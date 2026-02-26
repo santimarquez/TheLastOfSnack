@@ -1,0 +1,76 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(244, 37, 37, 0.2);
+}
+
+@media (min-width: 1024px) {
+  .header {
+    padding: 1rem 5rem;
+  }
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logoIcon {
+  width: 2rem;
+  height: 2rem;
+  background: var(--primary);
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoIconSymbol {
+  color: white;
+  font-size: 1.25rem;
+}
+
+.logoText {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--slate-100);
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.iconBtn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: var(--neutral-dark);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background: rgba(57, 40, 40, 0.8);
+  transform: scale(1.08);
+}
+
+.iconBtn:active {
+  transform: scale(0.94);
+}
+
+.iconBtn .material-symbols-outlined {
+  font-size: 1.25rem;
+}

@@ -1,0 +1,109 @@
+.main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-dark);
+  color: var(--slate-100);
+}
+
+.errorBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: #7f1d1d;
+  color: #fecaca;
+  border-radius: 8px;
+  margin: 0 1rem 1rem;
+}
+
+.errorBar button {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.25rem;
+  padding: 0 0.25rem;
+  cursor: pointer;
+}
+
+.status {
+  color: var(--neutral-soft);
+  text-align: center;
+  margin: 2rem;
+}
+
+.lobbyLayout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .lobbyLayout {
+    flex-direction: row;
+    padding: 2.5rem 5rem;
+  }
+}
+
+.lobbyColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chatColumn {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .chatColumn {
+    width: 24rem;
+    flex-shrink: 0;
+  }
+}
+
+.gameLayout {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gameMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gameSidebar {
+  width: 20rem;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(244, 37, 37, 0.2);
+  background: rgba(34, 16, 16, 0.8);
+  backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.footerBar {
+  height: 0.5rem;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    #eab308 50%,
+    var(--primary) 100%
+  );
+  opacity: 0.5;
+}

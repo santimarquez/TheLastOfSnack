@@ -1,0 +1,3 @@
+.wrapper {
+  animation: pageEnter 0.35s var(--ease-out-back) forwards;
+}

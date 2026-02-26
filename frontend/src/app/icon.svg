@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <circle cx="16" cy="16" r="15" fill="#f42525"/>
+  <!-- Fork: 3 tines + stem -->
+  <path fill="white" d="M10 7v2h.6v7c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5V9h.6V7H10zm0 2.2h2v1H10v-1z"/>
+  <!-- Knife -->
+  <path fill="white" d="M20 7l1.8 4V22h.8V11L24 7H20z"/>
+</svg>

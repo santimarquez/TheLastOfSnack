@@ -1,0 +1,470 @@
+.wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-dark);
+  color: var(--slate-100);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(244, 37, 37, 0.2);
+  background: rgba(34, 16, 16, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+@media (min-width: 768px) {
+  .header {
+    padding: 1rem 2.5rem;
+  }
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logoIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoIcon .material-symbols-outlined {
+  font-size: 1.5rem;
+}
+
+.logoText {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--slate-100);
+}
+
+.backBtn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: var(--primary);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: filter var(--transition-fast), transform var(--transition-fast);
+}
+
+.backBtn:hover {
+  filter: brightness(1.1);
+  transform: scale(1.08);
+}
+
+.backBtn:active {
+  transform: scale(0.94);
+}
+
+.backBtn .material-symbols-outlined {
+  font-size: 1.5rem;
+}
+
+.main {
+  flex: 1;
+  max-width: 52rem;
+  margin: 0 auto;
+  width: 100%;
+  padding: 2rem 1.5rem 3rem;
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: 3rem 2rem 4rem;
+  }
+}
+
+/* Banner */
+.banner {
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  padding: 2.5rem 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.bannerBg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(244, 37, 37, 0.25) 0%, rgba(244, 37, 37, 0.08) 50%, var(--slate-900) 100%);
+  background-size: cover;
+}
+
+.bannerBg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 80%, rgba(244, 37, 37, 0.15) 0%, transparent 40%);
+}
+
+.bannerTag {
+  position: relative;
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--primary);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.bannerTitle {
+  position: relative;
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.5rem;
+  color: var(--slate-100);
+}
+
+@media (min-width: 768px) {
+  .bannerTitle {
+    font-size: 3rem;
+  }
+}
+
+.bannerSub {
+  position: relative;
+  font-size: 1.125rem;
+  color: var(--slate-300);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--slate-100);
+  margin: 0 0 1.25rem;
+}
+
+.sectionNum {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* Goal section */
+.goalLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  background: rgba(244, 37, 37, 0.06);
+  border: 1px solid rgba(244, 37, 37, 0.2);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .goalLayout {
+    grid-template-columns: 12rem 1fr;
+    padding: 2rem;
+  }
+}
+
+.goalImage {
+  aspect-ratio: 1;
+  max-width: 12rem;
+  background: var(--slate-800);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goalImage .material-symbols-outlined {
+  font-size: 4rem;
+  color: var(--primary);
+  opacity: 0.9;
+}
+
+.goalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.goalTitle {
+  font-size: 1.25rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--primary);
+  margin: 0;
+}
+
+.goalCopy {
+  font-size: 0.9375rem;
+  color: var(--slate-300);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.goalCopy strong {
+  color: var(--slate-100);
+}
+
+.goalPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background: rgba(244, 37, 37, 0.15);
+  border: 1px solid rgba(244, 37, 37, 0.3);
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--slate-200);
+}
+
+.pill .material-symbols-outlined {
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+/* Cards grid */
+.cardsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .cardsGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+.actionCard {
+  background: rgba(244, 37, 37, 0.06);
+  border: 1px solid rgba(244, 37, 37, 0.2);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.actionCard .material-symbols-outlined {
+  font-size: 2rem;
+  color: var(--primary);
+}
+
+.actionTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--slate-100);
+  margin: 0;
+}
+
+.actionDesc {
+  font-size: 0.8125rem;
+  color: var(--slate-400);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Secret section */
+.secretBlock {
+  position: relative;
+  background: rgba(244, 37, 37, 0.06);
+  border: 1px solid rgba(244, 37, 37, 0.2);
+  border-radius: 0.75rem;
+  padding: 1.5rem 2rem 1.5rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .secretBlock {
+    padding: 2rem 2.5rem 2rem 2rem;
+  }
+}
+
+.warningIcon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: var(--primary);
+}
+
+.warningIcon .material-symbols-outlined {
+  font-size: 1.5rem;
+}
+
+.secretQuote {
+  font-size: 1.125rem;
+  font-style: italic;
+  color: var(--primary);
+  margin: 0 0 1rem;
+}
+
+.secretCopy {
+  font-size: 0.9375rem;
+  color: var(--slate-300);
+  line-height: 1.65;
+  margin: 0 0 1.25rem;
+}
+
+.secretCopy strong {
+  color: var(--slate-100);
+}
+
+.weaknessExamples {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.weaknessCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--slate-800);
+  border: 1px solid rgba(244, 37, 37, 0.15);
+  border-radius: 0.5rem;
+}
+
+.weaknessCard .material-symbols-outlined {
+  font-size: 1.75rem;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.weaknessCard strong {
+  display: block;
+  font-size: 0.9375rem;
+  color: var(--slate-100);
+  margin-bottom: 0.25rem;
+}
+
+.weaknessCard p {
+  font-size: 0.8125rem;
+  color: var(--slate-400);
+  margin: 0;
+}
+
+/* CTA */
+.ctaSection {
+  text-align: center;
+  padding: 2rem 0;
+  margin-top: 1rem;
+}
+
+.ctaText {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--slate-100);
+  margin: 0 0 1.25rem;
+}
+
+.ctaButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.75rem;
+  border-radius: 0.5rem;
+  background: var(--primary);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: filter var(--transition-normal), transform var(--transition-fast);
+}
+
+.btnPrimary:hover {
+  filter: brightness(1.1);
+  transform: scale(1.03);
+}
+
+.btnPrimary:active {
+  transform: scale(0.97);
+}
+
+.btnSecondary {
+  padding: 0.875rem 1.75rem;
+  border-radius: 0.5rem;
+  background: var(--slate-800);
+  color: var(--slate-100);
+  border: 1px solid rgba(244, 37, 37, 0.3);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-normal), transform var(--transition-fast);
+}
+
+.btnSecondary:hover {
+  background: var(--slate-700);
+  transform: scale(1.02);
+}
+
+.btnSecondary:active {
+  transform: scale(0.97);
+}
+
+/* Footer */
+.footer {
+  padding: 1.5rem;
+  text-align: center;
+  border-top: 1px solid rgba(244, 37, 37, 0.1);
+}
+
+.footer p {
+  font-size: 0.75rem;
+  color: var(--slate-500);
+  margin: 0;
+}

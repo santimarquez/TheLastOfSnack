@@ -1,0 +1,36 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--neutral-dark);
+  border: 1px solid rgba(244, 37, 37, 0.2);
+  border-radius: 9999px;
+  padding: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--slate-400);
+  background: transparent;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn:hover {
+  color: var(--slate-100);
+}
+
+.btnActive {
+  color: white;
+  background: rgba(244, 37, 37, 0.5);
+}
+
+.btnActive:hover {
+  color: white;
+  background: rgba(244, 37, 37, 0.6);
+}

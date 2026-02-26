@@ -1,0 +1,557 @@
+/* Arena section */
+.arenaSection {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: radial-gradient(
+    circle at center,
+    rgba(244, 37, 37, 0.1) 0%,
+    var(--background-dark) 50%,
+    var(--background-dark) 100%
+  );
+}
+
+.arenaBg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.arenaCircle {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  border-radius: 9999px;
+  border: 8px solid rgba(244, 37, 37, 0.3);
+  background: var(--slate-900);
+  box-shadow: 0 0 100px rgba(244, 37, 37, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arenaInnerDashed {
+  position: absolute;
+  inset: 1rem;
+  border-radius: 9999px;
+  border: 2px dashed rgba(244, 37, 37, 0.2);
+  pointer-events: none;
+}
+
+.discardPile {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.discardCard {
+  width: 8rem;
+  height: 11rem;
+  border-radius: 0.75rem;
+  border: 2px solid rgba(244, 37, 37, 0.4);
+  background: rgba(244, 37, 37, 0.1);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  transform: rotate(3deg);
+}
+
+.discardCard .material-symbols-outlined {
+  font-size: 3rem;
+  color: var(--primary);
+  opacity: 0.5;
+}
+
+.discardLabel {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: rgba(244, 37, 37, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Player slots around circle: position by angle */
+.playerSlot {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transform: translate(-50%, -50%) rotate(var(--slot-angle)) translateY(-180px) rotate(calc(-1 * var(--slot-angle)));
+}
+
+.playerSlotYou {
+  z-index: 10;
+}
+
+.playerSlotCurrent .playerAvatar {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(244, 37, 37, 0.2);
+}
+
+.playerSlotYou .playerAvatar {
+  width: 6rem;
+  height: 6rem;
+  border-width: 4px;
+  border-color: var(--primary);
+}
+
+.playerSlotYou .playerSlotName {
+  background: var(--primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.yourTurnBadge {
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  letter-spacing: 0.1em;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+.theirTurnBadge {
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(244, 37, 37, 0.25);
+  color: var(--slate-200);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(244, 37, 37, 0.4);
+  white-space: nowrap;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-4px); }
+}
+
+.playerAvatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 9999px;
+  border: 4px solid var(--slate-700);
+  background: var(--slate-800);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.playerAvatar .material-symbols-outlined {
+  font-size: 2rem;
+  color: var(--neutral-soft);
+}
+
+.playerAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.playerSlotName {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--slate-700);
+  color: white;
+}
+
+.playerSlotRole {
+  font-size: 0.65rem;
+  color: var(--slate-400);
+}
+
+.playerSlotOut {
+  opacity: 0.6;
+}
+
+.playerSlotOutLabel {
+  font-size: 0.65rem;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* Bottom HUD */
+.hud {
+  height: 16rem;
+  border-top: 1px solid rgba(244, 37, 37, 0.3);
+  background: rgba(34, 16, 16, 0.95);
+  backdrop-filter: blur(16px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+  gap: 2rem;
+}
+
+.hudLeft {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.hudLabel {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.secretCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.secretCardInner {
+  width: 6rem;
+  height: 9rem;
+  border-radius: 0.75rem;
+  border: 4px solid var(--primary);
+  background: var(--background-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.secretCardInner .material-symbols-outlined {
+  font-size: 2rem;
+  color: var(--primary);
+  opacity: 0.8;
+}
+
+.secretCardAvatar {
+  width: 100%;
+  height: 4.5rem;
+  object-fit: cover;
+  display: block;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.secretCardName {
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  text-align: center;
+}
+
+.weaknessCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hudLabelWeakness {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.weaknessIcon {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 9999px;
+  border: 4px solid rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weaknessIcon .material-symbols-outlined {
+  font-size: 2.25rem;
+  color: #60a5fa;
+}
+
+.weaknessContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  text-align: center;
+}
+
+.weaknessName {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+.weaknessEliminatedBy {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--slate-400);
+}
+
+.hudDivider {
+  width: 1px;
+  height: 10rem;
+  background: rgba(244, 37, 37, 0.2);
+  flex-shrink: 0;
+}
+
+.waitingForTurn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0 1rem;
+}
+
+.waitingAvatar {
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 3px solid rgba(244, 37, 37, 0.3);
+  background: var(--slate-800);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.waitingAvatar .material-symbols-outlined {
+  font-size: 2rem;
+  color: var(--neutral-soft);
+}
+
+.waitingAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.waitingText {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--slate-300);
+  margin: 0;
+}
+
+.handSection {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  min-width: 0;
+}
+
+.handCards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-left: -2rem;
+}
+
+.handCards > * {
+  margin-left: -2rem;
+}
+
+.handCards > *:first-child {
+  margin-left: 0;
+}
+
+.card {
+  width: 7rem;
+  height: 10rem;
+  border-radius: 0.75rem;
+  background: var(--slate-800);
+  border: 2px solid var(--slate-600);
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.card:hover.cardPlayable {
+  transform: translateY(-2rem);
+  border-color: var(--primary);
+  box-shadow: 0 0 30px rgba(244, 37, 37, 0.4);
+}
+
+.card:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.cardPlayable {
+  border-color: var(--slate-600);
+}
+
+.cardIcon {
+  height: 50%;
+  border-radius: 0.5rem;
+  background: var(--slate-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.cardIcon .material-symbols-outlined {
+  font-size: 1.5rem;
+  color: var(--neutral-soft);
+}
+
+.cardTitle {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  margin: 0 0 0.25rem;
+  color: white;
+}
+
+.cardDesc {
+  font-size: 8px;
+  color: var(--slate-400);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.hudRight {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+.timerWrap {
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timerSvg {
+  width: 5rem;
+  height: 5rem;
+  transform: rotate(-90deg);
+}
+
+.timerBg {
+  fill: none;
+  stroke: var(--slate-800);
+  stroke-width: 6;
+}
+
+.timerFill {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.timerText {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timerNum {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: white;
+}
+
+.timerUnit {
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--slate-400);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.endTurnBtn {
+  width: 10rem;
+  height: 6rem;
+  border-radius: 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  box-shadow: 0 10px 0 rgb(180, 20, 20);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.endTurnBtn:hover:not(:disabled) {
+  background: #dc2626;
+  box-shadow: 0 5px 0 rgb(180, 20, 20);
+  transform: translateY(5px);
+}
+
+.endTurnBtn:active:not(:disabled) {
+  box-shadow: none;
+  transform: translateY(10px);
+}
+
+.endTurnBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.endTurnBtn span:first-of-type {
+  font-size: 1.125rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.025em;
+}
+
+.endTurnBtn .material-symbols-outlined {
+  font-size: 1.875rem;
+}

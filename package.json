@@ -1,0 +1,20 @@
+{
+  "name": "last-of-snack",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "game-server",
+    "frontend",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:frontend\"",
+    "dev:server": "npm run dev -w game-server",
+    "dev:frontend": "npm run dev -w frontend",
+    "build": "npm run build -w shared && npm run build -w game-server && npm run build -w frontend",
+    "start": "concurrently \"npm run start -w game-server\" \"npm run start -w frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

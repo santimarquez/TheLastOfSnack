@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.turbo/
+
+# Next.js (static export)
+out/
+
+# Environment and secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Logs and debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# IDE and editors
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+# Uncomment to share workspace settings: remove .vscode/ from gitignore
+.vscode/
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Cache and temp
+.cache/
+.parcel-cache/
+.temp/
+.tmp/
+*.tmp
+
+# Vercel and deployment
+.vercel
+
+# Optional: lockfile (uncomment only if you intentionally don’t commit it)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml

@@ -1,0 +1,448 @@
+.main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-dark);
+  color: var(--slate-100);
+  background-image: radial-gradient(
+    ellipse 80% 50% at 50% 0%,
+    rgba(244, 37, 37, 0.12) 0%,
+    transparent 50%
+  );
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(244, 37, 37, 0.2);
+  background: rgba(34, 16, 16, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+@media (min-width: 768px) {
+  .header {
+    padding: 1rem 2.5rem;
+  }
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logoIcon {
+  color: var(--primary);
+}
+
+.logoIcon .material-symbols-outlined {
+  font-size: 1.75rem;
+}
+
+.logoText {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--slate-100);
+}
+
+.iconBtn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: rgba(244, 37, 37, 0.15);
+  border: none;
+  color: var(--slate-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.iconBtn:hover {
+  background: rgba(244, 37, 37, 0.25);
+}
+
+.iconBtn .material-symbols-outlined {
+  font-size: 1.25rem;
+}
+
+.content {
+  flex: 1;
+  padding: 2rem 1.5rem 3rem;
+  max-width: 56rem;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .content {
+    padding: 3rem 2rem 4rem;
+    gap: 2.5rem;
+  }
+}
+
+/* Connection Crisis card */
+.crisisCard {
+  background: rgba(244, 37, 37, 0.08);
+  border: 1px solid rgba(244, 37, 37, 0.3);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(244, 37, 37, 0.1);
+}
+
+@media (min-width: 768px) {
+  .crisisCard {
+    padding: 2.5rem;
+  }
+}
+
+.crisisIconWrap {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  background: var(--slate-800);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crisisIconWrap .material-symbols-outlined {
+  font-size: 2.25rem;
+  color: var(--primary);
+}
+
+.crisisSub {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--primary);
+  margin: 0 0 0.5rem;
+}
+
+.crisisTitle {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin: 0 0 1rem;
+  text-shadow: 0 0 20px rgba(244, 37, 37, 0.4);
+}
+
+@media (min-width: 768px) {
+  .crisisTitle {
+    font-size: 2.75rem;
+  }
+}
+
+.crisisCopy {
+  font-size: 1rem;
+  color: var(--slate-300);
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+  max-width: 32rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.crisisActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btnRejoin {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.5rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: filter var(--transition-normal), transform var(--transition-fast);
+}
+
+.btnRejoin:hover {
+  filter: brightness(1.1);
+  transform: scale(1.03);
+}
+
+.btnRejoin:active {
+  transform: scale(0.97);
+}
+
+.btnRejoin .material-symbols-outlined {
+  font-size: 1.25rem;
+}
+
+.btnExit {
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.5rem;
+  background: var(--slate-800);
+  color: var(--slate-100);
+  border: 1px solid rgba(244, 37, 37, 0.2);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background var(--transition-normal), transform var(--transition-fast);
+}
+
+.btnExit:hover {
+  background: var(--slate-700);
+  transform: scale(1.02);
+}
+
+.btnExit:active {
+  transform: scale(0.97);
+}
+
+/* Lower row: Not Found + Empty */
+.lowerRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .lowerRow {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+/* Snack Not Found card */
+.notFoundCard {
+  background: rgba(244, 37, 37, 0.06);
+  border: 1px solid rgba(244, 37, 37, 0.25);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .notFoundCard {
+    padding: 2rem;
+  }
+}
+
+.notFoundLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+  margin: 0 0 0.5rem;
+}
+
+.notFoundLabel .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.notFoundTitle {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+  color: var(--slate-100);
+}
+
+.notFoundHighlight {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-underline-offset: 4px;
+}
+
+.notFoundCopy {
+  font-size: 0.9375rem;
+  color: var(--slate-300);
+  line-height: 1.6;
+  margin: 0 0 1.25rem;
+}
+
+.codeForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.codeLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--slate-100);
+}
+
+.codeRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.codeInput {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: rgba(244, 37, 37, 0.1);
+  border: 1px solid rgba(244, 37, 37, 0.3);
+  border-radius: 0.5rem;
+  color: var(--slate-100);
+  font-size: 0.9375rem;
+  outline: none;
+}
+
+.codeInput::placeholder {
+  color: var(--slate-500);
+}
+
+.codeBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.75rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: filter var(--transition-fast), transform var(--transition-fast);
+}
+
+.codeBtn:hover {
+  filter: brightness(1.1);
+  transform: scale(1.03);
+}
+
+.codeBtn:active {
+  transform: scale(0.97);
+}
+
+.codeBtn .material-symbols-outlined {
+  font-size: 1.125rem;
+}
+
+.codeHint {
+  font-size: 0.8125rem;
+  color: var(--slate-500);
+  margin: 0;
+}
+
+/* Empty placeholder card */
+.emptyCard {
+  position: relative;
+  background: var(--slate-800);
+  border: 1px solid rgba(244, 37, 37, 0.15);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  transform: rotate(1.5deg);
+}
+
+.emptyBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0 0.75rem 0 0.5rem;
+  transform: rotate(0deg);
+}
+
+.emptyIcon {
+  color: var(--slate-500);
+}
+
+.emptyIcon .material-symbols-outlined {
+  font-size: 3rem;
+}
+
+.emptyLines {
+  width: 4rem;
+  height: 0.5rem;
+  margin-top: 1rem;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0.15) 80%,
+    transparent
+  );
+  border-radius: 2px;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(244, 37, 37, 0.1);
+}
+
+@media (min-width: 768px) {
+  .footer {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 1.5rem 2.5rem;
+  }
+}
+
+.footerCopy {
+  font-size: 0.75rem;
+  color: var(--slate-500);
+  margin: 0;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 1rem;
+}
+
+.footerLink {
+  background: none;
+  border: none;
+  color: var(--slate-400);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.footerLink:hover {
+  color: var(--slate-100);
+}
