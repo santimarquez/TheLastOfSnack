@@ -18,6 +18,7 @@ export function useGoodConnection(): boolean {
       return;
     }
     function check() {
+      if (!conn) return;
       const saveData = conn.saveData === true;
       const slow = conn.effectiveType === "slow-2g" || conn.effectiveType === "2g";
       const lowDownlink = typeof conn.downlink === "number" && conn.downlink < 0.4;
