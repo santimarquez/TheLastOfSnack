@@ -159,3 +159,21 @@ export function setPlayerAvatar(roomCode: string, playerId: string, avatarId: st
   player.avatarId = avatarId;
   return true;
 }
+
+export function setLobbySettings(
+  roomCode: string,
+  playerId: string,
+  settings: { speedMode?: boolean; suspicionMeter?: boolean }
+): boolean {
+  const room = store.getRoom(roomCode);
+  if (!room || room.gameState.phase !== "lobby") return false;
+  if (room.hostId !== playerId) return false;
+  if (settings.speedMode !== undefined) {
+    room.settings.speedMode = settings.speedMode;
+    room.settings.turnTimeoutSec = settings.speedMode ? 20 : 60;
+  }
+  if (settings.suspicionMeter !== undefined) {
+    room.settings.suspicionMeter = settings.suspicionMeter;
+  }
+  return true;
+}

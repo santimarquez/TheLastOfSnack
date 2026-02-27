@@ -28,8 +28,11 @@ export function createRoomEntity(
     gameState,
     createdAt: Date.now(),
     settings: {
-      turnTimeoutSec: settings?.turnTimeoutSec ?? config.turnTimeoutSec,
       speedMode: settings?.speedMode ?? config.speedMode,
+      suspicionMeter: settings?.suspicionMeter ?? false,
+      turnTimeoutSec:
+        settings?.turnTimeoutSec ??
+        ((settings?.speedMode ?? config.speedMode) ? 20 : 60),
     },
   };
 }

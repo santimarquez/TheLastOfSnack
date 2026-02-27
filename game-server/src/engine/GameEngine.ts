@@ -33,12 +33,21 @@ export function canStartGame(room: Room): { ok: true } | { error: string } {
   return { ok: true };
 }
 
-export function startGame(roomCode: string, hostPlayerId: string): { ok: true } | { error: string } {
+export function startGame(
+  roomCode: string,
+  hostPlayerId: string,
+  settings?: { speedMode?: boolean }
+): { ok: true } | { error: string } {
   const room = RoomManager.getRoom(roomCode);
   if (!room) return { error: "Room not found" };
   if (room.hostId !== hostPlayerId) return { error: "Only host can start" };
   const check = canStartGame(room);
   if ("error" in check) return check;
+
+  if (settings?.speedMode !== undefined) {
+    room.settings.speedMode = settings.speedMode;
+    room.settings.turnTimeoutSec = settings.speedMode ? 20 : 60;
+  }
 
   room.gameState.phase = "assigning";
   assignRoles(room.players);
@@ -50,9 +59,7 @@ export function startGame(roomCode: string, hostPlayerId: string): { ok: true } 
   room.gameState.phase = "playing";
   room.gameState.currentTurnIndex = 0;
   room.gameState.turnStartedAt = Date.now();
-
   const timeoutSec = room.settings.turnTimeoutSec;
-  room.gameState.turnStartedAt = Date.now();
   const currentId = getCurrentPlayerId(room);
   if (currentId) {
     startTurnTimer(roomCode, currentId, timeoutSec, () => onTurnTimeout(roomCode));

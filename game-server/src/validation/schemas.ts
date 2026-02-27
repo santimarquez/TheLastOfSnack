@@ -14,6 +14,11 @@ const setAvatarPayload = z.object({
   avatarId: z.string().min(1).max(64),
 });
 
+const setLobbySettingsPayload = z.object({
+  speedMode: z.boolean().optional(),
+  suspicionMeter: z.boolean().optional(),
+});
+
 const playCardPayload = z.object({
   cardId: z.string().min(1),
 });
@@ -26,7 +31,8 @@ export const clientMessageSchemas = {
   join: joinPayload,
   set_name: setNamePayload,
   set_avatar: setAvatarPayload,
-  start_game: z.object({}),
+  set_lobby_settings: setLobbySettingsPayload,
+  start_game: z.object({ speedMode: z.boolean().optional() }),
   play_card: playCardPayload,
   chat: chatPayload,
   restart: z.object({}),

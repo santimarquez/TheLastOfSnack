@@ -14,7 +14,8 @@ interface GameEndScreenProps {
 
 export function GameEndScreen({ send }: GameEndScreenProps) {
   const { t } = useTranslations();
-  const { gameState, playerId, isHost, setShowSettingsHelpModal } = useGameStore();
+  const { gameState, playerId, isHost, setShowSettingsHelpModal } =
+    useGameStore();
   const { muted, toggleMuted } = useSoundStore();
   const winnerId = gameState?.winnerId ?? null;
   const players = gameState?.players ?? [];
@@ -28,20 +29,22 @@ export function GameEndScreen({ send }: GameEndScreenProps) {
   return (
     <main className={styles.main}>
       <header className={styles.header}>
-        <Link href="/" className={styles.logoWrap}>
-          <span className="material-symbols-outlined">restaurant_menu</span>
-          <h2 className={styles.logoText}>{t("common.appName")}</h2>
-        </Link>
         <div className={styles.actions}>
           {MUSIC_ENABLED && (
-            <button type="button" className={styles.iconBtn} aria-label={muted ? t("common.unmute") : t("common.mute")} onClick={toggleMuted}>
-              <span className="material-symbols-outlined">{muted ? "volume_off" : "volume_up"}</span>
+            <button
+              type="button"
+              className={styles.iconBtn}
+              aria-label={muted ? t("common.unmute") : t("common.mute")}
+              onClick={toggleMuted}>
+              <span className="material-symbols-outlined">
+                {muted ? "volume_off" : "volume_up"}
+              </span>
             </button>
           )}
-          <button type="button" className={styles.iconBtn} aria-label={t("common.settings")} onClick={() => setShowSettingsHelpModal(true, "settings")}>
-            <span className="material-symbols-outlined">settings</span>
-          </button>
-          <button type="button" className={styles.iconBtn} aria-label={t("common.share")}>
+          <button
+            type="button"
+            className={styles.iconBtn}
+            aria-label={t("common.share")}>
             <span className="material-symbols-outlined">share</span>
           </button>
         </div>
@@ -66,15 +69,23 @@ export function GameEndScreen({ send }: GameEndScreenProps) {
               </div>
             </div>
             <h1 className={styles.victoryTitle}>
-              <span className={styles.victoryTitleName}>{winnerName.toUpperCase().replace(/\s+/g, " ")}</span>{" "}
+              <span className={styles.victoryTitleName}>
+                {winnerName.toUpperCase().replace(/\s+/g, " ")}
+              </span>{" "}
               {t("gameEnd.survived")}
             </h1>
             <p className={styles.winnerBanner}>{t("gameEnd.winner")}</p>
           </div>
-          <div className={styles.decorIcon} data-position="top-left" aria-hidden>
+          <div
+            className={styles.decorIcon}
+            data-position="top-left"
+            aria-hidden>
             <span className="material-symbols-outlined">celebration</span>
           </div>
-          <div className={styles.decorIcon} data-position="bottom-right" aria-hidden>
+          <div
+            className={styles.decorIcon}
+            data-position="bottom-right"
+            aria-hidden>
             <span className="material-symbols-outlined">star</span>
           </div>
           <div className={styles.decorIcon} data-position="left" aria-hidden>
@@ -84,11 +95,15 @@ export function GameEndScreen({ send }: GameEndScreenProps) {
 
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
-            <span className={styles.statLabel}>{t("gameEnd.eliminations")}</span>
+            <span className={styles.statLabel}>
+              {t("gameEnd.eliminations")}
+            </span>
             <span className={styles.statValue}>—</span>
           </div>
           <div className={styles.statCard}>
-            <span className={styles.statLabel}>{t("gameEnd.timeSurvived")}</span>
+            <span className={styles.statLabel}>
+              {t("gameEnd.timeSurvived")}
+            </span>
             <span className={styles.statValue}>—</span>
           </div>
           <div className={styles.statCard}>
@@ -128,13 +143,21 @@ export function GameEndScreen({ send }: GameEndScreenProps) {
                           </span>
                         </div>
                       </td>
-                      <td>{isWinner ? t("gameEnd.winnerLabel") : t("gameEnd.eliminatedLabel")}</td>
+                      <td>
+                        {isWinner
+                          ? t("gameEnd.winnerLabel")
+                          : t("gameEnd.eliminatedLabel")}
+                      </td>
                       <td>
                         <div className={styles.achievements}>
                           {isWinner && (
                             <>
-                              <span className={styles.badgePrimary}>{t("gameEnd.badgeSurvivor")}</span>
-                              <span className={styles.badgeAmber}>{t("gameEnd.badgeMvp")}</span>
+                              <span className={styles.badgePrimary}>
+                                {t("gameEnd.badgeSurvivor")}
+                              </span>
+                              <span className={styles.badgeAmber}>
+                                {t("gameEnd.badgeMvp")}
+                              </span>
                             </>
                           )}
                           {!isWinner && (
@@ -156,8 +179,11 @@ export function GameEndScreen({ send }: GameEndScreenProps) {
             className={styles.btnPlayAgain}
             onClick={handlePlayAgain}
             disabled={!isHost}
-            title={isHost ? t("gameEnd.playAgainTitle") : t("gameEnd.playAgainTitleHostOnly")}
-          >
+            title={
+              isHost
+                ? t("gameEnd.playAgainTitle")
+                : t("gameEnd.playAgainTitleHostOnly")
+            }>
             <span className="material-symbols-outlined">replay</span>
             {t("gameEnd.playAgain")}
           </button>

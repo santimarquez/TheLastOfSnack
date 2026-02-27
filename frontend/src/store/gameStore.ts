@@ -8,6 +8,11 @@ export interface ChatMessage {
   isSpectator?: boolean;
 }
 
+export interface LobbySettings {
+  speedMode: boolean;
+  suspicionMeter: boolean;
+}
+
 interface GameStore {
   roomCode: string;
   playerId: string | null;
@@ -15,6 +20,7 @@ interface GameStore {
   reconnectToken: string | null;
   isHost: boolean;
   gameState: GameStateView | null;
+  lobbySettings: LobbySettings;
   chatMessages: ChatMessage[];
   connectionStatus: "disconnected" | "connecting" | "connected";
   error: string | null;
@@ -29,8 +35,9 @@ interface GameStore {
     isHost: boolean;
     reconnectToken: string;
     gameState: GameStateView;
+    lobbySettings?: LobbySettings;
   }) => void;
-  setRoomUpdated: (players: PlayerView[], gameState: GameStateView) => void;
+  setRoomUpdated: (players: PlayerView[], gameState: GameStateView, lobbySettings?: LobbySettings) => void;
   setGameStarted: (gameState: GameStateView) => void;
   setTurnStarted: (currentPlayerId: string, expiresAt: number, gameState: GameStateView) => void;
   setCardPlayed: (playerId: string, cardId: string, gameState: GameStateView) => void;
@@ -65,6 +72,7 @@ export const useGameStore = create<GameStore>((set) => ({
   reconnectToken: null,
   isHost: false,
   gameState: null,
+  lobbySettings: { speedMode: false, suspicionMeter: false },
   chatMessages: [],
   connectionStatus: "disconnected",
   error: null,
@@ -81,16 +89,18 @@ export const useGameStore = create<GameStore>((set) => ({
       isHost: data.isHost,
       reconnectToken: data.reconnectToken,
       gameState: data.gameState,
+      lobbySettings: data.lobbySettings ?? { speedMode: false, suspicionMeter: false },
       displayName: data.gameState.players?.find((p) => p.id === data.playerId)?.displayName ?? "",
       connectionStatus: "connected",
       error: null,
       joinFailed: false,
     }),
 
-  setRoomUpdated: (players, gameState) =>
-    set({
+  setRoomUpdated: (players, gameState, lobbySettings) =>
+    set((s) => ({
       gameState: { ...gameState, players },
-    }),
+      ...(lobbySettings != null ? { lobbySettings } : {}),
+    })),
 
   setGameStarted: (gameState) => set({ gameState, showAssigningTransition: true }),
 
@@ -136,6 +146,7 @@ export const useGameStore = create<GameStore>((set) => ({
       reconnectToken: null,
       isHost: false,
       gameState: null,
+      lobbySettings: { speedMode: false, suspicionMeter: false },
       chatMessages: [],
       connectionStatus: "disconnected",
       error: null,

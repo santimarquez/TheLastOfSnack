@@ -36,7 +36,7 @@ export function GameTable({ send }: { send: SendFn }) {
       : null;
   const isMyTurn = currentPlayerId === playerId;
   const turnStartedAt = gameState?.turnStartedAt ?? 0;
-  const turnTimeoutSec = 20;
+  const turnTimeoutSec = gameState?.turnTimeoutSec ?? 60;
 
   const myHand = me?.hand ?? [];
   const myRole = me?.role;

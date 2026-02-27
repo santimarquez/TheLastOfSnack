@@ -1,0 +1,37 @@
+# Production override: use with Traefik (inverseproxy_shared network must exist).
+# Run: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Required env vars (e.g. in .env on the VPS):
+#   TRAEFIK_STACK_ENV=prod
+#   TRAEFIK_LASTOFSNACK_NAME=lastofsnack
+#   TRAEFIK_LASTOFSNACK_PORT=80
+#   TRAEFIK_LASTOFSNACK_URL=snack.yourdomain.com
+#
+# Frontend uses same-origin for API/WS when NEXT_PUBLIC_GAME_SERVER_HTTP is empty,
+# so the app and game server are reached via the same host (nginx proxies /ws, /rooms).
+
+services:
+  game-server:
+    ports: []  # no host port; only nginx is exposed to Traefik
+
+  frontend:
+    ports: []  # no host port; only nginx is exposed to Traefik
+
+  nginx:
+    ports: []  # no host port; Traefik routes by Host
+    networks:
+      - default
+      - inverseproxy_shared
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=inverseproxy_shared"
+      - "traefik.http.services.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}.loadbalancer.server.port=${TRAEFIK_LASTOFSNACK_PORT}"
+      - "traefik.http.routers.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}-https.entrypoints=websecure"
+      - "traefik.http.routers.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}-https.rule=Host(`${TRAEFIK_LASTOFSNACK_URL}`)"
+      - "traefik.http.routers.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}-https.tls=true"
+      - "traefik.http.routers.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}-https.service=${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}"
+
+networks:
+  inverseproxy_shared:
+    external: true

@@ -1,5 +1,6 @@
 import type { WebSocket } from "ws";
 import { randomUUID } from "crypto";
+import type { Room } from "../state/types.js";
 import * as RoomManager from "../rooms/RoomManager.js";
 import * as GameEngine from "../engine/GameEngine.js";
 import { buildGameStateView } from "../engine/EventBroadcasting.js";
@@ -9,6 +10,18 @@ import { sendToSocket } from "./broadcast.js";
 import { config } from "../config.js";
 
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
+
+function roomUpdatedPayload(room: Room, forPlayerId: string) {
+  const view = buildGameStateView(room, forPlayerId);
+  return {
+    players: view.players,
+    gameState: view,
+    lobbySettings: {
+      speedMode: room.settings.speedMode,
+      suspicionMeter: room.settings.suspicionMeter ?? false,
+    },
+  };
+}
 const RATE_WINDOW_MS = 1000;
 
 function checkRateLimit(socketId: string): boolean {
@@ -83,13 +96,14 @@ export function handleMessage(
         isHost: player.isHost,
         reconnectToken: token,
         gameState,
+        lobbySettings: {
+          speedMode: room.settings.speedMode,
+          suspicionMeter: room.settings.suspicionMeter ?? false,
+        },
       });
       if (!reconnected) {
         const broadcastFn = broadcast.createBroadcast(sockets);
-        broadcastFn(room.code, "room_updated", (forPlayerId: string) => {
-          const view = buildGameStateView(room, forPlayerId);
-          return { players: view.players, gameState: view };
-        });
+        broadcastFn(room.code, "room_updated", (forPlayerId: string) => roomUpdatedPayload(room, forPlayerId));
       }
       return;
     }
@@ -124,10 +138,7 @@ export function handleMessage(
         return;
       }
       const broadcastFn = broadcast.createBroadcast(sockets);
-      broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => {
-        const view = buildGameStateView(room, forPlayerId);
-        return { players: view.players, gameState: view };
-      });
+      broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => roomUpdatedPayload(room, forPlayerId));
       return;
     }
 
@@ -139,15 +150,30 @@ export function handleMessage(
         return;
       }
       const broadcastFn = broadcast.createBroadcast(sockets);
-      broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => {
-        const view = buildGameStateView(room, forPlayerId);
-        return { players: view.players, gameState: view };
-      });
+      broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => roomUpdatedPayload(room, forPlayerId));
+      return;
+    }
+
+    case "set_lobby_settings": {
+      const lobbyPayload = parsed.payload as { speedMode?: boolean; suspicionMeter?: boolean };
+      const ok = RoomManager.setLobbySettings(ctx.roomCode, ctx.playerId, lobbyPayload);
+      if (!ok) {
+        sendToSocket(ws, "error", { code: "INVALID_STATE", message: "Only host can change lobby settings" });
+        return;
+      }
+      const updatedRoom = RoomManager.getRoom(ctx.roomCode);
+      if (updatedRoom) {
+        const broadcastFn = broadcast.createBroadcast(sockets);
+        broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => roomUpdatedPayload(updatedRoom, forPlayerId));
+      }
       return;
     }
 
     case "start_game": {
-      const result = GameEngine.startGame(ctx.roomCode, ctx.playerId);
+      const payload = parsed.payload as { speedMode?: boolean };
+      const result = GameEngine.startGame(ctx.roomCode, ctx.playerId, {
+        speedMode: payload.speedMode,
+      });
       if ("error" in result) {
         sendToSocket(ws, "error", { code: "START_FAILED", message: result.error });
       }
@@ -195,9 +221,6 @@ export function handleClose(socketId: string, sockets: Map<string, WebSocket>): 
   const room = RoomManager.getRoom(ctx.roomCode);
   if (room) {
     const broadcastFn = broadcast.createBroadcast(sockets);
-    broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => {
-      const view = buildGameStateView(room, forPlayerId);
-      return { players: view.players, gameState: view };
-    });
+    broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => roomUpdatedPayload(room, forPlayerId));
   }
 }

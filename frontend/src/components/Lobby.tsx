@@ -33,12 +33,12 @@ function formatRoomCode(code: string): string {
 }
 
 export function Lobby({ send }: { send: SendFn }) {
-  const { gameState, playerId, roomCode, isHost, displayName } = useGameStore();
+  const { gameState, playerId, roomCode, isHost, displayName, lobbySettings } = useGameStore();
   const { t } = useTranslations();
   const [nameInput, setNameInput] = useState(displayName || "");
-  const [suspicionMeter, setSuspicionMeter] = useState(false);
-  const [speedMode, setSpeedMode] = useState(true);
   const [waitingMessageIndex, setWaitingMessageIndex] = useState(0);
+  const speedMode = lobbySettings.speedMode;
+  const suspicionMeter = lobbySettings.suspicionMeter;
 
   useEffect(() => {
     if (displayName) setNameInput(displayName);
@@ -80,7 +80,7 @@ export function Lobby({ send }: { send: SendFn }) {
   }
 
   function handleStart() {
-    send("start_game", {});
+    send("start_game", { speedMode: lobbySettings.speedMode });
   }
 
   function handleCopyCode() {
@@ -126,7 +126,7 @@ export function Lobby({ send }: { send: SendFn }) {
                   type="checkbox"
                   className={styles.toggleInput}
                   checked={suspicionMeter}
-                  onChange={(e) => setSuspicionMeter(e.target.checked)}
+                  onChange={() => isHost && send("set_lobby_settings", { suspicionMeter: !suspicionMeter })}
                   disabled={!isHost}
                   aria-label={t("lobby.suspicionMeter")}
                 />
@@ -138,7 +138,7 @@ export function Lobby({ send }: { send: SendFn }) {
                   type="checkbox"
                   className={styles.toggleInput}
                   checked={speedMode}
-                  onChange={(e) => setSpeedMode(e.target.checked)}
+                  onChange={() => isHost && send("set_lobby_settings", { speedMode: !speedMode })}
                   disabled={!isHost}
                   aria-label={t("lobby.speedMode")}
                 />

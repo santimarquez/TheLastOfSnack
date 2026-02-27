@@ -37,6 +37,7 @@ export function buildGameStateView(room: Room, forPlayerId: string | null): Game
     winnerId: gameState.winnerId,
     lastAction: gameState.lastAction,
     turnStartedAt: gameState.turnStartedAt,
+    turnTimeoutSec: room.settings.turnTimeoutSec,
     revealedRoles: { ...gameState.revealedRoles },
     players,
   };

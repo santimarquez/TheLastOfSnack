@@ -68,6 +68,7 @@ export interface GameState {
 export interface RoomSettings {
   turnTimeoutSec: number;
   speedMode?: boolean;
+  suspicionMeter?: boolean;
 }
 
 /** Room entity */
@@ -105,6 +106,8 @@ export interface GameStateView {
   winnerId: string | null;
   lastAction?: LastAction;
   turnStartedAt?: number;
+  /** Turn duration in seconds (20 for speed mode, 60 for normal). */
+  turnTimeoutSec?: number;
   revealedRoles: Record<string, Snack>;
   players: PlayerView[];
 }

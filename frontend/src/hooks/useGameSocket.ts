@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { useGameStore } from "@/store/gameStore";
+import { useGameStore, type LobbySettings } from "@/store/gameStore";
 
 const getWsUrl = () => {
   const base =
@@ -87,12 +87,14 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
             isHost: p.isHost as boolean,
             reconnectToken: p.reconnectToken as string,
             gameState: p.gameState as import("@last-of-snack/shared").GameStateView,
+            lobbySettings: p.lobbySettings as LobbySettings | undefined,
           });
           break;
         case "room_updated":
           setRoomUpdated(
             (p.players as import("@last-of-snack/shared").PlayerView[]) ?? [],
-            (p.gameState as import("@last-of-snack/shared").GameStateView)!
+            (p.gameState as import("@last-of-snack/shared").GameStateView)!,
+            p.lobbySettings as LobbySettings | undefined
           );
           break;
         case "game_started":

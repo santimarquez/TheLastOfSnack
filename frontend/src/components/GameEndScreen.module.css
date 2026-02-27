@@ -9,7 +9,7 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid rgba(244, 37, 37, 0.2);
   background: rgba(34, 16, 16, 0.5);
@@ -62,7 +62,9 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .iconBtn:hover {
@@ -146,8 +148,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.25; }
-  50% { opacity: 0.35; }
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 .characterIcon {
@@ -184,7 +191,9 @@
   height: 100%;
   object-fit: contain;
   border-radius: 50%;
-  animation: winnerPop 0.6s var(--ease-out-bounce) both, winnerFloat 3s ease-in-out 0.6s infinite;
+  animation:
+    winnerPop 0.6s var(--ease-out-bounce) both,
+    winnerFloat 3s ease-in-out 0.6s infinite;
 }
 
 @keyframes winnerPop {
@@ -199,7 +208,8 @@
 }
 
 @keyframes winnerFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1) translateY(0);
   }
   50% {
@@ -506,7 +516,9 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  transition: background var(--transition-normal), transform var(--transition-fast);
+  transition:
+    background var(--transition-normal),
+    transform var(--transition-fast);
 }
 
 .btnBackToLobby:hover {
