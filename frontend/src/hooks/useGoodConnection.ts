@@ -12,16 +12,18 @@ export function useGoodConnection(): boolean {
   const [networkOk, setNetworkOk] = useState(true);
 
   useEffect(() => {
-    const conn = (navigator as Navigator & { connection?: { effectiveType?: string; saveData?: boolean; downlink?: number } }).connection;
+    const nav = navigator as Navigator & { connection?: { effectiveType?: string; saveData?: boolean; downlink?: number } };
+    const conn = nav.connection;
     if (!conn) {
       setNetworkOk(true);
       return;
     }
     function check() {
-      if (!conn) return;
-      const saveData = conn.saveData === true;
-      const slow = conn.effectiveType === "slow-2g" || conn.effectiveType === "2g";
-      const lowDownlink = typeof conn.downlink === "number" && conn.downlink < 0.4;
+      const c = nav.connection;
+      if (!c) return;
+      const saveData = c.saveData === true;
+      const slow = c.effectiveType === "slow-2g" || c.effectiveType === "2g";
+      const lowDownlink = typeof c.downlink === "number" && c.downlink < 0.4;
       setNetworkOk(!saveData && !slow && !lowDownlink);
     }
     check();
