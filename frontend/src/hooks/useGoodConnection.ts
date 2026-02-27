@@ -12,7 +12,9 @@ export function useGoodConnection(): boolean {
   const [networkOk, setNetworkOk] = useState(true);
 
   useEffect(() => {
-    const nav = navigator as Navigator & { connection?: { effectiveType?: string; saveData?: boolean; downlink?: number } };
+    const nav = navigator as Navigator & {
+      connection?: EventTarget & { effectiveType?: string; saveData?: boolean; downlink?: number };
+    };
     const conn = nav.connection;
     if (!conn) {
       setNetworkOk(true);
@@ -27,8 +29,8 @@ export function useGoodConnection(): boolean {
       setNetworkOk(!saveData && !slow && !lowDownlink);
     }
     check();
-    conn.addEventListener?.("change", check);
-    return () => conn.removeEventListener?.("change", check);
+    conn.addEventListener("change", check);
+    return () => conn.removeEventListener("change", check);
   }, []);
 
   const inRoom = Boolean(roomCode);
