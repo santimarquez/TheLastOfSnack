@@ -19,6 +19,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      # So /api/rooms can proxy to the game-server container (required in Docker)
+      - GAME_SERVER_HTTP=http://game-server:4000
     depends_on:
       - game-server
     restart: unless-stopped
