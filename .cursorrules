@@ -1,0 +1,119 @@
+# Cursor Rules – The Last of the Snacks
+
+This file provides context and guidelines for Cursor AI when working with this repository.
+
+## Project Overview
+
+**The Last of the Snacks** is a multiplayer party game: create or join rooms, pick snack avatars, play turns with cards (attack, defend, steal, peek), and be the last snack standing. Real-time via WebSockets.
+
+**Tech Stack:**
+- **Frontend:** Next.js 14 (App Router), React 18, TypeScript, Zustand, CSS Modules
+- **Game server:** Node.js, Fastify, WebSockets (`@fastify/websocket`), TypeScript (ESM)
+- **Shared:** TypeScript package `@last-of-snack/shared` (types, constants) used by frontend and game-server
+- **i18n:** EN (default) / ES; JSON message files, no runtime locale routing
+- **DevOps:** Docker Compose (frontend, game-server, nginx); production behind Traefik (docker-compose.prod.yml)
+
+## Architecture Patterns
+
+### Monorepo (npm workspaces)
+- **frontend/** – Next.js app (App Router, client components, API route `/api/rooms` proxies to game-server)
+- **game-server/** – Fastify HTTP + WebSocket server; room state, game engine, timers
+- **shared/** – Shared types and data; build with `tsc`; consumed as `@last-of-snack/shared`
+
+Build order: `shared` → `game-server` → `frontend`.
+
+### Frontend (Next.js)
+- **App Router:** `frontend/src/app/` – `layout.tsx`, `page.tsx`, `room/[code]/page.tsx`, `how-to-play/page.tsx`, `api/rooms/route.ts`
+- **Components:** `frontend/src/components/` – Lobby, GameTable, GameHeader, Shell, GameEndScreen, SettingsHelpModal, etc.
+- **State:** Zustand in `frontend/src/store/` – `gameStore` (room, game state, lobby settings), `soundStore` (volume, mute; music toggle when enabled)
+- **i18n:** `frontend/src/i18n/` – context and `messages/en.json`, `messages/es.json`; key pattern `common.appName`, `home.*`, `lobby.*`, etc.
+- **Styling:** CSS Modules (`.module.css`) next to components; design tokens in `globals.css` (e.g. `--primary` red, `--slate-*`)
+
+### Game Server
+- **Entry:** `game-server/src/index.ts` – Fastify, WebSocket upgrade, route `/ws`
+- **State:** In-memory store in `game-server/src/state/`; rooms in `game-server/src/rooms/` (RoomManager, Room entity)
+- **Engine:** `game-server/src/engine/` – GameEngine, TurnSystem, CardResolutionEngine, TimerSystem, EventBroadcasting
+- **Validation:** Zod schemas in `game-server/src/validation/schemas.ts` for client messages (join, set_name, set_avatar, set_lobby_settings, start_game, play_card, chat, restart)
+- **Config:** `game-server/src/config.ts` – PORT, ALLOWED_ORIGINS, turnTimeoutSec, speedMode, min/max players
+
+### WebSocket & API
+- **Client → server:** JSON messages `{ type, payload }`; types: join, set_name, set_avatar, set_lobby_settings, start_game, play_card, chat, restart
+- **Server → client:** Events e.g. joined, room_updated, game_started, turn_started, card_played, player_eliminated, game_ended, state_sync, error
+- **Room creation (HTTP):** Browser POST to same-origin `/api/rooms`; Next.js API route proxies to `GAME_SERVER_HTTP` (in Docker: `http://game-server:4000`)
+- **WebSocket URL:**
+  - Production / nginx: same-origin `wss://host/ws` or `ws://host/ws` (no `NEXT_PUBLIC_GAME_SERVER_HTTP`)
+  - Local dev (localhost:3000): use `ws://localhost:4000/ws` (Next dev server does not proxy `/ws`)
+
+## Coding Standards
+
+### TypeScript
+- Strict mode; type all public APIs and payloads
+- Prefer `interface` for object shapes; use shared types from `@last-of-snack/shared` where applicable
+- Game server: ESM (`"type": "module"`); file extension `.js` in imports for compiled output
+
+### React / Next.js
+- Client components that use hooks or browser APIs: `"use client"`
+- Use Zustand for global client state; avoid prop drilling for room/game state
+- i18n: use `useTranslations()` and `t("key")`; add new keys to both `en.json` and `es.json`
+
+### Game server
+- Validate all client payloads with Zod; return structured errors for unknown type or validation failure
+- Only host can start game and set lobby settings; enforce in RoomManager / GameEngine
+
+### Naming
+- **App name (display):** "The Last of the Snacks" (hero line: "The Last Of The" + "Snacks")
+- **Env vars:** `GAME_SERVER_HTTP` (server-side, frontend container → game-server); `NEXT_PUBLIC_GAME_SERVER_HTTP` (optional, client-side override); `NEXT_PUBLIC_SITE_URL` (metadata base)
+
+## Key Conventions (from project history)
+
+- **Lobby settings:** speedMode and suspicionMeter are stored on the server and synced to all clients via `room_updated` and `lobbySettings` in payload; host sends `set_lobby_settings`; default speed mode is off (60s turns).
+- **Turn timer:** 20s when speed mode on, 60s when off; `turnTimeoutSec` in room settings and in GameStateView for client timer.
+- **Music:** Gated by `MUSIC_ENABLED` in `soundStore`; when false, BackgroundMusic does not run and all music UI is hidden (mute buttons, settings audio section).
+- **OG/social:** `og:image` and Twitter card use the CTA section image; metadata in `layout.tsx`; set `NEXT_PUBLIC_SITE_URL` in production.
+
+## File Locations
+
+| Area | Path |
+|------|------|
+| Frontend app | `frontend/src/app/` |
+| Frontend components | `frontend/src/components/` |
+| Frontend store | `frontend/src/store/` |
+| Frontend i18n | `frontend/src/i18n/` |
+| Frontend hooks | `frontend/src/hooks/` |
+| Game server entry & routes | `game-server/src/` |
+| Game engine | `game-server/src/engine/` |
+| Rooms & state | `game-server/src/rooms/`, `game-server/src/state/` |
+| Shared types | `shared/src/` |
+| Docker | `docker-compose.yml`, `docker-compose.prod.yml`, `nginx.conf` |
+| Env example | `.env.example` |
+
+## DevOps
+
+- **Local dev:** `npm run dev` (concurrently frontend + game-server); frontend on 3000, game-server on 4000; WebSocket from client to 4000 when on localhost:3000
+- **Local with Docker:** `docker compose up`; nginx on 3080, proxies `/` to frontend, `/ws` and `/rooms` to game-server
+- **Production:** `docker compose -f docker-compose.yml -f docker-compose.prod.yml up`; set `TRAEFIK_*` and optionally `ALLOWED_ORIGINS`; do not set `NEXT_PUBLIC_GAME_SERVER_HTTP` so client uses same-origin for API/WS
+
+## AI Infrastructure
+
+- **Context:** `ai/context/` – PROJECT_STRUCTURE.md, TECH_STACK.md, COMMON_PATTERNS.md, CODING_STANDARDS.md, RECENT_CHANGES.md
+- **Docs:** `ai/docs/` – Setup and feature docs
+- **Skills:** `ai/skills/` – Reusable patterns (Next.js page, game-server handler, i18n key)
+- **Agents:** `ai/agents/` – Specialized workflows (e.g. add feature, i18n pass)
+- **Prompts:** `ai/prompts/` – Prompt templates
+
+## Important Rules
+
+1. **Shared types:** Use `@last-of-snack/shared` for types shared between frontend and game-server; build shared before dependent packages.
+2. **WebSocket URL:** Use the logic in `useGameSocket.ts`: env override → same-origin; special-case `localhost:3000` → `ws://localhost:4000/ws`.
+3. **API proxy:** Frontend container must have `GAME_SERVER_HTTP=http://game-server:4000` when running in Docker so `/api/rooms` can reach the game-server.
+4. **i18n:** Add keys to both `en.json` and `es.json`; use existing namespaces (common, home, lobby, etc.).
+5. **Lobby settings:** Persist on server; broadcast `lobbySettings` in `room_updated` and in `joined` payload.
+6. After notable changes, update **ai/context/RECENT_CHANGES.md** and add or update docs in **ai/docs/** as needed.
+
+## Reference Files
+
+- Project structure: `ai/context/PROJECT_STRUCTURE.md`
+- Tech stack: `ai/context/TECH_STACK.md`
+- Common patterns: `ai/context/COMMON_PATTERNS.md`
+- Coding standards: `ai/context/CODING_STANDARDS.md`
+- Recent changes: `ai/context/RECENT_CHANGES.md`
