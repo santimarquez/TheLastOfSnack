@@ -44,12 +44,15 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ displayName: name }),
       });
-      if (!res.ok) throw new Error(t("home.errorCreateRoom"));
       const data = (await res.json()) as {
-        roomCode: string;
-        reconnectToken: string;
+        roomCode?: string;
+        reconnectToken?: string;
+        error?: string;
       };
-      sessionStorage.setItem(`reconnect_${data.roomCode}`, data.reconnectToken);
+      if (!res.ok) {
+        throw new Error(data.error ?? t("home.errorCreateRoom"));
+      }
+      sessionStorage.setItem(`reconnect_${data.roomCode!}`, data.reconnectToken!);
       router.push(
         `/room/${data.roomCode}?displayName=${encodeURIComponent(name)}`,
       );

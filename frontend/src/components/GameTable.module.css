@@ -1,11 +1,13 @@
-/* Arena section */
+/* Arena section: top row, table, bottom row */
 .arenaSection {
   flex: 1;
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  gap: 1rem;
   background: radial-gradient(
     circle at center,
     rgba(244, 37, 37, 0.1) 0%,
@@ -41,12 +43,189 @@
   pointer-events: none;
 }
 
-.discardPile {
+/* Player rows: top and bottom of table */
+.playersRowTop,
+.playersRowBottom {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  min-height: 8rem;
+}
+
+/* Central area: deck (face down) + discard pile (face up, stacked) */
+.tableCenter {
   position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  pointer-events: none;
+}
+
+.deckPile {
+  display: flex;
+  aspect-ratio: 8 / 9;
+  width: 8rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deckPileDraggable {
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.deckPileDraggable:active {
+  cursor: grabbing;
+}
+
+.deckCardWrap {
+  position: relative;
+}
+
+.deckCard {
+  aspect-ratio: 8 / 9;
+  width: 8rem;
+  border-radius: 12px;
+  border: 3px solid var(--slate-600);
+  background-color: var(--slate-800);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.deckDrawPrompt {
+  position: absolute;
+  bottom: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  animation: deckDrawPulse 1.5s ease-in-out infinite;
+}
+
+.deckDrawPrompt .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+@keyframes deckDrawPulse {
+  0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.9; transform: translateX(-50%) scale(1.05); }
+}
+
+.deckCountBadge {
+  position: absolute;
+  top: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.4rem;
+  border-radius: 9999px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.deckLabel {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: rgba(244, 37, 37, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.discardDropZone {
+  pointer-events: auto;
+  border-radius: 12px;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+
+.dropZoneActive {
+  box-shadow: 0 0 0 3px var(--primary);
+  background: rgba(244, 37, 37, 0.15);
+}
+
+.playerAvatar.dropZoneActive {
+  box-shadow: 0 0 0 3px var(--primary);
+  background: rgba(244, 37, 37, 0.2);
+  cursor: copy;
+}
+
+.discardPileStack {
+  position: relative;
+  aspect-ratio: 8 / 9;
+  width: 10.5rem;
+}
+
+.discardPileCard {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  aspect-ratio: 8 / 9;
+  width: 8rem;
+  margin-left: -3rem;
+  margin-top: -3.375rem;
+  border-radius: 12px;
+  border: 3px solid black;
+  overflow: hidden;
+  background: var(--slate-800);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  transform: translate(var(--pile-dx, 0), var(--pile-dy, 0))
+    rotate(var(--pile-rotation, 0deg));
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+
+.discardPileCardBg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--slate-700);
+}
+
+.discardPileCardTitle {
+  position: relative;
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  padding: 0.25rem 0.35rem;
+  z-index: 1;
+  margin-top: auto;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.discardPile {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  margin-top: -40px;
 }
 
 .discardCard {
@@ -77,14 +256,13 @@
   letter-spacing: 0.1em;
 }
 
-/* Player slots around circle: position by angle */
+/* Player slot (in row layout) */
 .playerSlot {
-  position: absolute;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  transform: translate(-50%, -50%) rotate(var(--slot-angle)) translateY(-180px) rotate(calc(-1 * var(--slot-angle)));
 }
 
 .playerSlotYou {
@@ -97,8 +275,8 @@
 }
 
 .playerSlotYou .playerAvatar {
-  width: 6rem;
-  height: 6rem;
+  width: 8rem;
+  height: 8rem;
   border-width: 4px;
   border-color: var(--primary);
 }
@@ -144,14 +322,19 @@
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(-4px); }
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-4px);
+  }
 }
 
 .playerAvatar {
-  width: 5rem;
-  height: 5rem;
-  border-radius: 9999px;
+  width: 6.5rem;
+  height: 6.5rem;
+  border-radius: 50%;
   border: 4px solid var(--slate-700);
   background: var(--slate-800);
   display: flex;
@@ -161,7 +344,7 @@
 }
 
 .playerAvatar .material-symbols-outlined {
-  font-size: 2rem;
+  font-size: 2.5rem;
   color: var(--neutral-soft);
 }
 
@@ -180,11 +363,49 @@
   border-radius: 0.25rem;
   border: 1px solid var(--slate-700);
   color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.playerSlotBotIcon {
+  display: inline-flex;
+}
+
+.playerSlotBotIcon .material-symbols-outlined {
+  font-size: 0.9rem;
+  color: var(--slate-400);
 }
 
 .playerSlotRole {
   font-size: 0.65rem;
   color: var(--slate-400);
+}
+
+.playerSlotCategory {
+  font-size: 0.65rem;
+  color: var(--slate-500);
+  font-style: italic;
+}
+
+.playerSlotShield {
+  display: inline-flex;
+  margin-top: 0.25rem;
+}
+
+.playerSlotShield .material-symbols-outlined {
+  font-size: 1rem;
+  color: var(--primary);
+  opacity: 0.9;
+}
+
+.playerSlotShieldCount {
+  margin-left: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--primary);
+  min-width: 1rem;
+  text-align: center;
 }
 
 .playerSlotOut {
@@ -378,6 +599,97 @@
   min-width: 0;
 }
 
+.targetSelection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.targetSelectionLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--slate-200);
+  margin: 0;
+}
+
+.targetSelectionPlayers {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.targetSelectionActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.discardCardSelected {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 0.75rem;
+}
+
+.targetButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--slate-600);
+  background: var(--slate-800);
+  color: white;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.targetButton:hover {
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+.targetAvatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--slate-700);
+}
+
+.targetAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.targetAvatar .material-symbols-outlined {
+  font-size: 1.5rem;
+  color: var(--neutral-soft);
+}
+
+.targetCancelBtn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--slate-600);
+  background: transparent;
+  color: var(--slate-300);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.targetCancelBtn:hover {
+  background: var(--slate-700);
+}
+
 .handCards {
   display: flex;
   align-items: center;
@@ -394,6 +706,31 @@
   margin-left: 0;
 }
 
+.handDropZoneActive {
+  box-shadow: 0 0 0 3px var(--primary);
+  background: rgba(244, 37, 37, 0.12);
+  border-radius: 12px;
+  padding: 1rem;
+  min-height: 6rem;
+}
+
+.handDrawPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  border: 2px dashed rgba(244, 37, 37, 0.4);
+  border-radius: 12px;
+  color: rgba(244, 37, 37, 0.8);
+  font-size: 0.9rem;
+  min-width: 12rem;
+}
+
+.handDrawPlaceholder .material-symbols-outlined {
+  font-size: 2.5rem;
+}
+
 .card {
   width: 7rem;
   height: 10rem;
@@ -404,7 +741,10 @@
   flex-direction: column;
   padding: 0.5rem;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s;
   flex-shrink: 0;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
@@ -526,7 +866,9 @@
   gap: 0.25rem;
   box-shadow: 0 10px 0 rgb(180, 20, 20);
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
 }
 
 .endTurnBtn:hover:not(:disabled) {
@@ -554,4 +896,35 @@
 
 .endTurnBtn .material-symbols-outlined {
   font-size: 1.875rem;
+}
+
+/* Card flying from deck to avatar when another player draws */
+.drawCardFlying {
+  position: fixed;
+  width: var(--fly-card-w, 8rem);
+  height: var(--fly-card-h, 9rem);
+  z-index: 9999;
+  pointer-events: none;
+  animation: drawCardFly var(--fly-duration, 1200ms) ease-out forwards;
+}
+
+.drawCardFlyingCard {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: 3px solid var(--slate-600);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes drawCardFly {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--fly-dx, 0), var(--fly-dy, 0)) scale(0.6);
+    opacity: 0.9;
+  }
 }

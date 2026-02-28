@@ -11,6 +11,7 @@ export function buildGameStateView(room: Room, forPlayerId: string | null): Game
       status: p.status,
       isHost: p.isHost,
       joinedAt: p.joinedAt,
+      isBot: p.isBot,
     };
     if (p.id === forPlayerId) {
       view.role = p.role ?? undefined;
@@ -18,13 +19,17 @@ export function buildGameStateView(room: Room, forPlayerId: string | null): Game
     }
     const isSelf = p.id === forPlayerId;
     const isRevealed = Boolean(gameState.revealedRoles[p.id]);
+    const isPeeked = Boolean(forPlayerId && gameState.peekedRoles?.[forPlayerId]?.[p.id]);
     const inLobby = gameState.phase === "lobby";
     const inGame = gameState.phase === "playing" || gameState.phase === "ended";
-    if (p.avatarId && (inLobby || inGame || isSelf || isRevealed)) {
+    if (p.avatarId && (inLobby || inGame || isSelf || isRevealed || isPeeked)) {
       const url = AVATAR_URLS[p.avatarId];
       if (url) view.avatarUrl = url;
     }
     if (inLobby && p.avatarId) view.avatarId = p.avatarId;
+    if (isPeeked && gameState.peekedRoles?.[forPlayerId!]?.[p.id]) {
+      view.role = gameState.peekedRoles[forPlayerId!][p.id];
+    }
     return view;
   });
 
@@ -38,7 +43,12 @@ export function buildGameStateView(room: Room, forPlayerId: string | null): Game
     lastAction: gameState.lastAction,
     turnStartedAt: gameState.turnStartedAt,
     turnTimeoutSec: room.settings.turnTimeoutSec,
+    currentTurnDrawn: gameState.currentTurnDrawn,
     revealedRoles: { ...gameState.revealedRoles },
+    revealedCategories: gameState.revealedCategories ? { ...gameState.revealedCategories } : undefined,
+    peekedRoles: forPlayerId && gameState.peekedRoles?.[forPlayerId] ? { ...gameState.peekedRoles[forPlayerId] } : undefined,
+    shieldedPlayerIds: gameState.shieldedPlayerIds ? [...gameState.shieldedPlayerIds] : undefined,
+    discardPile: gameState.discardPile ? [...gameState.discardPile] : undefined,
     players,
   };
 }

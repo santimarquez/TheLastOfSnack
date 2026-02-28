@@ -1,0 +1,90 @@
+/* Action card: aspect-ratio 8:9, 15px border-radius, 3px black border */
+.card {
+  position: relative;
+  aspect-ratio: 8 / 9;
+  min-width: 6rem;
+  width: 7rem;
+  border-radius: 15px;
+  border: 3px solid black;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s;
+  flex-shrink: 0;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  background: var(--slate-800);
+}
+
+.card:hover.cardPlayable {
+  transform: translateY(-2rem);
+  border-color: var(--primary);
+  box-shadow: 0 0 30px rgba(244, 37, 37, 0.4);
+}
+
+.card:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.cardPlayable {
+  border-color: var(--slate-600);
+  cursor: grab;
+}
+
+.cardPlayable:active {
+  cursor: grabbing;
+}
+
+.cardBg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--slate-700);
+}
+
+.cardContent {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  z-index: 1;
+}
+
+.cardTitle {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  margin: 0 0 auto;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  padding-top: 0.25rem;
+}
+
+.cardDescBox {
+  margin-top: auto;
+  padding: 0.35rem 0.4rem;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  border-radius: 6px;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.cardDesc {
+  font-size: 8px;
+  color: white;
+  line-height: 1.25;
+  margin: 0;
+  text-align: center;
+}

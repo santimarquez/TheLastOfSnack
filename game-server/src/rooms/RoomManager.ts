@@ -33,10 +33,12 @@ export function validateReconnectToken(token: string): { playerId: string; roomC
   return { playerId: entry.playerId, roomCode: entry.roomCode };
 }
 
-export function createRoom(displayName: string): { room: Room; player: Player; reconnectToken: string } {
+export function createRoom(displayName: string): { room: Room; player: Player; reconnectToken: string } | { error: string } {
+  const name = displayName.trim().slice(0, 32) || "Player";
+  if (name.toLowerCase().includes("host")) return { error: "Name cannot contain the word 'host'" };
   const player: Player = {
     id: randomUUID(),
-    displayName: displayName.trim().slice(0, 32) || "Player",
+    displayName: name,
     socketId: null,
     role: null,
     hand: [],
@@ -82,9 +84,15 @@ export function joinRoom(
   if (room.gameState.phase !== "lobby") return { error: "Game already started" };
   if (room.players.length >= config.maxPlayers) return { error: "Room is full" };
 
+  const name = displayName.trim().slice(0, 32) || "Player";
+  if (name.toLowerCase().includes("host")) return { error: "Name cannot contain the word 'host'" };
+  const nameLower = name.toLowerCase();
+  const duplicate = room.players.some((p) => p.displayName.toLowerCase() === nameLower);
+  if (duplicate) return { error: "Someone in this room already has that name" };
+
   const player: Player = {
     id: randomUUID(),
-    displayName: displayName.trim().slice(0, 32) || "Player",
+    displayName: name,
     socketId: null,
     role: null,
     hand: [],
@@ -139,12 +147,22 @@ export function clearPlayerSocket(roomCode: string, playerId: string): void {
   }
 }
 
-export function setPlayerDisplayName(roomCode: string, playerId: string, displayName: string): boolean {
+export function setPlayerDisplayName(
+  roomCode: string,
+  playerId: string,
+  displayName: string
+): true | { error: string } {
   const room = store.getRoom(roomCode);
-  if (!room || room.gameState.phase !== "lobby") return false;
+  if (!room || room.gameState.phase !== "lobby") return { error: "Can only change name in lobby" };
   const player = room.players.find((p) => p.id === playerId);
-  if (!player) return false;
-  player.displayName = displayName.trim().slice(0, 32) || player.displayName;
+  if (!player) return { error: "Player not found" };
+  const name = displayName.trim().slice(0, 32);
+  if (!name) return { error: "Display name is required" };
+  if (name.toLowerCase().includes("host")) return { error: "Name cannot contain the word 'host'" };
+  const nameLower = name.toLowerCase();
+  const duplicate = room.players.some((p) => p.id !== playerId && p.displayName.toLowerCase() === nameLower);
+  if (duplicate) return { error: "Someone in this room already has that name" };
+  player.displayName = name;
   return true;
 }
 
@@ -158,6 +176,36 @@ export function setPlayerAvatar(roomCode: string, playerId: string, avatarId: st
   if (takenByOther) return false;
   player.avatarId = avatarId;
   return true;
+}
+
+export function addBot(
+  roomCode: string,
+  hostPlayerId: string
+): { room: Room; player: Player } | { error: string } {
+  const room = store.getRoom(roomCode);
+  if (!room) return { error: "Room not found" };
+  if (room.gameState.phase !== "lobby") return { error: "Game already started" };
+  if (room.hostId !== hostPlayerId) return { error: "Only host can add bots" };
+  if (room.players.length >= config.maxPlayers) return { error: "Room is full" };
+
+  const botCount = room.players.filter((p) => (p as { isBot?: boolean }).isBot).length;
+  const displayName = `Bot ${botCount + 1}`;
+
+  const player: Player = {
+    id: randomUUID(),
+    displayName,
+    socketId: null,
+    role: null,
+    hand: [],
+    status: "active",
+    isHost: false,
+    joinedAt: Date.now(),
+    isBot: true,
+  };
+
+  room.players.push(player);
+  player.avatarId = pickLobbyAvatar(room.players, player.id);
+  return { room, player };
 }
 
 export function setLobbySettings(

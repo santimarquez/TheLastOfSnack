@@ -132,9 +132,13 @@ export function handleMessage(
 
   switch (parsed.type) {
     case "set_name": {
-      const ok = RoomManager.setPlayerDisplayName(ctx.roomCode, ctx.playerId, (parsed.payload as { displayName: string }).displayName);
-      if (!ok) {
-        sendToSocket(ws, "error", { code: "INVALID_STATE", message: "Can only change name in lobby" });
+      const result = RoomManager.setPlayerDisplayName(
+        ctx.roomCode,
+        ctx.playerId,
+        (parsed.payload as { displayName: string }).displayName
+      );
+      if (result !== true) {
+        sendToSocket(ws, "error", { code: "NAME_INVALID", message: result.error });
         return;
       }
       const broadcastFn = broadcast.createBroadcast(sockets);
@@ -181,9 +185,40 @@ export function handleMessage(
     }
 
     case "play_card": {
-      const result = GameEngine.playCard(ctx.roomCode, ctx.playerId, (parsed.payload as { cardId: string }).cardId);
+      const payload = parsed.payload as { cardId: string; targetId?: string; discardedCardIds?: string[] };
+      const result = GameEngine.playCard(ctx.roomCode, ctx.playerId, payload.cardId, payload.targetId, payload.discardedCardIds);
       if ("error" in result) {
         sendToSocket(ws, "error", { code: "PLAY_FAILED", message: result.error });
+      }
+      return;
+    }
+
+    case "draw_card": {
+      const result = GameEngine.drawCard(ctx.roomCode, ctx.playerId);
+      if ("error" in result) {
+        sendToSocket(ws, "error", { code: "DRAW_FAILED", message: result.error });
+      }
+      return;
+    }
+
+    case "end_turn": {
+      const result = GameEngine.endTurn(ctx.roomCode, ctx.playerId);
+      if ("error" in result) {
+        sendToSocket(ws, "error", { code: "END_TURN_FAILED", message: result.error });
+      }
+      return;
+    }
+
+    case "add_bot": {
+      const result = RoomManager.addBot(ctx.roomCode, ctx.playerId);
+      if ("error" in result) {
+        sendToSocket(ws, "error", { code: "ADD_BOT_FAILED", message: result.error });
+      } else {
+        const broadcastFn = broadcast.createBroadcast(sockets);
+        const updatedRoom = RoomManager.getRoom(ctx.roomCode);
+        if (updatedRoom) {
+          broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => roomUpdatedPayload(updatedRoom, forPlayerId));
+        }
       }
       return;
     }

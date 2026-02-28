@@ -1,0 +1,97 @@
+/* Card preview: fixed on right, centered vertically, on top of everything */
+.preview {
+  position: fixed;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 9999;
+  pointer-events: none;
+  width: 14rem;
+  aspect-ratio: 8 / 9;
+  border-radius: 15px;
+  border: 3px solid var(--primary);
+  overflow: hidden;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(244, 37, 37, 0.3),
+    0 50px 80px -20px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  background: var(--slate-800);
+  animation: previewAppear 0.2s ease-out forwards;
+}
+
+@keyframes previewAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+.previewLeaving {
+  animation: previewDisappear 0.2s ease-in forwards;
+}
+
+@keyframes previewDisappear {
+  from {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.92);
+  }
+}
+
+.cardBg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--slate-700);
+}
+
+.cardContent {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  z-index: 1;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  margin: 0 0 auto;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  padding-top: 0.5rem;
+}
+
+.cardDescBox {
+  margin-top: auto;
+  padding: 0.75rem 0.9rem;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  border-radius: 8px;
+  min-height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--slate-100);
+}
+
+.cardDesc {
+  font-size: 0.85rem;
+  color: white;
+  line-height: 1.25;
+  margin: 0;
+  text-align: center;
+}

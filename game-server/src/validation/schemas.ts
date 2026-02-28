@@ -1,13 +1,34 @@
 import { z } from "zod";
 
+const RESERVED_HOST = "host";
+
+const displayNameJoin = z
+  .string()
+  .min(1)
+  .max(32)
+  .transform((s) => s.trim() || "Player")
+  .refine((s) => !s.toLowerCase().includes(RESERVED_HOST), {
+    message: "Name cannot contain the word 'host'",
+  });
+
+const displayNameSet = z
+  .string()
+  .min(1)
+  .max(32)
+  .transform((s) => s.trim())
+  .refine((s) => s.length > 0, { message: "Display name is required" })
+  .refine((s) => !s.toLowerCase().includes(RESERVED_HOST), {
+    message: "Name cannot contain the word 'host'",
+  });
+
 const joinPayload = z.object({
   roomCode: z.string().length(8).transform((s) => s.toUpperCase()),
-  displayName: z.string().min(1).max(32).transform((s) => s.trim() || "Player"),
+  displayName: displayNameJoin,
   reconnectToken: z.string().uuid().optional(),
 });
 
 const setNamePayload = z.object({
-  displayName: z.string().min(1).max(32).transform((s) => s.trim()),
+  displayName: displayNameSet,
 });
 
 const setAvatarPayload = z.object({
@@ -21,6 +42,8 @@ const setLobbySettingsPayload = z.object({
 
 const playCardPayload = z.object({
   cardId: z.string().min(1),
+  targetId: z.string().min(1).optional(),
+  discardedCardIds: z.array(z.string().min(1)).optional(),
 });
 
 const chatPayload = z.object({
@@ -34,6 +57,9 @@ export const clientMessageSchemas = {
   set_lobby_settings: setLobbySettingsPayload,
   start_game: z.object({ speedMode: z.boolean().optional() }),
   play_card: playCardPayload,
+  draw_card: z.object({}),
+  end_turn: z.object({}),
+  add_bot: z.object({}),
   chat: chatPayload,
   restart: z.object({}),
 } as const;

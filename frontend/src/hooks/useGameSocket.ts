@@ -38,6 +38,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
     setGameStarted,
     setTurnStarted,
     setCardPlayed,
+    setCardDrawn,
     setPlayerEliminated,
     setGameEnded,
     addChat,
@@ -117,10 +118,25 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
             p.gameState as import("@last-of-snack/shared").GameStateView
           );
           break;
-        case "card_played":
+        case "card_played": {
+          const revealNotification = p.revealNotification as
+            | { type: "salt"; targetDisplayName: string; category: string }
+            | { type: "peek"; targetDisplayName: string; snackName: string }
+            | undefined;
           setCardPlayed(
             p.playerId as string,
             p.cardId as string,
+            p.gameState as import("@last-of-snack/shared").GameStateView,
+            {
+              revealNotification,
+              outcome: p.outcome as string | undefined,
+            }
+          );
+          break;
+        }
+        case "card_drawn":
+          setCardDrawn(
+            p.playerId as string,
             p.gameState as import("@last-of-snack/shared").GameStateView
           );
           break;

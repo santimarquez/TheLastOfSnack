@@ -1,20 +1,43 @@
 import type { Card } from "../state/types.js";
 
-const CARD_TYPES = ["season", "reveal", "eliminate", "peek", "swap"] as const;
-const DECK_SIZE = 24;
+/** Deck composition per card type for 4 players. Scaled proportionally for 5–8 players. */
+const DECK_4_PLAYERS: Record<string, number> = {
+  microwave: 8,
+  freeze: 8,
+  double_salt: 5,
+  shake: 5,
+  spoil: 5,
+  salt: 15,
+  trade_seats: 10,
+  peek: 9,
+  foil_wrap: 8,
+  buffet: 8,
+  trash: 8,
+};
 
-function createDeck(): Card[] {
+function getDeckComposition(playerCount: number): Record<string, number> {
+  const scale = playerCount / 4;
+  const composition: Record<string, number> = {};
+  for (const [type, count4] of Object.entries(DECK_4_PLAYERS)) {
+    composition[type] = Math.max(1, Math.round(count4 * scale));
+  }
+  return composition;
+}
+
+function createDeck(playerCount: number): Card[] {
+  const composition = getDeckComposition(playerCount);
   const deck: Card[] = [];
   let id = 0;
-  for (let i = 0; i < DECK_SIZE; i++) {
-    const type = CARD_TYPES[i % CARD_TYPES.length];
-    deck.push({ id: `card-${id++}`, type });
+  for (const [type, count] of Object.entries(composition)) {
+    for (let i = 0; i < count; i++) {
+      deck.push({ id: `card-${id++}`, type });
+    }
   }
   return deck;
 }
 
-export function createShuffledDeck(): Card[] {
-  const deck = createDeck();
+export function createShuffledDeck(playerCount: number): Card[] {
+  const deck = createDeck(playerCount);
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -22,7 +45,10 @@ export function createShuffledDeck(): Card[] {
   return deck;
 }
 
-export function dealHands(deck: Card[], playerCount: number): { hands: Card[][]; remainingDeck: Card[] } {
+export function dealHands(
+  deck: Card[],
+  playerCount: number,
+): { hands: Card[][]; remainingDeck: Card[] } {
   const hands: Card[][] = Array.from({ length: playerCount }, () => []);
   const cardsPerPlayer = 3;
   let index = 0;
@@ -35,7 +61,9 @@ export function dealHands(deck: Card[], playerCount: number): { hands: Card[][];
   return { hands, remainingDeck };
 }
 
-export function drawCard(deck: Card[]): { card: Card; remaining: Card[] } | null {
+export function drawCard(
+  deck: Card[],
+): { card: Card; remaining: Card[] } | null {
   if (deck.length === 0) return null;
   const [card, ...remaining] = deck;
   return { card, remaining };

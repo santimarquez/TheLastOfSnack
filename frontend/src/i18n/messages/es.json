@@ -99,7 +99,9 @@
     "waitingForHost2": "¡Anfitrión, empieza la partida antes de que nos enfriemos!",
     "waitingForHost3": "¡Listos cuando tú lo estés, chef!",
     "waitingForHost4": "Todos los snacks presentes—esperando a que el anfitrión encienda el horno.",
-    "waitingForHost5": "Estamos todos. ¡El anfitrión tiene el botón de empezar!"
+    "waitingForHost5": "Estamos todos. ¡El anfitrión tiene el botón de empezar!",
+    "bot": "Bot",
+    "addBot": "Añadir bot"
   },
   "connectionLost": {
     "crisisSub": "ERROR: LECHE_DERRAMADA",
@@ -173,7 +175,11 @@
   },
   "chatPanel": {
     "kitchenChat": "Chat de cocina",
+    "chat": "Chat",
     "chatEmotes": "Chat y emotes",
+    "showChat": "Mostrar chat",
+    "hideChat": "Ocultar chat",
+    "unreadCount": "{count} mensajes sin leer",
     "trashTalkEnabled": "El trash talk está activado",
     "noMessages": "Aún no hay mensajes. ¡Di algo!",
     "placeholder": "Escribe un mensaje...",
@@ -184,7 +190,54 @@
     "emoteRaw": "Crudo",
     "emoteBurned": "Quemado"
   },
+  "cards": {
+    "microwave": {
+      "title": "Microondas",
+      "action": "Elige un jugador. Si el calor es su debilidad → eliminado"
+    },
+    "freeze": {
+      "title": "Congelar",
+      "action": "Elige un jugador. Si el frío es su debilidad → eliminado"
+    },
+    "salt": {
+      "title": "Sal",
+      "action": "Revela Dulce o Salado de un jugador"
+    },
+    "double_salt": {
+      "title": "Doble Sal",
+      "action": "Elimina al Donut al instante"
+    },
+    "shake": {
+      "title": "Agitar",
+      "action": "Elimina al Taco al instante"
+    },
+    "spoil": {
+      "title": "Echar a perder",
+      "action": "Elimina al Burger al instante"
+    },
+    "buffet": {
+      "title": "Buffet",
+      "action": "Todos roban 1 carta extra"
+    },
+    "trash": {
+      "title": "Basura",
+      "action": "Descarta 2 cartas"
+    },
+    "trade_seats": {
+      "title": "Cambiar de asiento",
+      "action": "Intercambia las identidades de dos jugadores en secreto"
+    },
+    "peek": {
+      "title": "Otear",
+      "action": "Ver el snack de alguien en privado"
+    },
+    "foil_wrap": {
+      "title": "Papel de aluminio",
+      "action": "Bloquea un ataque"
+    }
+  },
   "gameTable": {
+    "cardsLeft": "{count} cartas en el mazo",
     "discardPile": "Descarte",
     "yourTurn": "TU TURNO",
     "you": "TÚ",
@@ -194,9 +247,23 @@
     "endTurn": "Terminar turno",
     "timerUnit": "SEG",
     "endTurnTitle": "Juega una carta para completar tu turno o espera al temporizador",
+    "drawCard": "Robar carta",
+    "drawCardPrompt": "Arrastra desde el mazo a tu mano para robar",
+    "dragDeckHere": "Arrastra una carta del mazo aquí",
     "notYourTurnTitle": "No es tu turno",
     "waitingForTurn": "Esperando el turno de {name}",
-    "cardTypeSuffix": "carta"
+    "cardTypeSuffix": "carta",
+    "selectTarget": "Elige un objetivo",
+    "selectCardsToDiscard": "Selecciona {count} cartas para descartar",
+    "discard": "Descartar",
+    "shieldOne": "Bloquea el próximo ataque",
+    "shieldCount": "Bloquea los próximos {count} ataques"
+  },
+  "cardReveal": {
+    "saltResult": "{name} es {category}",
+    "peekResult": "El snack de {name} es {snack}",
+    "sweet": "Dulce",
+    "savory": "Salado"
   },
   "settingsHelp": {
     "title": "Ajustes y ayuda",
@@ -215,6 +282,23 @@
     "rule5": "Usa el chat de cocina para farolear, acusar o callar. ¡Defiende tus migas!",
     "viewFullGuide": "Ver guía completa Cómo jugar",
     "leaveConfirm": "¿Salir de la partida? Necesitarás el código de sala para volver."
+  },
+  "lobbyLoading": {
+    "preparingArena": "Preparando la arena…",
+    "enteringKitchen": "Entrando a la cocina…",
+    "connecting": "Conectando…",
+    "loadingAssets": "Cargando recursos de cocina…",
+    "proTipLabel": "Consejo:",
+    "tip1": "Cada snack tiene una debilidad única. Si un rival juega tu carta de debilidad contra ti, quedas eliminado al instante.",
+    "tip2": "Microwave elimina a snacks débiles al calor. Freeze elimina a los débiles al frío.",
+    "tip3": "Salt revela si un jugador es Dulce o Salado. Úsalo para descubrir identidades.",
+    "tip4": "Double Salt elimina al Donut al instante. Shake elimina al Taco. Spoil elimina al Burger.",
+    "tip5": "Peek te permite ver en privado el snack de alguien. ¡Aprovecha!",
+    "tip6": "Foil Wrap bloquea un ataque. Guárdalo para cuando estés en peligro.",
+    "tip7": "Trade Seats intercambia las identidades de dos jugadores en secreto. ¡Úsalo para confundir!",
+    "tip8": "Buffet hace que todos roben 1 carta extra. Úsalo cuando necesites más opciones.",
+    "tip9": "Trash descarta 2 cartas de tu mano. Úsalo para deshacerte de cartas inútiles.",
+    "tip10": "Usa el chat de cocina para farolear, acusar o callar. La confusión es tu aliada."
   },
   "room": {
     "connecting": "Conectando…",

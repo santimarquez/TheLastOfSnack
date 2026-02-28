@@ -420,6 +420,21 @@
   font-size: 0.875rem;
 }
 
+.botBadge {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  background: var(--slate-600);
+  border-radius: 9999px;
+  padding: 0.25rem;
+}
+
+.botBadge .material-symbols-outlined {
+  display: block;
+  color: white;
+  font-size: 0.875rem;
+}
+
 .playerAvatar {
   width: 6rem;
   height: 6rem;
@@ -472,6 +487,39 @@
   letter-spacing: 0.1em;
   color: #4ade80;
   margin: 0.25rem 0 0;
+}
+
+.playerRoleBot {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--slate-400);
+  margin: 0.25rem 0 0;
+}
+
+.addBotSlot {
+  background: rgba(34, 16, 16, 0.5);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px dashed rgba(244, 37, 37, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.addBotSlot:hover:not(:disabled) {
+  background: rgba(244, 37, 37, 0.08);
+  border-color: rgba(244, 37, 37, 0.4);
+}
+
+.addBotSlot:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .emptySlot {

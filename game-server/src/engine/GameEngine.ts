@@ -1,6 +1,6 @@
 import type { Room } from "../state/types.js";
 import * as RoomManager from "../rooms/RoomManager.js";
-import { createShuffledDeck, dealHands } from "./DeckSystem.js";
+import { createShuffledDeck, dealHands, drawCard as drawFromDeck } from "./DeckSystem.js";
 import { assignRoles } from "./IdentityAssignment.js";
 import { initTurnOrder, getCurrentPlayerId, advanceTurn } from "./TurnSystem.js";
 import { resolveCard, checkWinCondition } from "./CardResolutionEngine.js";
@@ -16,9 +16,18 @@ export type BroadcastFn = (
 ) => void;
 
 let broadcastFn: BroadcastFn | null = null;
+let onBotTurnCheck: ((roomCode: string) => void) | null = null;
 
 export function setBroadcast(broadcast: BroadcastFn): void {
   broadcastFn = broadcast;
+}
+
+export function setOnBotTurnCheck(fn: (roomCode: string) => void): void {
+  onBotTurnCheck = fn;
+}
+
+function scheduleBotTurnIfNeeded(roomCode: string): void {
+  onBotTurnCheck?.(roomCode);
 }
 
 function broadcast(roomCode: string, event: string, payload: unknown): void {
@@ -51,21 +60,25 @@ export function startGame(
 
   room.gameState.phase = "assigning";
   assignRoles(room.players);
-  const deck = createShuffledDeck();
+  const deck = createShuffledDeck(room.players.length);
   const { hands, remainingDeck } = dealHands(deck, room.players.length);
   room.players.forEach((p, i) => (p.hand = hands[i] ?? []));
   room.gameState.deck = remainingDeck;
+  room.gameState.discardPile = [];
   initTurnOrder(room);
   room.gameState.phase = "playing";
   room.gameState.currentTurnIndex = 0;
   room.gameState.turnStartedAt = Date.now();
+  room.gameState.currentTurnDrawn = false;
   const timeoutSec = room.settings.turnTimeoutSec;
   const currentId = getCurrentPlayerId(room);
-  if (currentId) {
+  const currentPlayer = currentId ? room.players.find((p) => p.id === currentId) : null;
+  if (currentId && !currentPlayer?.isBot) {
     startTurnTimer(roomCode, currentId, timeoutSec, () => onTurnTimeout(roomCode));
   }
 
   broadcastToRoomPerPlayer(roomCode, "game_started", (room, playerId) => ({ gameState: buildGameStateView(room, playerId) }));
+  scheduleBotTurnIfNeeded(roomCode);
   return { ok: true };
 }
 
@@ -75,24 +88,41 @@ function broadcastToRoomPerPlayer(roomCode: string, event: string, payloadFn: (r
   broadcast(roomCode, event, (forPlayerId: string) => payloadFn(room, forPlayerId));
 }
 
-export function playCard(roomCode: string, playerId: string, cardId: string): { ok: true; result: import("./CardResolutionEngine.js").ResolutionResult } | { error: string } {
+export function playCard(
+  roomCode: string,
+  playerId: string,
+  cardId: string,
+  targetId?: string,
+  discardedCardIds?: string[]
+): { ok: true; result: import("./CardResolutionEngine.js").ResolutionResult } | { error: string } {
   const room = RoomManager.getRoom(roomCode);
   if (!room) return { error: "Room not found" };
   if (room.gameState.phase !== "playing") return { error: "Not in play" };
   const currentId = getCurrentPlayerId(room);
   if (currentId !== playerId) return { error: "Not your turn" };
+  if (!room.gameState.currentTurnDrawn) return { error: "Draw a card first" };
 
-  const result = resolveCard(room, playerId, cardId);
+  const result = resolveCard(room, playerId, cardId, targetId, discardedCardIds);
   if ("error" in result) return { error: result.error };
 
   cancelTurnTimer(roomCode, playerId);
 
-  broadcastToRoomPerPlayer(roomCode, "card_played", (r, forPlayerId) => ({
-    playerId,
-    cardId,
-    outcome: result.outcome,
-    gameState: buildGameStateView(r, forPlayerId),
-  }));
+  broadcastToRoomPerPlayer(roomCode, "card_played", (r, forPlayerId) => {
+    const payload: Record<string, unknown> = {
+      playerId,
+      cardId,
+      outcome: result.outcome,
+      gameState: buildGameStateView(r, forPlayerId),
+    };
+    if (forPlayerId === playerId) {
+      if (result.saltReveal) {
+        payload.revealNotification = { type: "salt", ...result.saltReveal };
+      } else if (result.peekReveal) {
+        payload.revealNotification = { type: "peek", ...result.peekReveal };
+      }
+    }
+    return payload;
+  });
 
   if (result.eliminated?.length) {
     result.eliminated.forEach((id) => {
@@ -124,8 +154,10 @@ export function playCard(roomCode: string, playerId: string, cardId: string): { 
 
   advanceTurn(room);
   room.gameState.turnStartedAt = Date.now();
+  room.gameState.currentTurnDrawn = false;
   const nextId = getCurrentPlayerId(room);
-  if (nextId) {
+  const nextPlayer = nextId ? room.players.find((p) => p.id === nextId) : null;
+  if (nextId && !nextPlayer?.isBot) {
     startTurnTimer(roomCode, nextId, room.settings.turnTimeoutSec, () => onTurnTimeout(roomCode));
   }
   broadcastToRoomPerPlayer(roomCode, "turn_started", (r, forPlayerId) => ({
@@ -133,8 +165,59 @@ export function playCard(roomCode: string, playerId: string, cardId: string): { 
     expiresAt: getExpiresAt(r.settings.turnTimeoutSec),
     gameState: buildGameStateView(r, forPlayerId),
   }));
+  scheduleBotTurnIfNeeded(roomCode);
 
   return { ok: true, result };
+}
+
+export function endTurn(roomCode: string, playerId: string): { ok: true } | { error: string } {
+  const room = RoomManager.getRoom(roomCode);
+  if (!room) return { error: "Room not found" };
+  if (room.gameState.phase !== "playing") return { error: "Not in play" };
+  const currentId = getCurrentPlayerId(room);
+  if (currentId !== playerId) return { error: "Not your turn" };
+  if (!room.gameState.currentTurnDrawn) return { error: "Draw a card first" };
+
+  cancelTurnTimer(roomCode, playerId);
+  advanceTurn(room);
+  room.gameState.turnStartedAt = Date.now();
+  room.gameState.currentTurnDrawn = false;
+  const nextId = getCurrentPlayerId(room);
+  const nextPlayer = nextId ? room.players.find((p) => p.id === nextId) : null;
+  if (nextId && !nextPlayer?.isBot) {
+    startTurnTimer(roomCode, nextId, room.settings.turnTimeoutSec, () => onTurnTimeout(roomCode));
+  }
+  broadcastToRoomPerPlayer(roomCode, "turn_started", (r, forPlayerId) => ({
+    currentPlayerId: nextId,
+    expiresAt: getExpiresAt(r.settings.turnTimeoutSec),
+    gameState: buildGameStateView(r, forPlayerId),
+  }));
+  scheduleBotTurnIfNeeded(roomCode);
+  return { ok: true };
+}
+
+export function drawCard(roomCode: string, playerId: string): { ok: true } | { error: string } {
+  const room = RoomManager.getRoom(roomCode);
+  if (!room) return { error: "Room not found" };
+  if (room.gameState.phase !== "playing") return { error: "Not in play" };
+  const currentId = getCurrentPlayerId(room);
+  if (currentId !== playerId) return { error: "Not your turn" };
+  if (room.gameState.currentTurnDrawn) return { error: "Already drew this turn" };
+  if (room.gameState.deck.length === 0) return { error: "Deck is empty" };
+
+  const result = drawFromDeck(room.gameState.deck);
+  if (!result) return { error: "Deck is empty" };
+  room.gameState.deck = result.remaining;
+  const player = room.players.find((p) => p.id === playerId);
+  if (player) player.hand.push(result.card);
+  room.gameState.currentTurnDrawn = true;
+
+  broadcastToRoomPerPlayer(roomCode, "card_drawn", (r, forPlayerId) => ({
+    playerId,
+    gameState: buildGameStateView(r, forPlayerId),
+  }));
+  scheduleBotTurnIfNeeded(roomCode);
+  return { ok: true };
 }
 
 function onTurnTimeout(roomCode: string): void {
@@ -144,8 +227,10 @@ function onTurnTimeout(roomCode: string): void {
   if (!currentId) return;
   advanceTurn(room);
   room.gameState.turnStartedAt = Date.now();
+  room.gameState.currentTurnDrawn = false;
   const nextId = getCurrentPlayerId(room);
-  if (nextId) {
+  const nextPlayer = nextId ? room.players.find((p) => p.id === nextId) : null;
+  if (nextId && !nextPlayer?.isBot) {
     startTurnTimer(roomCode, nextId, room.settings.turnTimeoutSec, () => onTurnTimeout(roomCode));
   }
   broadcastToRoomPerPlayer(roomCode, "turn_started", (r, forPlayerId) => ({
@@ -153,6 +238,7 @@ function onTurnTimeout(roomCode: string): void {
     expiresAt: getExpiresAt(r.settings.turnTimeoutSec),
     gameState: buildGameStateView(r, forPlayerId),
   }));
+  scheduleBotTurnIfNeeded(roomCode);
 }
 
 export function restartGame(roomCode: string, hostPlayerId: string): { ok: true } | { error: string } {
@@ -169,6 +255,8 @@ export function restartGame(roomCode: string, hostPlayerId: string): { ok: true 
     eliminatedPlayerIds: [],
     winnerId: null,
     revealedRoles: {},
+    revealedCategories: {},
+    discardPile: [],
   };
   room.players.forEach((p) => {
     p.role = null;

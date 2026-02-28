@@ -3,14 +3,62 @@ import { AVATAR_IDS_BY_SNACK, ALL_AVATAR_IDS } from "./avatars.js";
 
 /** Snacks and their weaknesses from the game design. The Last Snack is the special role. */
 const SNACKS: Snack[] = [
-  { id: "last", name: "The Last Snack", isLastSnack: true },
-  { id: "pizza", name: "🍕 Pizza", isLastSnack: false, category: "Savory", weakness: "Cold", eliminatedBy: "❄️ Freeze" },
-  { id: "sushi", name: "🍣 Sushi", isLastSnack: false, category: "Savory", weakness: "Heat", eliminatedBy: "🔥 Microwave" },
-  { id: "donut", name: "🍩 Donut", isLastSnack: false, category: "Sweet", weakness: "Salt", eliminatedBy: "🧂 Double Salt" },
-  { id: "ice_cream", name: "🍦 Ice Cream", isLastSnack: false, category: "Sweet", weakness: "Heat", eliminatedBy: "🔥 Microwave" },
-  { id: "burger", name: "🍔 Burger", isLastSnack: false, category: "Savory", weakness: "Mold", eliminatedBy: "🦠 Spoil" },
-  { id: "taco", name: "🌮 Taco", isLastSnack: false, category: "Savory", weakness: "Shake", eliminatedBy: "🌪️ Shake" },
-  { id: "fries", name: "🍟 Fries", isLastSnack: false, category: "Savory", weakness: "Soggy", eliminatedBy: "💧 Steam" },
+  {
+    id: "pizza",
+    name: "🍕 Pizza",
+    isLastSnack: false,
+    category: "Savory",
+    weakness: "Cold",
+    eliminatedBy: "❄️ Freeze",
+  },
+  {
+    id: "sushi",
+    name: "🍣 Sushi",
+    isLastSnack: false,
+    category: "Savory",
+    weakness: "Heat",
+    eliminatedBy: "🔥 Microwave",
+  },
+  {
+    id: "donut",
+    name: "🍩 Donut",
+    isLastSnack: false,
+    category: "Sweet",
+    weakness: "Salt",
+    eliminatedBy: "🧂 Double Salt",
+  },
+  {
+    id: "ice_cream",
+    name: "🍦 Ice Cream",
+    isLastSnack: false,
+    category: "Sweet",
+    weakness: "Heat",
+    eliminatedBy: "🔥 Microwave",
+  },
+  {
+    id: "burger",
+    name: "🍔 Burger",
+    isLastSnack: false,
+    category: "Savory",
+    weakness: "Mold",
+    eliminatedBy: "🦠 Spoil",
+  },
+  {
+    id: "taco",
+    name: "🌮 Taco",
+    isLastSnack: false,
+    category: "Savory",
+    weakness: "Shake",
+    eliminatedBy: "🌪️ Shake",
+  },
+  {
+    id: "fries",
+    name: "🍟 Fries",
+    isLastSnack: false,
+    category: "Savory",
+    weakness: "Soggy",
+    eliminatedBy: "💧 Steam",
+  },
 ];
 
 export function assignRoles(players: Player[]): void {
@@ -37,8 +85,12 @@ export function assignRoles(players: Player[]): void {
     });
   }
   // last and fries have no avatars in AVATAR_IDS_BY_SNACK; assign an unused avatar so everyone has one
-  const used = new Set(players.map((p) => p.avatarId).filter(Boolean) as string[]);
-  const available = ALL_AVATAR_IDS.filter((id) => !used.has(id)).sort(() => Math.random() - 0.5);
+  const used = new Set(
+    players.map((p) => p.avatarId).filter(Boolean) as string[],
+  );
+  const available = ALL_AVATAR_IDS.filter((id) => !used.has(id)).sort(
+    () => Math.random() - 0.5,
+  );
   let idx = 0;
   players.forEach((p) => {
     if (!p.avatarId && available[idx] != null) {

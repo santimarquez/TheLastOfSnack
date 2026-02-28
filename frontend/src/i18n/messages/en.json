@@ -99,7 +99,9 @@
     "waitingForHost2": "Host, start the game before we get cold!",
     "waitingForHost3": "Ready when you are, chef!",
     "waitingForHost4": "All snacks present—waiting for the host to fire up the oven!",
-    "waitingForHost5": "We're all in. The host holds the start button!"
+    "waitingForHost5": "We're all in. The host holds the start button!",
+    "bot": "Bot",
+    "addBot": "Add Bot"
   },
   "connectionLost": {
     "crisisSub": "SYSTEM ERROR: MILK_OVERFLOW",
@@ -173,7 +175,11 @@
   },
   "chatPanel": {
     "kitchenChat": "Kitchen Chat",
+    "chat": "Chat",
     "chatEmotes": "Chat & Emotes",
+    "showChat": "Show chat",
+    "hideChat": "Hide chat",
+    "unreadCount": "{count} unread messages",
     "trashTalkEnabled": "Trash talk is currently enabled",
     "noMessages": "No messages yet. Say something!",
     "placeholder": "Type a message...",
@@ -184,7 +190,54 @@
     "emoteRaw": "Raw",
     "emoteBurned": "Burned"
   },
+  "cards": {
+    "microwave": {
+      "title": "Microwave",
+      "action": "Target a player. If heat is their weakness → eliminated"
+    },
+    "freeze": {
+      "title": "Freeze",
+      "action": "Target a player. If cold is their weakness → eliminated"
+    },
+    "salt": {
+      "title": "Salt",
+      "action": "Reveal Sweet or Savory of a player"
+    },
+    "double_salt": {
+      "title": "Double Salt",
+      "action": "Instantly eliminates Donut"
+    },
+    "shake": {
+      "title": "Shake",
+      "action": "Instantly eliminates Taco"
+    },
+    "spoil": {
+      "title": "Spoil",
+      "action": "Instantly eliminates Burger"
+    },
+    "buffet": {
+      "title": "Buffet",
+      "action": "Everyone draws 1 extra card"
+    },
+    "trash": {
+      "title": "Trash",
+      "action": "Discard 2 cards"
+    },
+    "trade_seats": {
+      "title": "Trade Seats",
+      "action": "Swap identities of two players secretly"
+    },
+    "peek": {
+      "title": "Peek",
+      "action": "Privately view someone's snack"
+    },
+    "foil_wrap": {
+      "title": "Foil Wrap",
+      "action": "Block one attack"
+    }
+  },
   "gameTable": {
+    "cardsLeft": "{count} cards left in deck",
     "discardPile": "Discard Pile",
     "yourTurn": "YOUR TURN",
     "you": "YOU",
@@ -194,9 +247,23 @@
     "endTurn": "End Turn",
     "timerUnit": "SEC",
     "endTurnTitle": "Play a card to take your turn, or wait for the timer",
+    "drawCard": "Draw a card",
+    "drawCardPrompt": "Drag from deck to your hand to draw",
+    "dragDeckHere": "Drag a card from the deck here",
     "notYourTurnTitle": "Not your turn",
     "waitingForTurn": "Waiting for {name}'s turn",
-    "cardTypeSuffix": "card"
+    "cardTypeSuffix": "card",
+    "selectTarget": "Select a target",
+    "selectCardsToDiscard": "Select {count} cards to discard",
+    "discard": "Discard",
+    "shieldOne": "Blocks next attack",
+    "shieldCount": "Blocks next {count} attacks"
+  },
+  "cardReveal": {
+    "saltResult": "{name} is {category}",
+    "peekResult": "{name}'s snack is {snack}",
+    "sweet": "Sweet",
+    "savory": "Savory"
   },
   "settingsHelp": {
     "title": "Settings and Help",
@@ -215,6 +282,23 @@
     "rule5": "Use the kitchen chat to bluff, accuse, or stay quiet. Defend your crumbs!",
     "viewFullGuide": "View full How to Play guide",
     "leaveConfirm": "Leave game? You'll need the room code to rejoin."
+  },
+  "lobbyLoading": {
+    "preparingArena": "Preparing the arena…",
+    "enteringKitchen": "Entering the kitchen…",
+    "connecting": "Connecting…",
+    "loadingAssets": "Loading kitchen assets…",
+    "proTipLabel": "Pro Tip:",
+    "tip1": "Every snack has a unique weakness. If an opponent plays your weakness card against you, you're eliminated instantly.",
+    "tip2": "Microwave eliminates snacks weak to heat. Freeze eliminates snacks weak to cold.",
+    "tip3": "Salt reveals whether a player is Sweet or Savory. Use it to discover identities.",
+    "tip4": "Double Salt eliminates Donut instantly. Shake eliminates Taco. Spoil eliminates Burger.",
+    "tip5": "Peek lets you privately view someone's snack. Use it wisely!",
+    "tip6": "Foil Wrap blocks one attack. Save it for when you're in danger.",
+    "tip7": "Trade Seats swaps two players' identities secretly. Use it to confuse everyone!",
+    "tip8": "Buffet makes everyone draw 1 extra card. Use it when you need more options.",
+    "tip9": "Trash discards 2 cards from your hand. Use it to get rid of useless cards.",
+    "tip10": "Use the kitchen chat to bluff, accuse, or stay quiet. Confusion is your ally."
   },
   "room": {
     "connecting": "Connecting…",

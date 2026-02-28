@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { config } from "./config.js";
 import * as RoomManager from "./rooms/RoomManager.js";
 import * as GameEngine from "./engine/GameEngine.js";
+import * as BotEngine from "./engine/BotEngine.js";
 import * as broadcast from "./websocket/broadcast.js";
 import { handleMessage, handleClose } from "./websocket/handler.js";
 
@@ -16,12 +17,17 @@ await fastify.register(fastifyWebsocket, {
 });
 
 GameEngine.setBroadcast(broadcast.createBroadcast(sockets));
+GameEngine.setOnBotTurnCheck((roomCode) => BotEngine.runBotTurn(roomCode));
 
 fastify.get("/health", async () => ({ status: "ok" }));
 
 fastify.post<{ Body: { displayName?: string } }>("/rooms", async (req, reply) => {
   const displayName = req.body?.displayName ?? "Player";
-  const { room, player, reconnectToken } = RoomManager.createRoom(displayName);
+  const result = RoomManager.createRoom(displayName);
+  if ("error" in result) {
+    return reply.status(400).send({ error: result.error });
+  }
+  const { room, reconnectToken } = result;
   return reply.send({ roomCode: room.code, reconnectToken });
 });
 

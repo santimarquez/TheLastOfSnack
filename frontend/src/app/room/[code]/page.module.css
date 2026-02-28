@@ -41,6 +41,8 @@
   max-width: 1600px;
   margin: 0 auto;
   width: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 @media (min-width: 1024px) {
@@ -55,25 +57,39 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  overflow: auto;
 }
 
 .chatColumn {
   width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (min-width: 1024px) {
   .chatColumn {
     width: 24rem;
     flex-shrink: 0;
+    min-height: 0;
+    transition: width var(--transition-normal) ease;
+  }
+
+  .chatColumnCollapsed {
+    width: 3.5rem;
   }
 }
 
+/* Hand/HUD height - must match GameTable .hud */
 .gameLayout {
+  --hand-height: 16rem;
   flex: 1;
   display: flex;
   flex-direction: row;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .gameMain {
@@ -85,15 +101,27 @@
   overflow: hidden;
 }
 
+/* Chat height = 100% minus hand/HUD area */
 .gameSidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: var(--hand-height);
   width: 20rem;
-  flex-shrink: 0;
+  z-index: 10;
   border-left: 1px solid rgba(244, 37, 37, 0.2);
-  background: rgba(34, 16, 16, 0.8);
+  background: rgba(34, 16, 16, 0.95);
   backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
   min-height: 0;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+  transition: width var(--transition-normal) ease, box-shadow var(--transition-normal) ease;
+}
+
+.gameSidebarCollapsed {
+  width: 3.5rem;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.3);
 }
 
 .footerBar {

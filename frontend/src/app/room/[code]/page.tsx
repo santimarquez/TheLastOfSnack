@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations, getGuestDisplayName } from "@/i18n/context";
 import { useGameStore } from "@/store/gameStore";
 import { useGameSocket } from "@/hooks/useGameSocket";
@@ -13,10 +13,14 @@ import { GameEndScreen } from "@/components/GameEndScreen";
 import { ChatPanel } from "@/components/ChatPanel";
 import { SpectatorBanner } from "@/components/SpectatorBanner";
 import { EliminationModal } from "@/components/EliminationModal";
+import { CardRevealNotification } from "@/components/CardRevealNotification";
 import { AssigningIdentitiesScreen } from "@/components/AssigningIdentitiesScreen";
 import { SettingsHelpModal } from "@/components/SettingsHelpModal";
 import { ConnectionLostScreen } from "@/components/ConnectionLostScreen";
+import { LobbyLoadingScreen } from "@/components/LobbyLoadingScreen";
 import styles from "./page.module.css";
+
+const LOADING_MIN_MS = 3000;
 
 export default function RoomPage() {
   const params = useParams();
@@ -50,6 +54,27 @@ export default function RoomPage() {
   const showConnectionLost = connectionStatus === "disconnected" || joinFailed;
   const hasJoined = !!playerId && !!gameState;
 
+  const loadStartRef = useRef<number | null>(null);
+  const [loadingMinElapsed, setLoadingMinElapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [lobbyChatCollapsed, setLobbyChatCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (!roomCode?.trim() || showConnectionLost) return;
+    if (loadStartRef.current === null) loadStartRef.current = Date.now();
+    const elapsed = Date.now() - (loadStartRef.current ?? 0);
+    if (elapsed >= LOADING_MIN_MS) {
+      setLoadingMinElapsed(true);
+      return;
+    }
+    const remaining = LOADING_MIN_MS - elapsed;
+    const t = setTimeout(() => setLoadingMinElapsed(true), remaining);
+    return () => clearTimeout(t);
+  }, [roomCode, showConnectionLost]);
+
+  const showLoadingScreen =
+    !showConnectionLost && (!hasJoined || !loadingMinElapsed);
+
   return (
     <main className={styles.main}>
       {showConnectionLost ? (
@@ -60,6 +85,8 @@ export default function RoomPage() {
           showConnectionCrisis={connectionStatus === "disconnected"}
           showNotFound={joinFailed}
         />
+      ) : showLoadingScreen ? (
+        <LobbyLoadingScreen roomCode={stableRoomCode || roomCode} />
       ) : (
         <>
       {phase === "lobby" ? <Shell /> : phase === "assigning" ? null : phase === "playing" && showAssigningTransition ? null : (
@@ -77,9 +104,6 @@ export default function RoomPage() {
           </button>
         </div>
       )}
-      {connectionStatus === "connecting" && !hasJoined && (
-        <p className={styles.status}>{t("room.connecting")}</p>
-      )}
       {(connectionStatus === "connected" || hasJoined) && (
         <>
           {phase === "lobby" ? (
@@ -87,8 +111,12 @@ export default function RoomPage() {
               <div className={styles.lobbyColumn}>
                 <Lobby send={send} />
               </div>
-              <div className={styles.chatColumn}>
-                <ChatPanel send={send} />
+              <div className={`${styles.chatColumn} ${lobbyChatCollapsed ? styles.chatColumnCollapsed : ""}`}>
+                <ChatPanel
+                  send={send}
+                  onCollapsedChange={setLobbyChatCollapsed}
+                  sidebarCompact={lobbyChatCollapsed}
+                />
               </div>
             </div>
           ) : phase === "assigning" || (phase === "playing" && showAssigningTransition) ? (
@@ -104,8 +132,15 @@ export default function RoomPage() {
               <div className={styles.gameMain}>
                 <GameTable send={send} />
               </div>
-              <aside className={styles.gameSidebar}>
-                <ChatPanel send={send} variant="game" />
+              <aside
+                className={`${styles.gameSidebar} ${sidebarCollapsed ? styles.gameSidebarCollapsed : ""}`}
+              >
+                <ChatPanel
+                  send={send}
+                  variant="game"
+                  onCollapsedChange={setSidebarCollapsed}
+                  sidebarCompact={sidebarCollapsed}
+                />
               </aside>
             </div>
           )}
@@ -114,6 +149,7 @@ export default function RoomPage() {
       {showEliminationModal && (
         <EliminationModal onClose={() => setShowEliminationModal(false)} />
       )}
+      <CardRevealNotification />
       {showSettingsHelpModal && (
         <SettingsHelpModal
           onClose={() => setShowSettingsHelpModal(false)}

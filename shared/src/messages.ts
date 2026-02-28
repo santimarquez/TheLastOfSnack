@@ -20,6 +20,7 @@ export interface SetNamePayload {
 
 export interface PlayCardPayload {
   cardId: string;
+  targetId?: string;
 }
 
 export interface ChatPayload {

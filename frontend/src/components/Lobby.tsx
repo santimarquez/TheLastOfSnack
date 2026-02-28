@@ -212,11 +212,16 @@ export function Lobby({ send }: { send: SendFn }) {
         {players.map((p) => (
           <div
             key={p.id}
-            className={`${styles.playerCard} ${p.isHost ? styles.playerCardHost : ""} ${p.id === playerId ? styles.playerCardYou : ""}`}
+            className={`${styles.playerCard} ${p.isHost ? styles.playerCardHost : ""} ${p.id === playerId ? styles.playerCardYou : ""} ${p.isBot ? styles.playerCardBot : ""}`}
           >
             {p.isHost && (
               <div className={styles.hostBadge}>
                 <span className="material-symbols-outlined">workspace_premium</span>
+              </div>
+            )}
+            {p.isBot && (
+              <div className={styles.botBadge} title={t("lobby.bot")}>
+                <span className="material-symbols-outlined">smart_toy</span>
               </div>
             )}
             <div className={styles.playerAvatar}>
@@ -227,12 +232,27 @@ export function Lobby({ send }: { send: SendFn }) {
               )}
             </div>
             <p className={styles.playerName}>{p.displayName}</p>
-            <p className={p.isHost ? styles.playerRoleHost : styles.playerRoleReady}>
-              {p.isHost ? t("common.host") : t("common.ready")}
+            <p className={p.isHost ? styles.playerRoleHost : p.isBot ? styles.playerRoleBot : styles.playerRoleReady}>
+              {p.isHost ? t("common.host") : p.isBot ? t("lobby.bot") : t("common.ready")}
             </p>
           </div>
         ))}
-        {Array.from({ length: emptySlots }).map((_, i) => (
+        {isHost && emptySlots > 0 && (
+          <button
+            type="button"
+            className={styles.addBotSlot}
+            onClick={() => send("add_bot", {})}
+            disabled={players.length >= MAX_PLAYERS}
+            aria-label={t("lobby.addBot")}
+            title={t("lobby.addBot")}
+          >
+            <div className={styles.emptySlotIcon}>
+              <span className="material-symbols-outlined">smart_toy</span>
+            </div>
+            <p className={styles.emptySlotText}>{t("lobby.addBot")}</p>
+          </button>
+        )}
+        {Array.from({ length: isHost && emptySlots > 0 ? Math.max(0, emptySlots - 1) : emptySlots }).map((_, i) => (
           <div key={`empty-${i}`} className={styles.emptySlot}>
             <div className={styles.emptySlotIcon}>
               <span className="material-symbols-outlined">person_add</span>

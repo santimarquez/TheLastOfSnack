@@ -47,6 +47,8 @@ export interface Player {
   reconnectToken?: string;
   /** Unique avatar id for this game (e.g. pizza_1). No two players share the same avatar. */
   avatarId?: string | null;
+  /** True if this player is an AI bot */
+  isBot?: boolean;
 }
 
 /** Game state (server). Client receives a view: deck count, public info, own hand/role only. */
@@ -60,8 +62,18 @@ export interface GameState {
   suspicionMeter?: SuspicionSystem;
   lastAction?: LastAction;
   turnStartedAt?: number;
+  /** True when current player has drawn their mandatory card this turn */
+  currentTurnDrawn?: boolean;
   /** Revealed roles (playerId -> Snack) - public after reveal */
   revealedRoles: Record<string, Snack>;
+  /** Revealed categories only (playerId -> "Sweet"|"Savory") - from Salt card */
+  revealedCategories?: Record<string, string>;
+  /** Peeked roles: viewerId -> targetId -> Snack (private to viewer) */
+  peekedRoles?: Record<string, Record<string, Snack>>;
+  /** Foil Wrap protection: each occurrence = one attack blocked (stackable) */
+  shieldedPlayerIds?: string[];
+  /** Discarded/played cards (face up on table) */
+  discardPile?: Card[];
 }
 
 /** Room settings */
@@ -94,6 +106,8 @@ export interface PlayerView {
   avatarUrl?: string;
   /** Avatar id (e.g. pizza_1); exposed in lobby so client can show which are taken. */
   avatarId?: string | null;
+  /** True if this player is an AI bot */
+  isBot?: boolean;
 }
 
 /** Client-safe game state view */
@@ -108,6 +122,16 @@ export interface GameStateView {
   turnStartedAt?: number;
   /** Turn duration in seconds (20 for speed mode, 60 for normal). */
   turnTimeoutSec?: number;
+  /** True when current player has drawn their mandatory card this turn */
+  currentTurnDrawn?: boolean;
   revealedRoles: Record<string, Snack>;
+  /** Revealed categories (playerId -> "Sweet"|"Savory") */
+  revealedCategories?: Record<string, string>;
+  /** Peeked roles (targetId -> Snack) - only for this viewer, from Peek card */
+  peekedRoles?: Record<string, Snack>;
+  /** Foil Wrap protection: each occurrence = one attack blocked (stackable) */
+  shieldedPlayerIds?: string[];
+  /** Top of discard pile (cards played/discarded, face up) */
+  discardPile?: Card[];
   players: PlayerView[];
 }

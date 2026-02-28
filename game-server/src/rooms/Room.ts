@@ -12,6 +12,8 @@ function createInitialGameState(): GameState {
     eliminatedPlayerIds: [],
     winnerId: null,
     revealedRoles: {},
+    revealedCategories: {},
+    discardPile: [],
   };
 }
 
