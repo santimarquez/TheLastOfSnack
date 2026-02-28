@@ -9,6 +9,11 @@ const getWsUrl = () => {
     return base.replace(/^http/, "ws") + "/ws";
   }
   if (typeof window !== "undefined") {
+    const host = window.location.host;
+    const isLocalDev = host === "localhost:3000" || host.startsWith("localhost:3000");
+    if (isLocalDev) {
+      return "ws://localhost:4000/ws";
+    }
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     return `${protocol}//${window.location.host}/ws`;
   }
