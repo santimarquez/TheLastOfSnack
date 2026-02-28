@@ -6,7 +6,7 @@ import { AppProviders } from "@/components/AppProviders";
 const OG_IMAGE_URL =
   "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/517e2778-d4e5-4792-abae-82c773702d00/public";
 
-const SITE_NAME = "The Last of Snack";
+const SITE_NAME = "The Last of the Snacks";
 const DEFAULT_DESCRIPTION = "Trust no one. Season aggressively.";
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
-        alt: "The Last of Snack – Are you ready?",
+        alt: "The Last of the Snacks – Are you ready?",
       },
     ],
   },

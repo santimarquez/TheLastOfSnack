@@ -1,8 +1,8 @@
 {
   "common": {
-    "appName": "The Last of Snack",
-    "heroTitleLine1": "The Last Of",
-    "heroTitleLine2": "Snack",
+    "appName": "The Last of the Snacks",
+    "heroTitleLine1": "The Last Of The",
+    "heroTitleLine2": "Snacks",
     "close": "Cerrar",
     "settings": "Ajustes",
     "help": "Ayuda",
@@ -44,7 +44,7 @@
     "footerTerms": "Términos",
     "footerSupport": "Soporte",
     "footerDiscord": "Discord",
-    "footerCopy": "© 2024 The Last of Snack. Reservados todos los derechos. No tragar las fichas."
+    "footerCopy": "© 2024 The Last of the Snacks. Reservados todos los derechos. No tragar las fichas."
   },
   "howToPlay": {
     "rulebookTag": "MANUAL V1.0",
@@ -74,7 +74,7 @@
     "ctaReady": "¿Listo para desmoronarte?",
     "startNewGame": "Nueva partida",
     "goBack": "Volver",
-    "footerCopy": "© 2024 The Last of Snack. Calorías incluidas."
+    "footerCopy": "© 2024 The Last of the Snacks. Calorías incluidas."
   },
   "lobby": {
     "title": "Cocina lista",
@@ -115,7 +115,7 @@
     "enterNewRoomCode": "NUEVO CÓDIGO DE SALA",
     "codeHint": "Códigos típicos: BREAD-42, CHIP-X9, SODA-01",
     "emptyBadge": "¡VACÍO!",
-    "footerCopy": "© 2024 The Last of Snack. Todas las migas reservadas.",
+    "footerCopy": "© 2024 The Last of the Snacks. Todas las migas reservadas.",
     "helpCenter": "Centro de ayuda",
     "recipeGuide": "Guía de recetas",
     "contactChef": "Contactar al chef"

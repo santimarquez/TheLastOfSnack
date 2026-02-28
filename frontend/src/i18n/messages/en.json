@@ -1,8 +1,8 @@
 {
   "common": {
-    "appName": "The Last of Snack",
-    "heroTitleLine1": "The Last Of",
-    "heroTitleLine2": "Snack",
+    "appName": "The Last of the Snacks",
+    "heroTitleLine1": "The Last Of The",
+    "heroTitleLine2": "Snacks",
     "close": "Close",
     "settings": "Settings",
     "help": "Help",
@@ -44,7 +44,7 @@
     "footerTerms": "Terms",
     "footerSupport": "Support",
     "footerDiscord": "Discord",
-    "footerCopy": "© 2024 The Last of Snack. All rights reserved. Do not swallow the game pieces."
+    "footerCopy": "© 2024 The Last of the Snacks. All rights reserved. Do not swallow the game pieces."
   },
   "howToPlay": {
     "rulebookTag": "RULEBOOK V1.0",
@@ -74,7 +74,7 @@
     "ctaReady": "Ready to Crumble?",
     "startNewGame": "Start New Game",
     "goBack": "Go Back",
-    "footerCopy": "© 2024 The Last of Snack. All calories included."
+    "footerCopy": "© 2024 The Last of the Snacks. All calories included."
   },
   "lobby": {
     "title": "Kitchen Lobby",
@@ -115,7 +115,7 @@
     "enterNewRoomCode": "ENTER NEW ROOM CODE",
     "codeHint": "Common codes look like: BREAD-42, CHIP-X9, SODA-01",
     "emptyBadge": "EMPTY!",
-    "footerCopy": "© 2024 The Last of Snack. All crumbs reserved.",
+    "footerCopy": "© 2024 The Last of the Snacks. All crumbs reserved.",
     "helpCenter": "Help Center",
     "recipeGuide": "Recipe Guide",
     "contactChef": "Contact Chef"
