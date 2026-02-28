@@ -4,10 +4,15 @@ import { useEffect, useRef, useCallback } from "react";
 import { useGameStore, type LobbySettings } from "@/store/gameStore";
 
 const getWsUrl = () => {
-  const base =
-    process.env.NEXT_PUBLIC_GAME_SERVER_HTTP ||
-    "http://localhost:4000";
-  return base.replace(/^http/, "ws") + "/ws";
+  const base = process.env.NEXT_PUBLIC_GAME_SERVER_HTTP;
+  if (base) {
+    return base.replace(/^http/, "ws") + "/ws";
+  }
+  if (typeof window !== "undefined") {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${protocol}//${window.location.host}/ws`;
+  }
+  return "ws://localhost:4000/ws";
 };
 
 const MAX_RETRIES = 5;
