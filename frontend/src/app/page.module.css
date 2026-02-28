@@ -539,6 +539,7 @@
   gap: 1.5rem;
   width: 100%;
   max-width: 64rem;
+  z-index: 1;
 }
 
 @media (min-width: 768px) {
@@ -548,7 +549,7 @@
 }
 
 .featureCard {
-  background: rgba(244, 37, 37, 0.1);
+  background: rgba(118, 30, 30, 0.6);
   padding: 2rem;
   border-radius: 0.5rem;
   border: 1px solid rgba(244, 37, 37, 0.2);
@@ -593,7 +594,7 @@
 
 .featureDesc {
   font-size: 1rem;
-  color: var(--slate-500);
+  color: var(--slate-400);
   margin: 0;
 }
 
