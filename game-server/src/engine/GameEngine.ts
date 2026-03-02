@@ -3,7 +3,10 @@ import * as RoomManager from "../rooms/RoomManager.js";
 import { createShuffledDeck, dealHands, drawCard as drawFromDeck } from "./DeckSystem.js";
 import { assignRoles } from "./IdentityAssignment.js";
 import { initTurnOrder, getCurrentPlayerId, advanceTurn } from "./TurnSystem.js";
-import { resolveCard, checkWinCondition } from "./CardResolutionEngine.js";
+import {
+  resolveCard,
+  getWinnerBySnackPoints,
+} from "./CardResolutionEngine.js";
 import { cancelTurnTimer, startTurnTimer, getExpiresAt, cancelAllForRoom } from "./TimerSystem.js";
 import { buildGameStateView } from "./EventBroadcasting.js";
 import { config } from "../config.js";
@@ -65,9 +68,11 @@ export function startGame(
   room.players.forEach((p, i) => (p.hand = hands[i] ?? []));
   room.gameState.deck = remainingDeck;
   room.gameState.discardPile = [];
+  room.gameState.eliminationsByPlayerId = {};
   initTurnOrder(room);
   room.gameState.phase = "playing";
   room.gameState.currentTurnIndex = 0;
+  room.gameState.gameStartedAt = Date.now();
   room.gameState.turnStartedAt = Date.now();
   room.gameState.currentTurnDrawn = false;
   const timeoutSec = room.settings.turnTimeoutSec;
@@ -114,6 +119,7 @@ export function playCard(
       outcome: result.outcome,
       gameState: buildGameStateView(r, forPlayerId),
     };
+    if (targetId) payload.targetId = targetId;
     if (forPlayerId === playerId) {
       if (result.saltReveal) {
         payload.revealNotification = { type: "salt", ...result.saltReveal };
@@ -125,6 +131,9 @@ export function playCard(
   });
 
   if (result.eliminated?.length) {
+    if (!room.gameState.eliminationsByPlayerId) room.gameState.eliminationsByPlayerId = {};
+    room.gameState.eliminationsByPlayerId[playerId] =
+      (room.gameState.eliminationsByPlayerId[playerId] ?? 0) + result.eliminated.length;
     result.eliminated.forEach((id) => {
       const revealed = room.players.find((p) => p.id === id)?.role;
       broadcastToRoomPerPlayer(roomCode, "player_eliminated", (r, forPlayerId) => ({
@@ -141,10 +150,11 @@ export function playCard(
     }));
   }
 
-  const winnerId = checkWinCondition(room);
+  const winnerId = getWinnerBySnackPoints(room);
   if (winnerId) {
     room.gameState.phase = "ended";
     room.gameState.winnerId = winnerId;
+    room.gameState.gameEndedAt = Date.now();
     broadcastToRoomPerPlayer(roomCode, "game_ended", (r, forPlayerId) => ({
       winnerId,
       gameState: buildGameStateView(r, forPlayerId),
@@ -179,6 +189,17 @@ export function endTurn(roomCode: string, playerId: string): { ok: true } | { er
   if (!room.gameState.currentTurnDrawn) return { error: "Draw a card first" };
 
   cancelTurnTimer(roomCode, playerId);
+  const winnerId = getWinnerBySnackPoints(room);
+  if (winnerId) {
+    room.gameState.phase = "ended";
+    room.gameState.winnerId = winnerId;
+    room.gameState.gameEndedAt = Date.now();
+    broadcastToRoomPerPlayer(roomCode, "game_ended", (r, forPlayerId) => ({
+      winnerId,
+      gameState: buildGameStateView(r, forPlayerId),
+    }));
+    return { ok: true };
+  }
   advanceTurn(room);
   room.gameState.turnStartedAt = Date.now();
   room.gameState.currentTurnDrawn = false;
@@ -225,6 +246,17 @@ function onTurnTimeout(roomCode: string): void {
   if (!room || room.gameState.phase !== "playing") return;
   const currentId = getCurrentPlayerId(room);
   if (!currentId) return;
+  const winnerId = getWinnerBySnackPoints(room);
+  if (winnerId) {
+    room.gameState.phase = "ended";
+    room.gameState.winnerId = winnerId;
+    room.gameState.gameEndedAt = Date.now();
+    broadcastToRoomPerPlayer(roomCode, "game_ended", (r, forPlayerId) => ({
+      winnerId,
+      gameState: buildGameStateView(r, forPlayerId),
+    }));
+    return;
+  }
   advanceTurn(room);
   room.gameState.turnStartedAt = Date.now();
   room.gameState.currentTurnDrawn = false;
@@ -257,6 +289,7 @@ export function restartGame(roomCode: string, hostPlayerId: string): { ok: true 
     revealedRoles: {},
     revealedCategories: {},
     discardPile: [],
+    eliminationsByPlayerId: {},
   };
   room.players.forEach((p) => {
     p.role = null;

@@ -1,3 +1,7 @@
+/** Placeholder shown when identity is hidden. Used on game board until peek reveals it. */
+export const PLACEHOLDER_AVATAR_URL =
+  "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/3c60c2cc-6327-45d8-94d9-7e483729a300/public";
+
 /**
  * 12 snack avatars: 2 per type (Pizza, Donut, Burger, Ice cream, Sushi, Taco).
  * Same avatar is never assigned to two players in the same game.

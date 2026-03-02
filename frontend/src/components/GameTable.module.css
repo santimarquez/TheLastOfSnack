@@ -1,3 +1,204 @@
+/* Game table layout: main content full width; action log floats over it */
+.gameTableWrap {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.gameTableMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+}
+
+/* Floating action log over the table (like chat pattern: header + content, collapse button at top) */
+.actionLogContainer {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 2rem);
+  pointer-events: none;
+}
+
+.actionLogContainer > * {
+  pointer-events: auto;
+}
+
+.actionLogPanel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  max-height: 320px;
+  background: var(--slate-900);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(244, 37, 37, 0.25);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.actionLogPanelHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.actionLogHeader {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(244, 37, 37, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.actionLogHeaderIcon {
+  color: rgba(244, 37, 37, 0.9);
+  font-size: 1.25rem;
+}
+
+.actionLogHeaderTitle {
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+.actionLogCollapseBtn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--slate-400);
+  padding: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionLogCollapseBtn:hover {
+  color: var(--primary);
+}
+
+.actionLogCollapseBtn .material-symbols-outlined {
+  font-size: 1.35rem;
+}
+
+.actionLogContent {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.actionLogList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--slate-300);
+}
+
+.actionLogEmpty {
+  margin: 0;
+  padding: 0.5rem 0;
+  color: var(--slate-500);
+  font-style: italic;
+}
+
+.actionLogEntry {
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-left: 3px solid rgba(244, 37, 37, 0.4);
+}
+
+.actionLogScrollDown {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: var(--primary);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.actionLogScrollDown:hover {
+  background: rgba(244, 37, 37, 0.9);
+  transform: translateX(-50%) scale(1.1);
+}
+
+.actionLogScrollDown .material-symbols-outlined {
+  font-size: 1.25rem;
+}
+
+/* Collapsed state: small bar/button to expand (like chat) */
+.actionLogCollapsedBar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  background: var(--slate-900);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(244, 37, 37, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.2s ease;
+}
+
+.actionLogToggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(244, 37, 37, 0.2);
+  background: rgba(244, 37, 37, 0.08);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.actionLogToggleBtn:hover {
+  background: rgba(244, 37, 37, 0.15);
+  border-color: rgba(244, 37, 37, 0.3);
+}
+
+.actionLogToggleBtn .material-symbols-outlined {
+  font-size: 1.2rem;
+  color: var(--primary);
+}
+
+.actionLogToggleLabel {
+  white-space: nowrap;
+}
+
 /* Arena section: top row, table, bottom row */
 .arenaSection {
   flex: 1;
@@ -331,6 +532,11 @@
   }
 }
 
+.playerAvatarWrap {
+  position: relative;
+  display: inline-flex;
+}
+
 .playerAvatar {
   width: 6.5rem;
   height: 6.5rem;
@@ -353,6 +559,37 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.playerAvatarFoilWrap {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 32px;
+  height: 36px;
+  border-radius: 8px;
+  border: 2px solid var(--primary);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+.playerAvatarFoilWrapCount {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .playerSlotName {
@@ -925,6 +1162,110 @@
   }
   to {
     transform: translate(var(--fly-dx, 0), var(--fly-dy, 0)) scale(0.6);
+    opacity: 0.9;
+  }
+}
+
+/* Trade Seats: two avatars swap positions */
+.tradeSeatsFlying {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  animation: tradeSeatsSwap var(--swap-duration) var(--swap-easing) forwards;
+}
+
+.tradeSeatsFlyingAvatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid var(--primary);
+  background: var(--slate-800);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.tradeSeatsFlyingAvatar .material-symbols-outlined {
+  font-size: 2rem;
+  color: var(--neutral-soft);
+}
+
+.tradeSeatsFlyingAvatar .playerAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes tradeSeatsSwap {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--swap-dx, 0), var(--swap-dy, 0)) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Card played: hand → discard or hand → avatar (foil wrap) */
+.cardPlayedFlying {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  animation: cardPlayedFly var(--card-fly-duration) ease-out forwards;
+}
+
+.cardPlayedFlyingBg {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: 3px solid var(--slate-600);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes cardPlayedFly {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--card-fly-dx, 0), var(--card-fly-dy, 0))
+      scale(var(--card-fly-scale-end, 0.8));
+    opacity: 1;
+  }
+}
+
+/* Shield consumed: foil wrap avatar → discard */
+.shieldConsumedFlying {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  animation: shieldConsumedFly var(--shield-fly-duration) ease-out forwards;
+}
+
+.shieldConsumedFlyingBg {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  border: 2px solid var(--primary);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes shieldConsumedFly {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--shield-fly-dx, 0), var(--shield-fly-dy, 0))
+      scale(1.2);
     opacity: 0.9;
   }
 }

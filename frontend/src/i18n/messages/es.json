@@ -101,7 +101,8 @@
     "waitingForHost4": "Todos los snacks presentes—esperando a que el anfitrión encienda el horno.",
     "waitingForHost5": "Estamos todos. ¡El anfitrión tiene el botón de empezar!",
     "bot": "Bot",
-    "addBot": "Añadir bot"
+    "addBot": "Añadir bot",
+    "removeBot": "Quitar bot"
   },
   "connectionLost": {
     "crisisSub": "ERROR: LECHE_DERRAMADA",
@@ -225,7 +226,7 @@
     },
     "trade_seats": {
       "title": "Cambiar de asiento",
-      "action": "Intercambia las identidades de dos jugadores en secreto"
+      "action": "Intercambia la identidad con otro jugador."
     },
     "peek": {
       "title": "Otear",
@@ -257,7 +258,19 @@
     "selectCardsToDiscard": "Selecciona {count} cartas para descartar",
     "discard": "Descartar",
     "shieldOne": "Bloquea el próximo ataque",
-    "shieldCount": "Bloquea los próximos {count} ataques"
+    "shieldCount": "Bloquea los próximos {count} ataques",
+    "actionLogTitle": "Registro de acciones",
+    "actionLogTurn": "Turno de {name}",
+    "actionLogDraw": "{name} robó una carta",
+    "actionLogPlay": "{name} jugó {card}",
+    "actionLogPlayOn": "{name} jugó {card} contra {target}",
+    "actionLogEliminated": "{name} fue eliminado (era {role})",
+    "actionLogGameOverWinner": "Partida terminada. ¡{winner} gana!",
+    "actionLogGameOverDraw": "Partida terminada. Sin ganador.",
+    "actionLogEmpty": "Aún no hay acciones.",
+    "actionLogExpand": "Mostrar registro de acciones",
+    "actionLogCollapse": "Ocultar registro de acciones",
+    "actionLogScrollDown": "Ir al final"
   },
   "cardReveal": {
     "saltResult": "{name} es {category}",

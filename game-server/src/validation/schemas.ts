@@ -60,6 +60,7 @@ export const clientMessageSchemas = {
   draw_card: z.object({}),
   end_turn: z.object({}),
   add_bot: z.object({}),
+  remove_bot: z.object({ playerId: z.string().min(1) }),
   chat: chatPayload,
   restart: z.object({}),
 } as const;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "@/i18n/context";
-import { useGameStore } from "@/store/gameStore";
+import { useGameStore, type ActionLogEntry } from "@/store/gameStore";
 import { getCardMeta, CARD_BACK_IMAGE_URL } from "@/config/cards";
 import { ActionCard, CARD_DRAG_TYPE, type CardDragData } from "./ActionCard";
 
@@ -10,6 +10,9 @@ export const DECK_DRAG_TYPE = "application/x-last-of-snack-deck-draw";
 import { CardPreview } from "./CardPreview";
 import { DrawCardFlying } from "./DrawCardFlying";
 import { BuffetCardFlying } from "./BuffetCardFlying";
+import { TradeSeatsAnimation } from "./TradeSeatsAnimation";
+import { CardPlayedAnimation } from "./CardPlayedAnimation";
+import { ShieldConsumedAnimation } from "./ShieldConsumedAnimation";
 import styles from "./GameTable.module.css";
 
 function useIsHost() {
@@ -38,9 +41,12 @@ function splitPlayersTopBottom<T>(items: T[], meIndex: number): [T[], T[]] {
 
 export function GameTable({ send }: { send: SendFn }) {
   const { t } = useTranslations();
-  const { gameState, playerId, drawAnimation, clearDrawAnimation, buffetAnimation, clearBuffetAnimation } = useGameStore();
+  const { gameState, playerId, drawAnimation, clearDrawAnimation, buffetAnimation, clearBuffetAnimation, tradeSeatsAnimation, clearTradeSeatsAnimation, cardPlayedAnimation, clearCardPlayedAnimation, shieldConsumedAnimation, clearShieldConsumedAnimation, actionLog } = useGameStore();
   const isHost = useIsHost();
   const phase = gameState?.phase ?? "lobby";
+  const [actionLogCollapsed, setActionLogCollapsed] = useState(true);
+  const [actionLogAutoScroll, setActionLogAutoScroll] = useState(true);
+  const actionLogListRef = useRef<HTMLDivElement>(null);
   const me = gameState?.players?.find((p) => p.id === playerId);
   const players = gameState?.players ?? [];
   const meIndex = players.findIndex((p) => p.id === playerId);
@@ -124,6 +130,33 @@ export function GameTable({ send }: { send: SendFn }) {
     setPendingDiscardCards((prev) => prev.filter((c) => !serverIds.has(c.id)));
   }, [serverDiscardPile]);
 
+  // Action log: auto-scroll to bottom when new entries and autoScroll enabled
+  useEffect(() => {
+    if (!actionLogAutoScroll || actionLogCollapsed) return;
+    const el = actionLogListRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [actionLog, actionLogAutoScroll, actionLogCollapsed]);
+
+  function handleActionLogScroll() {
+    const el = actionLogListRef.current;
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    if (distanceFromBottom <= 5) {
+      setActionLogAutoScroll(true);
+    } else if (scrollTop > 500) {
+      setActionLogAutoScroll(false);
+    }
+  }
+
+  function scrollActionLogToBottom() {
+    const el = actionLogListRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+      setActionLogAutoScroll(true);
+    }
+  }
+
   // Timer: remaining seconds
   const elapsed = (Date.now() - turnStartedAt) / 1000;
   const remainingSec = Math.max(0, Math.min(turnTimeoutSec, Math.floor(turnTimeoutSec - elapsed)));
@@ -204,8 +237,105 @@ export function GameTable({ send }: { send: SendFn }) {
     send("draw_card", {});
   }
 
+  function formatActionLogEntry(entry: ActionLogEntry): string {
+    const cardTitle = (type: string) => {
+      const key = `cards.${type}.title`;
+      const out = t(key);
+      return out !== key ? out : type;
+    };
+    switch (entry.kind) {
+      case "turn":
+        return t("gameTable.actionLogTurn", { name: entry.playerName });
+      case "draw":
+        return t("gameTable.actionLogDraw", { name: entry.playerName });
+      case "play":
+        return t("gameTable.actionLogPlay", { name: entry.playerName, card: cardTitle(entry.cardType) });
+      case "play_target":
+        return t("gameTable.actionLogPlayOn", {
+          name: entry.playerName,
+          card: cardTitle(entry.cardType),
+          target: entry.targetName,
+        });
+      case "eliminated":
+        return t("gameTable.actionLogEliminated", { name: entry.playerName, role: entry.roleName });
+      case "game_over_winner":
+        return t("gameTable.actionLogGameOverWinner", { winner: entry.winnerName });
+      case "game_over_draw":
+        return t("gameTable.actionLogGameOverDraw");
+      default:
+        return "";
+    }
+  }
+
+  const showActionLog = phase === "playing" || phase === "ended";
+
   return (
-    <>
+    <div className={styles.gameTableWrap}>
+      <div className={styles.gameTableMain}>
+      {showActionLog && (
+        <div className={styles.actionLogContainer} aria-label={t("gameTable.actionLogTitle")}>
+          <section
+            className={`${styles.actionLogPanel} ${actionLogCollapsed ? styles.actionLogPanelHidden : ""}`}
+            aria-hidden={actionLogCollapsed}
+          >
+            <div className={styles.actionLogHeader}>
+              <span className={`material-symbols-outlined ${styles.actionLogHeaderIcon}`}>history</span>
+              <h3 className={styles.actionLogHeaderTitle}>{t("gameTable.actionLogTitle")}</h3>
+              <button
+                type="button"
+                className={styles.actionLogCollapseBtn}
+                onClick={() => setActionLogCollapsed(true)}
+                aria-label={t("gameTable.actionLogCollapse")}
+              >
+                <span className="material-symbols-outlined">chevron_left</span>
+              </button>
+            </div>
+            <div className={styles.actionLogContent}>
+              <div
+                ref={actionLogListRef}
+                className={styles.actionLogList}
+                role="log"
+                aria-live="polite"
+                onScroll={handleActionLogScroll}
+              >
+                {actionLog.length === 0 ? (
+                  <p className={styles.actionLogEmpty}>{t("gameTable.actionLogEmpty")}</p>
+                ) : (
+                  actionLog.map((entry) => (
+                    <div key={entry.id} className={styles.actionLogEntry}>
+                      {formatActionLogEntry(entry)}
+                    </div>
+                  ))
+                )}
+              </div>
+              {!actionLogAutoScroll && (
+                <button
+                  type="button"
+                  className={styles.actionLogScrollDown}
+                  onClick={scrollActionLogToBottom}
+                  aria-label={t("gameTable.actionLogScrollDown")}
+                >
+                  <span className="material-symbols-outlined">keyboard_arrow_down</span>
+                </button>
+              )}
+            </div>
+          </section>
+          <div
+            className={`${styles.actionLogCollapsedBar} ${!actionLogCollapsed ? styles.actionLogPanelHidden : ""}`}
+            aria-hidden={!actionLogCollapsed}
+          >
+            <button
+              type="button"
+              className={styles.actionLogToggleBtn}
+              onClick={() => setActionLogCollapsed(false)}
+              aria-label={t("gameTable.actionLogExpand")}
+            >
+              <span className="material-symbols-outlined">history</span>
+              <span className={styles.actionLogToggleLabel}>{t("gameTable.actionLogTitle")}</span>
+            </button>
+          </div>
+        </div>
+      )}
       {previewCard && (
         <CardPreview card={previewCard} isLeaving={previewLeaving} />
       )}
@@ -219,6 +349,29 @@ export function GameTable({ send }: { send: SendFn }) {
         <BuffetCardFlying
           playerIds={buffetAnimation.playerIds}
           onComplete={clearBuffetAnimation}
+        />
+      )}
+      {tradeSeatsAnimation && (
+        <TradeSeatsAnimation
+          playerId1={tradeSeatsAnimation.playerId1}
+          playerId2={tradeSeatsAnimation.playerId2}
+          players={players}
+          onComplete={clearTradeSeatsAnimation}
+        />
+      )}
+      {cardPlayedAnimation && (
+        <CardPlayedAnimation
+          cardType={cardPlayedAnimation.cardType}
+          playerId={cardPlayedAnimation.playerId}
+          destination={cardPlayedAnimation.destination}
+          startRect={cardPlayedAnimation.startRect}
+          onComplete={clearCardPlayedAnimation}
+        />
+      )}
+      {shieldConsumedAnimation && (
+        <ShieldConsumedAnimation
+          targetPlayerId={shieldConsumedAnimation.targetPlayerId}
+          onComplete={clearShieldConsumedAnimation}
         />
       )}
       <section className={styles.arenaSection}>
@@ -242,22 +395,45 @@ export function GameTable({ send }: { send: SendFn }) {
                     {t("gameTable.waitingForTurn", { name: p.displayName })}
                   </div>
                 )}
-                <div
-                  className={`${styles.playerAvatar} ${canDrop ? styles.dropZoneActive : ""}`}
-                  data-player-avatar={p.id}
-                  onDragOver={(e) => {
-                    if (canDrop) {
-                      e.preventDefault();
-                      e.dataTransfer.dropEffect = "move";
-                    }
-                  }}
-                  onDrop={(e) => handlePlayerDrop(e, p.id)}
-                >
-                  {p.avatarUrl ? (
-                    <img src={p.avatarUrl} alt="" className={styles.playerAvatarImg} />
-                  ) : (
-                    <span className="material-symbols-outlined">lunch_dining</span>
-                  )}
+                <div className={styles.playerAvatarWrap}>
+                  <div
+                    className={`${styles.playerAvatar} ${canDrop ? styles.dropZoneActive : ""}`}
+                    data-player-avatar={p.id}
+                    onDragOver={(e) => {
+                      if (canDrop) {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                      }
+                    }}
+                    onDrop={(e) => handlePlayerDrop(e, p.id)}
+                  >
+                    {p.avatarUrl ? (
+                      <img src={p.avatarUrl} alt="" className={styles.playerAvatarImg} />
+                    ) : (
+                      <span className="material-symbols-outlined">lunch_dining</span>
+                    )}
+                  </div>
+                  {shieldedCounts.get(p.id) != null &&
+                    shieldedCounts.get(p.id)! > 0 &&
+                    p.status === "active" && (
+                      <div
+                        className={styles.playerAvatarFoilWrap}
+                        style={{
+                          backgroundImage: `url(${getCardMeta("foil_wrap").imageUrl})`,
+                        }}
+                        title={
+                          shieldedCounts.get(p.id)! > 1
+                            ? t("gameTable.shieldCount", { count: String(shieldedCounts.get(p.id)!) })
+                            : t("gameTable.shieldOne")
+                        }
+                      >
+                        {shieldedCounts.get(p.id)! > 1 && (
+                          <span className={styles.playerAvatarFoilWrapCount}>
+                            {shieldedCounts.get(p.id)}
+                          </span>
+                        )}
+                      </div>
+                    )}
                 </div>
                 <span className={styles.playerSlotName}>
                   {isYou ? t("gameTable.you") : p.displayName}
@@ -272,21 +448,6 @@ export function GameTable({ send }: { send: SendFn }) {
                 )}
                 {!roleToShow && revealedCategories[p.id] && (
                   <span className={styles.playerSlotCategory}>{revealedCategories[p.id]}</span>
-                )}
-                {shieldedCounts.get(p.id) != null && shieldedCounts.get(p.id)! > 0 && p.status === "active" && (
-                  <span
-                    className={styles.playerSlotShield}
-                    title={
-                      shieldedCounts.get(p.id)! > 1
-                        ? t("gameTable.shieldCount", { count: String(shieldedCounts.get(p.id)!) })
-                        : t("gameTable.shieldOne")
-                    }
-                  >
-                    <span className="material-symbols-outlined">shield</span>
-                    {shieldedCounts.get(p.id)! > 1 && (
-                      <span className={styles.playerSlotShieldCount}>{shieldedCounts.get(p.id)}</span>
-                    )}
-                  </span>
                 )}
                 {p.status === "spectator" && <span className={styles.playerSlotOutLabel}>{t("gameTable.out")}</span>}
               </div>
@@ -333,7 +494,7 @@ export function GameTable({ send }: { send: SendFn }) {
               onDragLeave={() => {}}
               onDrop={handleDiscardDrop}
             >
-              <div className={styles.discardPileStack}>
+              <div className={styles.discardPileStack} data-discard-pile>
                 {discardPile
                   .slice(-8)
                   .reverse()
@@ -395,22 +556,45 @@ export function GameTable({ send }: { send: SendFn }) {
                       {t("gameTable.waitingForTurn", { name: p.displayName })}
                     </div>
                   )}
-                  <div
-                    className={`${styles.playerAvatar} ${canDrop ? styles.dropZoneActive : ""}`}
-                    data-player-avatar={p.id}
-                    onDragOver={(e) => {
-                      if (canDrop) {
-                        e.preventDefault();
-                        e.dataTransfer.dropEffect = "move";
-                      }
-                    }}
-                    onDrop={(e) => handlePlayerDrop(e, p.id)}
-                  >
-                    {p.avatarUrl ? (
-                      <img src={p.avatarUrl} alt="" className={styles.playerAvatarImg} />
-                    ) : (
-                      <span className="material-symbols-outlined">lunch_dining</span>
-                    )}
+                  <div className={styles.playerAvatarWrap}>
+                    <div
+                      className={`${styles.playerAvatar} ${canDrop ? styles.dropZoneActive : ""}`}
+                      data-player-avatar={p.id}
+                      onDragOver={(e) => {
+                        if (canDrop) {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = "move";
+                        }
+                      }}
+                      onDrop={(e) => handlePlayerDrop(e, p.id)}
+                    >
+                      {p.avatarUrl ? (
+                        <img src={p.avatarUrl} alt="" className={styles.playerAvatarImg} />
+                      ) : (
+                        <span className="material-symbols-outlined">lunch_dining</span>
+                      )}
+                    </div>
+                    {shieldedCounts.get(p.id) != null &&
+                      shieldedCounts.get(p.id)! > 0 &&
+                      p.status === "active" && (
+                        <div
+                          className={styles.playerAvatarFoilWrap}
+                          style={{
+                            backgroundImage: `url(${getCardMeta("foil_wrap").imageUrl})`,
+                          }}
+                          title={
+                            shieldedCounts.get(p.id)! > 1
+                              ? t("gameTable.shieldCount", { count: String(shieldedCounts.get(p.id)!) })
+                              : t("gameTable.shieldOne")
+                          }
+                        >
+                          {shieldedCounts.get(p.id)! > 1 && (
+                            <span className={styles.playerAvatarFoilWrapCount}>
+                              {shieldedCounts.get(p.id)}
+                            </span>
+                          )}
+                        </div>
+                      )}
                   </div>
                   <span className={styles.playerSlotName}>
                     {isYou ? t("gameTable.you") : p.displayName}
@@ -426,21 +610,6 @@ export function GameTable({ send }: { send: SendFn }) {
                   {!roleToShow && revealedCategories[p.id] && (
                     <span className={styles.playerSlotCategory}>{revealedCategories[p.id]}</span>
                   )}
-                  {shieldedCounts.get(p.id) != null && shieldedCounts.get(p.id)! > 0 && p.status === "active" && (
-                  <span
-                    className={styles.playerSlotShield}
-                    title={
-                      shieldedCounts.get(p.id)! > 1
-                        ? t("gameTable.shieldCount", { count: String(shieldedCounts.get(p.id)!) })
-                        : t("gameTable.shieldOne")
-                    }
-                  >
-                    <span className="material-symbols-outlined">shield</span>
-                    {shieldedCounts.get(p.id)! > 1 && (
-                      <span className={styles.playerSlotShieldCount}>{shieldedCounts.get(p.id)}</span>
-                    )}
-                  </span>
-                )}
                   {p.status === "spectator" && <span className={styles.playerSlotOutLabel}>{t("gameTable.out")}</span>}
                 </div>
               );
@@ -628,6 +797,7 @@ export function GameTable({ send }: { send: SendFn }) {
                   myHand.map((c) => (
                       <div
                         key={c.id}
+                        data-card-id={c.id}
                         onMouseEnter={() => setHoveredCard(c)}
                         onMouseLeave={() => setHoveredCard(null)}
                       >
@@ -696,6 +866,7 @@ export function GameTable({ send }: { send: SendFn }) {
           </div>
         ) : null}
       </footer>
-    </>
+      </div>
+    </div>
   );
 }

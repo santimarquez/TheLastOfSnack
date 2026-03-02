@@ -101,7 +101,8 @@
     "waitingForHost4": "All snacks present—waiting for the host to fire up the oven!",
     "waitingForHost5": "We're all in. The host holds the start button!",
     "bot": "Bot",
-    "addBot": "Add Bot"
+    "addBot": "Add Bot",
+    "removeBot": "Remove bot"
   },
   "connectionLost": {
     "crisisSub": "SYSTEM ERROR: MILK_OVERFLOW",
@@ -225,7 +226,7 @@
     },
     "trade_seats": {
       "title": "Trade Seats",
-      "action": "Swap identities of two players secretly"
+      "action": "Swap identities with another player."
     },
     "peek": {
       "title": "Peek",
@@ -257,7 +258,19 @@
     "selectCardsToDiscard": "Select {count} cards to discard",
     "discard": "Discard",
     "shieldOne": "Blocks next attack",
-    "shieldCount": "Blocks next {count} attacks"
+    "shieldCount": "Blocks next {count} attacks",
+    "actionLogTitle": "Action log",
+    "actionLogTurn": "{name}'s turn",
+    "actionLogDraw": "{name} drew a card",
+    "actionLogPlay": "{name} played {card}",
+    "actionLogPlayOn": "{name} played {card} on {target}",
+    "actionLogEliminated": "{name} was eliminated (was {role})",
+    "actionLogGameOverWinner": "Game over. {winner} wins!",
+    "actionLogGameOverDraw": "Game over. No winner.",
+    "actionLogEmpty": "No actions yet.",
+    "actionLogExpand": "Show action log",
+    "actionLogCollapse": "Hide action log",
+    "actionLogScrollDown": "Scroll to bottom"
   },
   "cardReveal": {
     "saltResult": "{name} is {category}",

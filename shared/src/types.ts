@@ -59,6 +59,14 @@ export interface GameState {
   deck: Card[];
   eliminatedPlayerIds: string[];
   winnerId: string | null;
+  /** Timestamp when game started (playing phase). */
+  gameStartedAt?: number;
+  /** Timestamp when game ended (phase = ended). */
+  gameEndedAt?: number;
+  /** Per-player: how many eliminations. */
+  eliminationsByPlayerId?: Record<string, number>;
+  /** Per-player: timestamp when eliminated (for survival time). */
+  eliminatedAt?: Record<string, number>;
   suspicionMeter?: SuspicionSystem;
   lastAction?: LastAction;
   turnStartedAt?: number;
@@ -72,6 +80,8 @@ export interface GameState {
   peekedRoles?: Record<string, Record<string, Snack>>;
   /** Foil Wrap protection: each occurrence = one attack blocked (stackable) */
   shieldedPlayerIds?: string[];
+  /** Cards held as active shields (parallel to shieldedPlayerIds, pushed to discard when consumed) */
+  shieldedCards?: Card[];
   /** Discarded/played cards (face up on table) */
   discardPile?: Card[];
 }
@@ -108,6 +118,10 @@ export interface PlayerView {
   avatarId?: string | null;
   /** True if this player is an AI bot */
   isBot?: boolean;
+  /** Number of players this player eliminated (game end stats). */
+  eliminationsCount?: number;
+  /** Timestamp when eliminated (for survival time). */
+  eliminatedAt?: number;
 }
 
 /** Client-safe game state view */
@@ -118,6 +132,10 @@ export interface GameStateView {
   deckCount: number;
   eliminatedPlayerIds: string[];
   winnerId: string | null;
+  gameStartedAt?: number;
+  gameEndedAt?: number;
+  eliminationsByPlayerId?: Record<string, number>;
+  eliminatedAt?: Record<string, number>;
   lastAction?: LastAction;
   turnStartedAt?: number;
   /** Turn duration in seconds (20 for speed mode, 60 for normal). */

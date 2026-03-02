@@ -13,6 +13,16 @@ export interface LobbySettings {
   suspicionMeter: boolean;
 }
 
+/** Structured entry for the game action log; formatted with i18n in the UI. */
+export type ActionLogEntry =
+  | { id: string; kind: "turn"; playerName: string }
+  | { id: string; kind: "draw"; playerName: string }
+  | { id: string; kind: "play"; playerName: string; cardType: string }
+  | { id: string; kind: "play_target"; playerName: string; targetName: string; cardType: string }
+  | { id: string; kind: "eliminated"; playerName: string; roleName: string }
+  | { id: string; kind: "game_over_winner"; winnerName: string }
+  | { id: string; kind: "game_over_draw" };
+
 interface GameStore {
   roomCode: string;
   playerId: string | null;
@@ -22,6 +32,8 @@ interface GameStore {
   gameState: GameStateView | null;
   lobbySettings: LobbySettings;
   chatMessages: ChatMessage[];
+  /** Log of in-game actions (turn, draw, play, eliminated, game over). */
+  actionLog: ActionLogEntry[];
   connectionStatus: "disconnected" | "connecting" | "connected";
   error: string | null;
   showEliminationModal: boolean;
@@ -33,6 +45,19 @@ interface GameStore {
   drawAnimation: { playerId: string } | null;
   /** When Buffet is played, cards fly from deck to each active player. */
   buffetAnimation: { playerIds: string[] } | null;
+  /** When Trade Seats is played, two avatars animate swapping positions. */
+  tradeSeatsAnimation: { playerId1: string; playerId2: string } | null;
+  /** Card flying from hand to discard (or to avatar for foil_wrap). */
+  cardPlayedAnimation: {
+    cardId: string;
+    cardType: string;
+    playerId: string;
+    destination: "discard" | "avatar";
+    /** Captured before state update; null for other players' cards. */
+    startRect?: { left: number; top: number; width: number; height: number } | null;
+  } | null;
+  /** Foil wrap consumed: fly from avatar to discard. */
+  shieldConsumedAnimation: { targetPlayerId: string } | null;
   /** Salt/Peek result notification - only for the player who used the card. */
   cardRevealNotification:
     | { type: "salt"; targetDisplayName: string; category: string }
@@ -53,9 +78,18 @@ interface GameStore {
     playerId: string,
     cardId: string,
     gameState: GameStateView,
-    options?: { revealNotification?: GameStore["cardRevealNotification"]; outcome?: string }
+    options?: {
+      revealNotification?: GameStore["cardRevealNotification"];
+      outcome?: string;
+      targetId?: string;
+      cardType?: string;
+      startRect?: { left: number; top: number; width: number; height: number } | null;
+    }
   ) => void;
   clearBuffetAnimation: () => void;
+  clearTradeSeatsAnimation: () => void;
+  clearCardPlayedAnimation: () => void;
+  clearShieldConsumedAnimation: () => void;
   clearCardRevealNotification: () => void;
   setCardDrawn: (drawnByPlayerId: string, gameState: GameStateView) => void;
   clearDrawAnimation: () => void;
@@ -63,6 +97,8 @@ interface GameStore {
   setGameEnded: (winnerId: string | null, gameState: GameStateView) => void;
   addChat: (msg: ChatMessage) => void;
   setStateSync: (gameState: GameStateView) => void;
+  addActionLogEntry: (entry: ActionLogEntry) => void;
+  clearActionLog: () => void;
   setConnectionStatus: (status: GameStore["connectionStatus"]) => void;
   setError: (error: string | null) => void;
   setShowEliminationModal: (show: boolean) => void;
@@ -93,6 +129,7 @@ export const useGameStore = create<GameStore>((set) => ({
   gameState: null,
   lobbySettings: { speedMode: false, suspicionMeter: false },
   chatMessages: [],
+  actionLog: [],
   connectionStatus: "disconnected",
   error: null,
   showEliminationModal: false,
@@ -102,6 +139,9 @@ export const useGameStore = create<GameStore>((set) => ({
   joinFailed: false,
   drawAnimation: null,
   buffetAnimation: null,
+  tradeSeatsAnimation: null,
+  cardPlayedAnimation: null,
+  shieldConsumedAnimation: null,
   cardRevealNotification: null,
 
   setJoined: (data) =>
@@ -124,11 +164,12 @@ export const useGameStore = create<GameStore>((set) => ({
       ...(lobbySettings != null ? { lobbySettings } : {}),
     })),
 
-  setGameStarted: (gameState) => set({ gameState, showAssigningTransition: true }),
+  setGameStarted: (gameState) =>
+    set({ gameState, showAssigningTransition: true, actionLog: [] }),
 
   setTurnStarted: (_, __, gameState) => set({ gameState }),
 
-  setCardPlayed: (_, __, gameState, options) =>
+  setCardPlayed: (playerId, cardId, gameState, options) =>
     set((s) => {
       const eliminated = new Set(gameState.eliminatedPlayerIds ?? []);
       const buffetPlayerIds =
@@ -136,6 +177,26 @@ export const useGameStore = create<GameStore>((set) => ({
           ? (gameState.players ?? [])
               .filter((p) => p.status === "active" && !eliminated.has(p.id))
               .map((p) => p.id)
+          : null;
+      const tradeSeats =
+        options?.outcome === "swapped" && options?.targetId
+          ? { playerId1: playerId, playerId2: options.targetId }
+          : null;
+      const cardType = (options?.cardType as string) ?? "card";
+      const isFoilWrap = cardType === "foil_wrap";
+      const cardPlayed =
+        cardId && cardType
+          ? {
+              cardId,
+              cardType,
+              playerId,
+              destination: (isFoilWrap ? "avatar" : "discard") as "discard" | "avatar",
+              startRect: options?.startRect ?? undefined,
+            }
+          : null;
+      const shieldConsumed =
+        options?.outcome === "blocked" && options?.targetId
+          ? { targetPlayerId: options.targetId }
           : null;
       return {
         gameState,
@@ -145,10 +206,19 @@ export const useGameStore = create<GameStore>((set) => ({
         ...(buffetPlayerIds != null && buffetPlayerIds.length > 0
           ? { buffetAnimation: { playerIds: buffetPlayerIds } }
           : {}),
+        ...(tradeSeats != null ? { tradeSeatsAnimation: tradeSeats } : {}),
+        ...(cardPlayed != null ? { cardPlayedAnimation: cardPlayed } : {}),
+        ...(shieldConsumed != null ? { shieldConsumedAnimation: shieldConsumed } : {}),
       };
     }),
 
   clearBuffetAnimation: () => set({ buffetAnimation: null }),
+
+  clearTradeSeatsAnimation: () => set({ tradeSeatsAnimation: null }),
+
+  clearCardPlayedAnimation: () => set({ cardPlayedAnimation: null }),
+
+  clearShieldConsumedAnimation: () => set({ shieldConsumedAnimation: null }),
 
   clearCardRevealNotification: () => set({ cardRevealNotification: null }),
 
@@ -176,6 +246,13 @@ export const useGameStore = create<GameStore>((set) => ({
 
   setStateSync: (gameState) => set({ gameState }),
 
+  addActionLogEntry: (entry) =>
+    set((s) => ({
+      actionLog: [...s.actionLog.slice(-199), entry],
+    })),
+
+  clearActionLog: () => set({ actionLog: [] }),
+
   setConnectionStatus: (connectionStatus) => set({ connectionStatus }),
 
   setError: (error) => set({ error }),
@@ -201,6 +278,7 @@ export const useGameStore = create<GameStore>((set) => ({
       gameState: null,
       lobbySettings: { speedMode: false, suspicionMeter: false },
       chatMessages: [],
+      actionLog: [],
       connectionStatus: "disconnected",
       error: null,
       showEliminationModal: false,
@@ -210,6 +288,9 @@ export const useGameStore = create<GameStore>((set) => ({
       joinFailed: false,
       drawAnimation: null,
       buffetAnimation: null,
+      tradeSeatsAnimation: null,
+      cardPlayedAnimation: null,
+      shieldConsumedAnimation: null,
       cardRevealNotification: null,
     }),
 }));

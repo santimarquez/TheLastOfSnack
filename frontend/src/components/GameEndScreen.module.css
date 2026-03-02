@@ -133,9 +133,37 @@
   pointer-events: none;
 }
 
+.heroWinnerRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .heroWinnerRow {
+    flex-direction: row;
+    gap: 2rem;
+  }
+}
+
+.heroWinnerText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .heroWinnerText {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
 .characterSpotlight {
   position: relative;
-  margin-bottom: 1.5rem;
+  flex-shrink: 0;
 }
 
 .characterGlow {
@@ -401,6 +429,21 @@
   color: white;
   font-weight: 700;
   font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.playerAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.playerAvatarInitial {
   display: flex;
   align-items: center;
   justify-content: center;

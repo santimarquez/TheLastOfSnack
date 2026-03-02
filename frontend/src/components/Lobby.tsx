@@ -220,9 +220,25 @@ export function Lobby({ send }: { send: SendFn }) {
               </div>
             )}
             {p.isBot && (
-              <div className={styles.botBadge} title={t("lobby.bot")}>
-                <span className="material-symbols-outlined">smart_toy</span>
-              </div>
+              <>
+                <div className={styles.botBadge} title={t("lobby.bot")}>
+                  <span className="material-symbols-outlined">smart_toy</span>
+                </div>
+                {isHost && (
+                  <button
+                    type="button"
+                    className={styles.removeBotBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      send("remove_bot", { playerId: p.id });
+                    }}
+                    aria-label={t("lobby.removeBot")}
+                    title={t("lobby.removeBot")}
+                  >
+                    <span className="material-symbols-outlined">close</span>
+                  </button>
+                )}
+              </>
             )}
             <div className={styles.playerAvatar}>
               {p.avatarUrl ? (

@@ -8,6 +8,11 @@ function consumeShield(room: Room, targetId: string): boolean {
   if (!arr?.length) return false;
   const idx = arr.indexOf(targetId);
   if (idx < 0) return false;
+  const shieldedCards = room.gameState.shieldedCards;
+  if (shieldedCards?.length && idx < shieldedCards.length) {
+    const consumedCard = shieldedCards.splice(idx, 1)[0];
+    if (consumedCard && room.gameState.discardPile) room.gameState.discardPile.push(consumedCard);
+  }
   arr.splice(idx, 1);
   return true;
 }
@@ -39,7 +44,8 @@ export function resolveCard(
   player.hand.splice(cardIndex, 1);
 
   if (!room.gameState.discardPile) room.gameState.discardPile = [];
-  room.gameState.discardPile.push(card);
+  const isFoilWrap = card.type === "foil_wrap";
+  if (!isFoilWrap) room.gameState.discardPile.push(card);
 
   const result: ResolutionResult = { outcome: "played" };
 
@@ -99,37 +105,54 @@ export function resolveCard(
       break;
     }
     case "double_salt": {
-      const donutPlayer = room.players.find((p) => p.status === "active" && p.role?.id === "donut");
-      if (donutPlayer) {
-        eliminatePlayer(room, donutPlayer.id);
-        result.eliminated = [donutPlayer.id];
-        result.outcome = "eliminated";
+      if (!targetId) return { error: "Double Salt requires a target" };
+      const doubleSaltTarget = room.players.find((p) => p.id === targetId);
+      if (!doubleSaltTarget) return { error: "Target not found" };
+      if (doubleSaltTarget.status !== "active") return { error: "Target is not active" };
+      if (doubleSaltTarget.id === playerId) return { error: "Cannot target yourself" };
+      if (doubleSaltTarget.role?.id === "donut") {
+        if (consumeShield(room, doubleSaltTarget.id)) {
+          result.blocked = { targetId: doubleSaltTarget.id };
+          result.outcome = "blocked";
+        } else {
+          eliminatePlayer(room, doubleSaltTarget.id);
+          result.eliminated = [doubleSaltTarget.id];
+          result.outcome = "eliminated";
+        }
       }
       break;
     }
     case "shake": {
-      const tacoPlayer = room.players.find((p) => p.status === "active" && p.role?.id === "taco");
-      if (tacoPlayer) {
-        if (consumeShield(room, tacoPlayer.id)) {
-          result.blocked = { targetId: tacoPlayer.id };
+      if (!targetId) return { error: "Shake requires a target" };
+      const shakeTarget = room.players.find((p) => p.id === targetId);
+      if (!shakeTarget) return { error: "Target not found" };
+      if (shakeTarget.status !== "active") return { error: "Target is not active" };
+      if (shakeTarget.id === playerId) return { error: "Cannot target yourself" };
+      if (shakeTarget.role?.id === "taco") {
+        if (consumeShield(room, shakeTarget.id)) {
+          result.blocked = { targetId: shakeTarget.id };
           result.outcome = "blocked";
         } else {
-          eliminatePlayer(room, tacoPlayer.id);
-          result.eliminated = [tacoPlayer.id];
+          eliminatePlayer(room, shakeTarget.id);
+          result.eliminated = [shakeTarget.id];
           result.outcome = "eliminated";
         }
       }
       break;
     }
     case "spoil": {
-      const burgerPlayer = room.players.find((p) => p.status === "active" && p.role?.id === "burger");
-      if (burgerPlayer) {
-        if (consumeShield(room, burgerPlayer.id)) {
-          result.blocked = { targetId: burgerPlayer.id };
+      if (!targetId) return { error: "Spoil requires a target" };
+      const spoilTarget = room.players.find((p) => p.id === targetId);
+      if (!spoilTarget) return { error: "Target not found" };
+      if (spoilTarget.status !== "active") return { error: "Target is not active" };
+      if (spoilTarget.id === playerId) return { error: "Cannot target yourself" };
+      if (spoilTarget.role?.id === "burger") {
+        if (consumeShield(room, spoilTarget.id)) {
+          result.blocked = { targetId: spoilTarget.id };
           result.outcome = "blocked";
         } else {
-          eliminatePlayer(room, burgerPlayer.id);
-          result.eliminated = [burgerPlayer.id];
+          eliminatePlayer(room, spoilTarget.id);
+          result.eliminated = [spoilTarget.id];
           result.outcome = "eliminated";
         }
       }
@@ -149,21 +172,25 @@ export function resolveCard(
       break;
     }
     case "trash": {
-      if (!discardedCardIds || discardedCardIds.length !== 2) return { error: "Trash requires selecting 2 cards to discard" };
-      const ids = new Set(discardedCardIds);
-      if (ids.size !== 2) return { error: "Must select 2 different cards" };
+      if (!targetId) return { error: "Trash requires a target" };
+      const trashTarget = room.players.find((p) => p.id === targetId);
+      if (!trashTarget) return { error: "Target not found" };
+      if (trashTarget.status !== "active") return { error: "Target is not active" };
+      if (trashTarget.id === playerId) return { error: "Cannot target yourself" };
+      const toDiscard = 2;
+      const hand = trashTarget.hand;
+      if (hand.length < toDiscard) return { error: "Target has fewer than 2 cards to discard" };
       if (!room.gameState.discardPile) room.gameState.discardPile = [];
-      for (const id of ids) {
-        const idx = player.hand.findIndex((c) => c.id === id);
-        if (idx === -1) return { error: "Selected card not in hand" };
-        const discarded = player.hand[idx];
-        player.hand.splice(idx, 1);
-        room.gameState.discardPile.push(discarded);
+      for (let i = 0; i < toDiscard && hand.length > 0; i++) {
+        const idx = Math.floor(Math.random() * hand.length);
+        const card = hand.splice(idx, 1)[0];
+        if (card) room.gameState.discardPile.push(card);
       }
       result.outcome = "trash";
       break;
     }
     case "trade_seats": {
+      if (!targetId) return { error: "Trade Seats requires a target" };
       const swapTarget = room.players.find((p) => p.id === targetId);
       if (!swapTarget) return { error: "Target not found" };
       if (swapTarget.status !== "active") return { error: "Target is not active" };
@@ -174,6 +201,13 @@ export function resolveCard(
       player.avatarId = swapTarget.avatarId;
       swapTarget.role = playerRole;
       swapTarget.avatarId = playerAvatar;
+      // Clear peeked data for both players since identities changed
+      if (room.gameState.peekedRoles) {
+        for (const viewerId of Object.keys(room.gameState.peekedRoles)) {
+          delete room.gameState.peekedRoles[viewerId][player.id];
+          delete room.gameState.peekedRoles[viewerId][swapTarget.id];
+        }
+      }
       result.outcome = "swapped";
       break;
     }
@@ -199,7 +233,9 @@ export function resolveCard(
     }
     case "foil_wrap": {
       if (!room.gameState.shieldedPlayerIds) room.gameState.shieldedPlayerIds = [];
+      if (!room.gameState.shieldedCards) room.gameState.shieldedCards = [];
       room.gameState.shieldedPlayerIds.push(playerId);
+      room.gameState.shieldedCards.push(card);
       result.outcome = "shielded";
       break;
     }
@@ -236,15 +272,42 @@ export function resolveCard(
   return result;
 }
 
-export function checkWinCondition(room: Room): string | null {
-  const activeSnacks = room.players.filter(
-    (p) =>
-      p.status === "active" &&
-      p.role &&
-      !room.gameState.eliminatedPlayerIds.includes(p.id)
-  );
-  const lastSnacksRemaining = activeSnacks.filter((p) => p.role?.isLastSnack);
-  if (lastSnacksRemaining.length === 1) return lastSnacksRemaining[0].id;
-  if (activeSnacks.length === 1) return activeSnacks[0].id;
-  return null;
+/** Snack points formula: 50 + 10*eliminations + 1 per 10s survived */
+function computeSnackPoints(
+  room: Room,
+  playerId: string,
+  gameEndedAt: number
+): number {
+  const gs = room.gameState;
+  const eliminations = gs.eliminationsByPlayerId?.[playerId] ?? 0;
+  const gameStartedAt = gs.gameStartedAt ?? gameEndedAt;
+  const eliminatedAt = gs.eliminatedAt?.[playerId];
+  const survivalMs = eliminatedAt != null
+    ? eliminatedAt - gameStartedAt
+    : gameEndedAt - gameStartedAt;
+  let pts = 50;
+  pts += eliminations * 10;
+  pts += Math.floor((Number.isFinite(survivalMs) ? survivalMs : 0) / 10_000);
+  return pts;
+}
+
+/** When deck is empty or all eliminated, winner is the player with highest Snack points. */
+export function getWinnerBySnackPoints(room: Room): string | null {
+  const gs = room.gameState;
+  const deckEmpty = gs.deck.length === 0;
+  const allEliminated =
+    room.players.length > 0 &&
+    room.players.every((p) => gs.eliminatedPlayerIds.includes(p.id));
+  if (!deckEmpty && !allEliminated) return null;
+  const gameEndedAt = Date.now();
+  let bestId: string | null = null;
+  let bestPts = -1;
+  for (const p of room.players) {
+    const pts = computeSnackPoints(room, p.id, gameEndedAt);
+    if (pts > bestPts) {
+      bestPts = pts;
+      bestId = p.id;
+    }
+  }
+  return bestId;
 }

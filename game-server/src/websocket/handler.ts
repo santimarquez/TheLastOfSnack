@@ -223,6 +223,25 @@ export function handleMessage(
       return;
     }
 
+    case "remove_bot": {
+      const botPlayerId = (parsed.payload as { playerId?: string }).playerId;
+      if (!botPlayerId || typeof botPlayerId !== "string") {
+        sendToSocket(ws, "error", { code: "REMOVE_BOT_FAILED", message: "Player ID required" });
+        return;
+      }
+      const result = RoomManager.removeBot(ctx.roomCode, ctx.playerId, botPlayerId);
+      if ("error" in result) {
+        sendToSocket(ws, "error", { code: "REMOVE_BOT_FAILED", message: result.error });
+      } else {
+        const broadcastFn = broadcast.createBroadcast(sockets);
+        const updatedRoom = RoomManager.getRoom(ctx.roomCode);
+        if (updatedRoom) {
+          broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => roomUpdatedPayload(updatedRoom, forPlayerId));
+        }
+      }
+      return;
+    }
+
     case "chat": {
       const text = (parsed.payload as { text: string }).text;
       const broadcastFn = broadcast.createBroadcast(sockets);

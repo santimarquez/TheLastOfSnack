@@ -1,6 +1,6 @@
 import type { Room } from "../state/types.js";
 import type { GameStateView, PlayerView } from "../state/types.js";
-import { AVATAR_URLS } from "./avatars.js";
+import { AVATAR_URLS, PLACEHOLDER_AVATAR_URL } from "./avatars.js";
 
 export function buildGameStateView(room: Room, forPlayerId: string | null): GameStateView {
   const { gameState } = room;
@@ -20,15 +20,27 @@ export function buildGameStateView(room: Room, forPlayerId: string | null): Game
     const isSelf = p.id === forPlayerId;
     const isRevealed = Boolean(gameState.revealedRoles[p.id]);
     const isPeeked = Boolean(forPlayerId && gameState.peekedRoles?.[forPlayerId]?.[p.id]);
+    const isWinner = p.id === gameState.winnerId;
     const inLobby = gameState.phase === "lobby";
     const inGame = gameState.phase === "playing" || gameState.phase === "ended";
-    if (p.avatarId && (inLobby || inGame || isSelf || isRevealed || isPeeked)) {
-      const url = AVATAR_URLS[p.avatarId];
+    const gameEnded = gameState.phase === "ended";
+    // In lobby: show real avatar (players choose, no hidden identity yet).
+    // In game: show real avatar when viewer is self, peeked, revealed, winner; when game ended, show all.
+    if (p.avatarId && (inLobby || inGame)) {
+      const showRealAvatar =
+        inLobby || isSelf || isRevealed || isPeeked || isWinner || gameEnded;
+      const url = showRealAvatar ? AVATAR_URLS[p.avatarId] : PLACEHOLDER_AVATAR_URL;
       if (url) view.avatarUrl = url;
     }
     if (inLobby && p.avatarId) view.avatarId = p.avatarId;
     if (isPeeked && gameState.peekedRoles?.[forPlayerId!]?.[p.id]) {
       view.role = gameState.peekedRoles[forPlayerId!][p.id];
+    }
+    if (gameState.eliminationsByPlayerId?.[p.id] != null) {
+      view.eliminationsCount = gameState.eliminationsByPlayerId[p.id];
+    }
+    if (gameState.eliminatedAt?.[p.id] != null) {
+      view.eliminatedAt = gameState.eliminatedAt[p.id];
     }
     return view;
   });
@@ -40,6 +52,10 @@ export function buildGameStateView(room: Room, forPlayerId: string | null): Game
     deckCount: gameState.deck.length,
     eliminatedPlayerIds: [...gameState.eliminatedPlayerIds],
     winnerId: gameState.winnerId,
+    gameStartedAt: gameState.gameStartedAt,
+    gameEndedAt: gameState.gameEndedAt,
+    eliminationsByPlayerId: gameState.eliminationsByPlayerId ? { ...gameState.eliminationsByPlayerId } : undefined,
+    eliminatedAt: gameState.eliminatedAt ? { ...gameState.eliminatedAt } : undefined,
     lastAction: gameState.lastAction,
     turnStartedAt: gameState.turnStartedAt,
     turnTimeoutSec: room.settings.turnTimeoutSec,

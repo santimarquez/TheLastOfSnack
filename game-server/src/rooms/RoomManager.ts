@@ -5,6 +5,18 @@ import { createRoomEntity, generateRoomCode } from "./Room.js";
 import { config } from "../config.js";
 import { ALL_AVATAR_IDS } from "../engine/avatars.js";
 
+/** Same names as frontend room.guestName0..7 (en); used for bot display names. */
+const GUEST_NAME_POOL = [
+  "CrunchCookie",
+  "SpicyTaco",
+  "SneakySushi",
+  "SaltyChip",
+  "DramaNacho",
+  "CheesyPretzel",
+  "NinjaNoodle",
+  "ToastedMarshmallow",
+];
+
 const RECONNECT_TOKENS = new Map<string, { playerId: string; roomCode: string; expiresAt: number }>();
 
 /** Pick an avatar ID not yet used by other players in the room (for lobby display). */
@@ -188,8 +200,11 @@ export function addBot(
   if (room.hostId !== hostPlayerId) return { error: "Only host can add bots" };
   if (room.players.length >= config.maxPlayers) return { error: "Room is full" };
 
-  const botCount = room.players.filter((p) => (p as { isBot?: boolean }).isBot).length;
-  const displayName = `Bot ${botCount + 1}`;
+  const usedNames = new Set(room.players.map((p) => p.displayName.toLowerCase()));
+  const available = GUEST_NAME_POOL.filter((name) => !usedNames.has(name.toLowerCase()));
+  if (available.length === 0) return { error: "No available names in pool for another bot" };
+
+  const displayName = available[Math.floor(Math.random() * available.length)];
 
   const player: Player = {
     id: randomUUID(),
@@ -206,6 +221,25 @@ export function addBot(
   room.players.push(player);
   player.avatarId = pickLobbyAvatar(room.players, player.id);
   return { room, player };
+}
+
+export function removeBot(
+  roomCode: string,
+  hostPlayerId: string,
+  botPlayerId: string
+): { room: Room } | { error: string } {
+  const room = store.getRoom(roomCode);
+  if (!room) return { error: "Room not found" };
+  if (room.gameState.phase !== "lobby") return { error: "Game already started" };
+  if (room.hostId !== hostPlayerId) return { error: "Only host can remove bots" };
+
+  const index = room.players.findIndex((p) => p.id === botPlayerId);
+  if (index === -1) return { error: "Player not found" };
+  const player = room.players[index];
+  if (!player.isBot) return { error: "Can only remove bots" };
+
+  room.players.splice(index, 1);
+  return { room };
 }
 
 export function setLobbySettings(

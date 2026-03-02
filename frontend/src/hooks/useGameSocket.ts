@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { useGameStore, type LobbySettings } from "@/store/gameStore";
+import { useGameStore, type LobbySettings, type ActionLogEntry } from "@/store/gameStore";
 
 const getWsUrl = () => {
   const base = process.env.NEXT_PUBLIC_GAME_SERVER_HTTP;
@@ -43,6 +43,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
     setGameEnded,
     addChat,
     setStateSync,
+    addActionLogEntry,
     setConnectionStatus,
     setError,
     setJoinFailed,
@@ -108,51 +109,134 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
             p.lobbySettings as LobbySettings | undefined
           );
           break;
-        case "game_started":
-          setGameStarted((p.gameState as import("@last-of-snack/shared").GameStateView)!);
+        case "game_started": {
+          const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          setGameStarted(gs!);
+          const order = gs?.turnOrder ?? [];
+          const idx = (gs?.currentTurnIndex ?? 0) % Math.max(1, order.length);
+          const firstId = order[idx];
+          const players = gs?.players ?? [];
+          const firstName = firstId ? players.find((pl: { id: string }) => pl.id === firstId)?.displayName : undefined;
+          if (firstName) {
+            addActionLogEntry({
+              id: `turn-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+              kind: "turn",
+              playerName: firstName,
+            });
+          }
           break;
-        case "turn_started":
+        }
+        case "turn_started": {
+          const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          const players = gs?.players ?? [];
+          const currentId = p.currentPlayerId as string;
+          const playerName = players.find((pl: { id: string }) => pl.id === currentId)?.displayName ?? "?";
+          addActionLogEntry({
+            id: `turn-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            kind: "turn",
+            playerName,
+          });
           setTurnStarted(
-            p.currentPlayerId as string,
+            currentId,
             p.expiresAt as number,
-            p.gameState as import("@last-of-snack/shared").GameStateView
+            gs
           );
           break;
+        }
         case "card_played": {
+          const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          const players = gs?.players ?? [];
+          const cardId = p.cardId as string;
+          const outcome = p.outcome as string | undefined;
+          const pile = gs?.discardPile ?? [];
+          const card = pile.find((c: { id: string }) => c.id === cardId);
+          const cardType =
+            outcome === "shielded"
+              ? "foil_wrap"
+              : (card as { type?: string } | undefined)?.type ?? "card";
+          const playerName = players.find((pl: { id: string }) => pl.id === (p.playerId as string))?.displayName ?? "?";
+          const targetId = (p as { targetId?: string }).targetId;
+          const targetName = targetId ? players.find((pl: { id: string }) => pl.id === targetId)?.displayName : undefined;
+          const entry: ActionLogEntry = targetName
+            ? { id: `play-${Date.now()}-${Math.random().toString(36).slice(2)}`, kind: "play_target", playerName, targetName, cardType }
+            : { id: `play-${Date.now()}-${Math.random().toString(36).slice(2)}`, kind: "play", playerName, cardType };
+          addActionLogEntry(entry);
           const revealNotification = p.revealNotification as
             | { type: "salt"; targetDisplayName: string; category: string }
             | { type: "peek"; targetDisplayName: string; snackName: string }
             | undefined;
+          let startRect: { left: number; top: number; width: number; height: number } | undefined;
+          if (typeof document !== "undefined") {
+            const cardEl = document.querySelector(`[data-card-id="${cardId}"]`);
+            if (cardEl) {
+              const r = cardEl.getBoundingClientRect();
+              startRect = { left: r.left, top: r.top, width: r.width, height: r.height };
+            }
+          }
           setCardPlayed(
             p.playerId as string,
-            p.cardId as string,
-            p.gameState as import("@last-of-snack/shared").GameStateView,
+            cardId,
+            gs,
             {
               revealNotification,
               outcome: p.outcome as string | undefined,
+              targetId: (p as { targetId?: string }).targetId,
+              cardType,
+              startRect,
             }
           );
           break;
         }
-        case "card_drawn":
+        case "card_drawn": {
+          const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          const players = gs?.players ?? [];
+          const playerName = players.find((pl: { id: string }) => pl.id === (p.playerId as string))?.displayName ?? "?";
+          addActionLogEntry({
+            id: `draw-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            kind: "draw",
+            playerName,
+          });
           setCardDrawn(
             p.playerId as string,
-            p.gameState as import("@last-of-snack/shared").GameStateView
+            gs
           );
           break;
-        case "player_eliminated":
+        }
+        case "player_eliminated": {
+          const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          const players = gs?.players ?? [];
+          const eliminatedId = p.playerId as string;
+          const role = p.revealedRole as { name?: string } | undefined;
+          const playerName = players.find((pl: { id: string }) => pl.id === eliminatedId)?.displayName ?? "?";
+          addActionLogEntry({
+            id: `elim-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            kind: "eliminated",
+            playerName,
+            roleName: role?.name ?? "?",
+          });
           setPlayerEliminated(
-            p.playerId as string,
+            eliminatedId,
             p.revealedRole,
-            p.gameState as import("@last-of-snack/shared").GameStateView
+            gs
           );
           break;
-        case "game_ended":
+        }
+        case "game_ended": {
+          const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          const winnerId = p.winnerId as string | null;
+          const players = gs?.players ?? [];
+          const winnerName = winnerId ? players.find((pl: { id: string }) => pl.id === winnerId)?.displayName : undefined;
+          addActionLogEntry(
+            winnerName
+              ? { id: `end-${Date.now()}-${Math.random().toString(36).slice(2)}`, kind: "game_over_winner", winnerName }
+              : { id: `end-${Date.now()}-${Math.random().toString(36).slice(2)}`, kind: "game_over_draw" }
+          );
           setGameEnded(
-            (p.winnerId as string | null) ?? null,
-            p.gameState as import("@last-of-snack/shared").GameStateView
+            winnerId ?? null,
+            gs
           );
           break;
+        }
         case "chat":
           addChat({
             playerId: p.playerId as string,

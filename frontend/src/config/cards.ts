@@ -38,19 +38,19 @@ export const CARD_META: Record<string, CardMeta> = {
     type: "double_salt",
     imageUrl:
       "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/5fbb0f25-12ee-456e-5c86-ad7efa97a200/public",
-    requiresTarget: false,
+    requiresTarget: true,
   },
   shake: {
     type: "shake",
     imageUrl:
       "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/74e951b6-8216-4cf1-10e5-fefb4f01c400/public",
-    requiresTarget: false,
+    requiresTarget: true,
   },
   spoil: {
     type: "spoil",
     imageUrl:
       "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/356e547e-76aa-420b-fe0a-18fa53a24900/public",
-    requiresTarget: false,
+    requiresTarget: true,
   },
   buffet: {
     type: "buffet",
@@ -62,8 +62,7 @@ export const CARD_META: Record<string, CardMeta> = {
     type: "trash",
     imageUrl:
       "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/12bb9be5-0d46-4e91-058e-76cb5f1f8400/public",
-    requiresTarget: false,
-    requiresDiscardCards: 2,
+    requiresTarget: true,
   },
   trade_seats: {
     type: "trade_seats",

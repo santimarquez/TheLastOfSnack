@@ -7,6 +7,8 @@ export function eliminatePlayer(room: Room, playerId: string): void {
   if (!room.gameState.eliminatedPlayerIds.includes(playerId)) {
     room.gameState.eliminatedPlayerIds.push(playerId);
   }
+  if (!room.gameState.eliminatedAt) room.gameState.eliminatedAt = {};
+  room.gameState.eliminatedAt[playerId] = Date.now();
 }
 
 export function isEliminated(room: Room, playerId: string): boolean {
