@@ -207,18 +207,19 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
           const players = gs?.players ?? [];
           const eliminatedId = p.playerId as string;
           const role = p.revealedRole as { name?: string } | undefined;
-          const playerName = players.find((pl: { id: string }) => pl.id === eliminatedId)?.displayName ?? "?";
+          const playerName = players.find((pl: { id: string }) => pl.id === eliminatedId)?.displayName ?? (p.displayName as string) ?? "?";
           addActionLogEntry({
             id: `elim-${Date.now()}-${Math.random().toString(36).slice(2)}`,
             kind: "eliminated",
             playerName,
             roleName: role?.name ?? "?",
           });
-          setPlayerEliminated(
-            eliminatedId,
-            p.revealedRole,
-            gs
-          );
+          setPlayerEliminated(eliminatedId, p.revealedRole, gs, {
+            cardType: p.cardType as string | undefined,
+            snackId: (p.snackId as string | null) ?? undefined,
+            displayName: (p.displayName as string) ?? playerName,
+            avatarUrl: p.avatarUrl as string | undefined,
+          });
           break;
         }
         case "game_ended": {

@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "@/i18n/context";
+import { ActionCard } from "@/components/ActionCard";
+import { CARD_META } from "@/config/cards";
+import { SNACK_AVATAR_URLS } from "@/constants/avatars";
 import styles from "./page.module.css";
+
+const ACTION_CARD_TYPES = Object.keys(CARD_META) as string[];
 
 export default function HowToPlayPage() {
   const router = useRouter();
@@ -45,7 +50,11 @@ export default function HowToPlayPage() {
           </h2>
           <div className={styles.goalLayout}>
             <div className={styles.goalImage}>
-              <span className="material-symbols-outlined">lunch_dining</span>
+              <img
+                src="https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/c41e7396-3168-473d-969d-f83664373f00/public"
+                alt=""
+                aria-hidden
+              />
             </div>
             <div className={styles.goalContent}>
               <h3 className={styles.goalTitle}>{t("howToPlay.section1Headline")}</h3>
@@ -69,6 +78,96 @@ export default function HowToPlayPage() {
         <section className={styles.section}>
           <h2 className={styles.sectionHead}>
             <span className={styles.sectionNum}>2</span>
+            {t("howToPlay.section3Title")}
+          </h2>
+          <div className={styles.secretBlock}>
+            <span className={styles.warningIcon} aria-hidden>
+              <span className="material-symbols-outlined">warning</span>
+            </span>
+            <p className={styles.secretQuote}>
+              {t("howToPlay.secretQuote")}
+            </p>
+            <p className={styles.secretCopy}>
+              {t("howToPlay.secretCopy")}
+            </p>
+            <div className={styles.characterCards}>
+              <div className={styles.characterCard}>
+                <div className={styles.characterAvatar}>
+                  <img src={SNACK_AVATAR_URLS.pizza} alt="" aria-hidden />
+                </div>
+                <div className={styles.characterInfo}>
+                  <strong>{t("howToPlay.characterPizza")}</strong>
+                  <span className={styles.characterWeakness}>{t("howToPlay.characterPizzaWeakness")}</span>
+                  <p className={styles.characterQuote}>{t("howToPlay.characterPizzaQuote")}</p>
+                </div>
+              </div>
+              <div className={styles.characterCard}>
+                <div className={styles.characterAvatar}>
+                  <img src={SNACK_AVATAR_URLS.sushi} alt="" aria-hidden />
+                </div>
+                <div className={styles.characterInfo}>
+                  <strong>{t("howToPlay.characterSushi")}</strong>
+                  <span className={styles.characterWeakness}>{t("howToPlay.characterSushiWeakness")}</span>
+                  <p className={styles.characterQuote}>{t("howToPlay.characterSushiQuote")}</p>
+                </div>
+              </div>
+              <div className={styles.characterCard}>
+                <div className={styles.characterAvatar}>
+                  <img src={SNACK_AVATAR_URLS.donut} alt="" aria-hidden />
+                </div>
+                <div className={styles.characterInfo}>
+                  <strong>{t("howToPlay.characterDonut")}</strong>
+                  <span className={styles.characterWeakness}>{t("howToPlay.characterDonutWeakness")}</span>
+                  <p className={styles.characterQuote}>{t("howToPlay.characterDonutQuote")}</p>
+                </div>
+              </div>
+              <div className={styles.characterCard}>
+                <div className={styles.characterAvatar}>
+                  <img src={SNACK_AVATAR_URLS.ice_cream} alt="" aria-hidden />
+                </div>
+                <div className={styles.characterInfo}>
+                  <strong>{t("howToPlay.characterIceCream")}</strong>
+                  <span className={styles.characterWeakness}>{t("howToPlay.characterIceCreamWeakness")}</span>
+                  <p className={styles.characterQuote}>{t("howToPlay.characterIceCreamQuote")}</p>
+                </div>
+              </div>
+              <div className={styles.characterCard}>
+                <div className={styles.characterAvatar}>
+                  <img src={SNACK_AVATAR_URLS.burger} alt="" aria-hidden />
+                </div>
+                <div className={styles.characterInfo}>
+                  <strong>{t("howToPlay.characterBurger")}</strong>
+                  <span className={styles.characterWeakness}>{t("howToPlay.characterBurgerWeakness")}</span>
+                  <p className={styles.characterQuote}>{t("howToPlay.characterBurgerQuote")}</p>
+                </div>
+              </div>
+              <div className={styles.characterCard}>
+                <div className={styles.characterAvatar}>
+                  <img src={SNACK_AVATAR_URLS.taco} alt="" aria-hidden />
+                </div>
+                <div className={styles.characterInfo}>
+                  <strong>{t("howToPlay.characterTaco")}</strong>
+                  <span className={styles.characterWeakness}>{t("howToPlay.characterTacoWeakness")}</span>
+                  <p className={styles.characterQuote}>{t("howToPlay.characterTacoQuote")}</p>
+                </div>
+              </div>
+              <div className={styles.characterCard}>
+                <div className={styles.characterAvatar} aria-hidden>
+                  <span className={styles.characterEmoji}>🍟</span>
+                </div>
+                <div className={styles.characterInfo}>
+                  <strong>{t("howToPlay.characterFries")}</strong>
+                  <span className={styles.characterWeakness}>{t("howToPlay.characterFriesWeakness")}</span>
+                  <p className={styles.characterQuote}>{t("howToPlay.characterFriesQuote")}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionHead}>
+            <span className={styles.sectionNum}>3</span>
             {t("howToPlay.section2Title")}
           </h2>
           <div className={styles.cardsGrid}>
@@ -89,9 +188,11 @@ export default function HowToPlayPage() {
             <div className={styles.actionCard}>
               <span className="material-symbols-outlined">shopping_bag</span>
               <h4 className={styles.actionTitle}>{t("howToPlay.actionSteal")}</h4>
-              <p className={styles.actionDesc}>
-                {t("howToPlay.actionStealDesc")}
-              </p>
+              {t("howToPlay.actionStealDesc") && (
+                <p className={styles.actionDesc}>
+                  {t("howToPlay.actionStealDesc")}
+                </p>
+              )}
             </div>
             <div className={styles.actionCard}>
               <span className="material-symbols-outlined">visibility</span>
@@ -101,38 +202,36 @@ export default function HowToPlayPage() {
               </p>
             </div>
           </div>
+          <h3 className={styles.subsectionHead}>{t("howToPlay.actionCardsTitle")}</h3>
+          <div className={styles.actionCardsGrid}>
+            {ACTION_CARD_TYPES.map((type) => (
+              <div key={type} className={styles.actionCardCell}>
+                <ActionCard
+                  card={{ id: `howto-${type}`, type }}
+                  disabled
+                />
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionHead}>
-            <span className={styles.sectionNum}>3</span>
-            {t("howToPlay.section3Title")}
+            <span className={styles.sectionNum}>4</span>
+            {t("howToPlay.section4Title")}
           </h2>
-          <div className={styles.secretBlock}>
-            <span className={styles.warningIcon} aria-hidden>
-              <span className="material-symbols-outlined">warning</span>
-            </span>
-            <p className={styles.secretQuote}>
-              {t("howToPlay.secretQuote")}
-            </p>
-            <p className={styles.secretCopy}>
-              {t("howToPlay.secretCopy")}
-            </p>
-            <div className={styles.weaknessExamples}>
-              <div className={styles.weaknessCard}>
-                <span className="material-symbols-outlined">icecream</span>
-                <div>
-                  <strong>{t("howToPlay.weaknessIceCream")}</strong>
-                  <p>{t("howToPlay.weaknessIceCreamDesc")}</p>
-                </div>
-              </div>
-              <div className={styles.weaknessCard}>
-                <span className="material-symbols-outlined">cookie</span>
-                <div>
-                  <strong>{t("howToPlay.weaknessCookie")}</strong>
-                  <p>{t("howToPlay.weaknessCookieDesc")}</p>
-                </div>
-              </div>
+          <div className={styles.gameOrderBlock}>
+            <div className={styles.gameOrderItem}>
+              <h3 className={styles.gameOrderHeadline}>{t("howToPlay.section4RoundsHeadline")}</h3>
+              <p className={styles.gameOrderCopy}>{t("howToPlay.section4RoundsCopy")}</p>
+            </div>
+            <div className={styles.gameOrderItem}>
+              <h3 className={styles.gameOrderHeadline}>{t("howToPlay.section4TurnHeadline")}</h3>
+              <p className={styles.gameOrderCopy}>{t("howToPlay.section4TurnCopy")}</p>
+            </div>
+            <div className={styles.gameOrderItem}>
+              <h3 className={styles.gameOrderHeadline}>{t("howToPlay.section4PointsHeadline")}</h3>
+              <p className={styles.gameOrderCopy}>{t("howToPlay.section4PointsCopy")}</p>
             </div>
           </div>
         </section>

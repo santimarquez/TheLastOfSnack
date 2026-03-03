@@ -1,0 +1,683 @@
+/**
+ * Elimination Animation System - Pop-up Modal
+ * Duration: 5s (matches server config.eliminationAnimationMs)
+ * CSS-first, performant, no JS animation libraries.
+ */
+
+/* --- Lock overlay (when reconnecting during animation, no animation data) --- */
+.lockOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.lockMessage {
+  font-size: 1.125rem;
+  color: var(--slate-300);
+}
+
+/* --- Overlay --- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  pointer-events: auto;
+  animation: overlayFadeIn 0.25s ease-out;
+}
+
+.bgBlur {
+  position: absolute;
+  inset: 0;
+  background: var(--background-dark);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Brief screen flash on elimination start */
+.screenFlash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.12);
+  animation: screenFlash 0.3s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes screenFlash {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Optional camera shake - subtle */
+.cameraShake {
+  animation: cameraShake 0.5s ease-out 0.1s;
+}
+
+@keyframes cameraShake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-4px, -2px);
+  }
+  30% {
+    transform: translate(4px, 2px);
+  }
+  50% {
+    transform: translate(-2px, 2px);
+  }
+  70% {
+    transform: translate(2px, -2px);
+  }
+  90% {
+    transform: translate(-1px, 1px);
+  }
+}
+
+/* --- Pop-up modal (reference: Snack Battle Royale style) --- */
+.popupWrap {
+  position: relative;
+  width: 100%;
+  max-width: 36rem;
+  z-index: 2;
+  animation: popupEnter 0.4s var(--ease-out-bounce) forwards;
+}
+
+@keyframes popupEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.popupGlow {
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, var(--primary), rgba(244, 37, 37, 0.8));
+  border-radius: 1rem;
+  filter: blur(8px);
+  opacity: 0.6;
+  box-shadow: 0 0 50px rgba(244, 37, 37, 0.4);
+}
+
+.popup {
+  position: relative;
+  background: rgba(34, 16, 16, 0.95);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(244, 37, 37, 0.5);
+  border-radius: calc(1rem - 2px);
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.popupBgDeco {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(244, 37, 37, 0.15),
+    transparent 70%
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Avatar section with X eyes (defeated snack) */
+.avatarSection {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.avatarGlow {
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  filter: blur(2rem);
+  opacity: 0.2;
+  border-radius: 50%;
+  transform: scale(1.5);
+}
+
+.avatarCircle {
+  position: relative;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  background: rgba(244, 37, 37, 0.1);
+  overflow: hidden;
+  flex-shrink: 0;
+  /* Pop-up: avatar stays visible with subtle defeated effect; no full disappear animation */
+  filter: brightness(0.92) saturate(0.95);
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarXEyes {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  color: white;
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+.avatarXEyes .material-symbols-outlined {
+  font-size: 2rem;
+}
+
+/* Content */
+.content {
+  position: relative;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.alertLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.mainMessage {
+  font-size: 1.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: white;
+  margin: 0 0 0.5rem;
+  line-height: 1.2;
+}
+
+.mainMessage :global([data-highlight]) {
+  color: var(--primary);
+}
+
+.flavorText {
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--slate-400);
+  margin: 0;
+}
+
+/* Actions */
+.actions {
+  position: relative;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btnPrimary {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(244, 37, 37, 0.3);
+}
+
+.btnPrimary:hover {
+  filter: brightness(1.1);
+}
+
+.btnPrimary:active {
+  transform: scale(0.97);
+}
+
+.btnSecondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  backdrop-filter: blur(4px);
+}
+
+.btnSecondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btnSecondary:active {
+  transform: scale(0.97);
+}
+
+/* Legacy - avatarWrap used by animation selectors; avatarCircle is new target */
+.avatarWrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Microwave + Sushi: Vaporized --- */
+.elimMicrowaveSushi .avatarCircle {
+  animation: microwaveSushi 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.elimMicrowaveSushi .avatarCircle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(80, 60, 40, 0.4) 50%,
+    rgba(40, 30, 20, 0.8) 100%
+  );
+  animation: heatDarken 1.2s ease-in 0.3s forwards;
+  opacity: 0;
+}
+
+.elimMicrowaveSushi .avatarCircle::after {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 8px,
+    rgba(255, 200, 100, 0.15) 8px,
+    rgba(255, 200, 100, 0.15) 12px
+  );
+  animation: heatWaves 0.8s ease-in-out 0.2s 2;
+  opacity: 0;
+}
+
+@keyframes microwaveSushi {
+  0% {
+    filter: brightness(1) contrast(1);
+    transform: scale(1);
+    opacity: 1;
+  }
+  30% {
+    filter: brightness(0.9) contrast(1.1);
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  60% {
+    filter: brightness(0.6) contrast(1.2);
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+  100% {
+    filter: brightness(0.2) contrast(1.5);
+    transform: scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes heatDarken {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes heatWaves {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(-4px);
+  }
+}
+
+/* --- Microwave + Ice Cream: Melted --- */
+.elimMicrowaveIceCream .avatarCircle {
+  animation: microwaveIceCream 1.8s cubic-bezier(0.55, 0, 0.45, 1) forwards;
+}
+
+@keyframes microwaveIceCream {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+    opacity: 1;
+    border-radius: 50%;
+  }
+  25% {
+    transform: scale(1.05, 1.1);
+    filter: brightness(1.1);
+    opacity: 1;
+    border-radius: 50%;
+  }
+  50% {
+    transform: scale(1.1, 0.7);
+    filter: brightness(1.2);
+    opacity: 1;
+    border-radius: 45% 45% 55% 55%;
+  }
+  75% {
+    transform: scale(1.2, 0.4);
+    filter: brightness(1.3);
+    opacity: 0.7;
+    border-radius: 40% 40% 60% 60%;
+  }
+  100% {
+    transform: scale(1.5, 0.2);
+    filter: brightness(1.5);
+    opacity: 0;
+    border-radius: 50%;
+  }
+}
+
+/* --- Freeze + Pizza: Frozen fracture --- */
+.elimFreezePizza .avatarCircle {
+  animation: freezePizza 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.elimFreezePizza .avatarCircle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(150, 200, 255, 0.3) 0%,
+    rgba(100, 180, 255, 0.5) 50%,
+    rgba(80, 160, 255, 0.4) 100%
+  );
+  animation: freezeOverlay 1s ease-in 0.2s forwards;
+  opacity: 0;
+}
+
+.elimFreezePizza .avatarCircle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M20 50 L50 20 L80 50 L50 80 Z' stroke='rgba(255,255,255,0.4)' stroke-width='1' fill='none'/%3E%3Cpath d='M35 35 L65 65 M65 35 L35 65' stroke='rgba(255,255,255,0.3)' stroke-width='0.5' fill='none'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  animation: crackReveal 0.8s ease-in 0.6s forwards;
+  opacity: 0;
+}
+
+@keyframes freezePizza {
+  0% {
+    filter: brightness(1) saturate(1);
+    transform: scale(1);
+    opacity: 1;
+  }
+  35% {
+    filter: brightness(1.1) saturate(0.9) hue-rotate(-5deg);
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  60% {
+    filter: brightness(1.2) saturate(0.8) hue-rotate(-10deg);
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  80% {
+    filter: brightness(1.3) saturate(0.7);
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    filter: brightness(1.5) saturate(0.5);
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes freezeOverlay {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes crackReveal {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* --- Double Salt + Donut: Salt disintegration --- */
+.elimDoubleSaltDonut .avatarCircle {
+  animation: doubleSaltDonut 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.elimDoubleSaltDonut .avatarCircle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.2) 40%,
+    transparent 70%
+  );
+  animation: saltCrystals 1s ease-in 0.3s forwards;
+  opacity: 0;
+}
+
+@keyframes doubleSaltDonut {
+  0% {
+    filter: brightness(1);
+    transform: scale(1);
+    opacity: 1;
+  }
+  30% {
+    filter: brightness(1.2) contrast(1.1);
+    transform: scale(1.03);
+    opacity: 1;
+  }
+  55% {
+    filter: brightness(1.5) contrast(1.2);
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  80% {
+    filter: brightness(2) contrast(1.5);
+    transform: scale(1.15);
+    opacity: 0.5;
+  }
+  100% {
+    filter: brightness(2.5) contrast(2);
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+@keyframes saltCrystals {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* --- Spoil + Burger: Putrefaction --- */
+.elimSpoilBurger .avatarCircle {
+  animation: spoilBurger 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.elimSpoilBurger .avatarCircle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(80, 120, 60, 0.2) 0%,
+    rgba(60, 100, 50, 0.4) 50%,
+    rgba(40, 80, 40, 0.5) 100%
+  );
+  animation: spoilTint 1.2s ease-in 0.2s forwards;
+  opacity: 0;
+}
+
+@keyframes spoilBurger {
+  0% {
+    filter: brightness(1) hue-rotate(0deg);
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  30% {
+    filter: brightness(0.95) hue-rotate(15deg);
+    transform: scale(1.02) translateY(2px);
+    opacity: 1;
+  }
+  55% {
+    filter: brightness(0.85) hue-rotate(25deg);
+    transform: scale(1.05) translateY(8px);
+    opacity: 0.9;
+  }
+  80% {
+    filter: brightness(0.7) hue-rotate(30deg);
+    transform: scale(1.08) translateY(16px);
+    opacity: 0.6;
+  }
+  100% {
+    filter: brightness(0.5) hue-rotate(35deg);
+    transform: scale(1.1) translateY(24px);
+    opacity: 0;
+  }
+}
+
+@keyframes spoilTint {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* --- Shake + Taco: Fatal shake --- */
+.elimShakeTaco .avatarCircle {
+  animation: shakeTaco 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes shakeTaco {
+  0% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  15% {
+    transform: translateX(-8px) scale(1.02);
+    opacity: 1;
+  }
+  25% {
+    transform: translateX(8px) scale(1.02);
+    opacity: 1;
+  }
+  35% {
+    transform: translateX(-10px) scale(1.03);
+    opacity: 1;
+  }
+  45% {
+    transform: translateX(10px) scale(1.03);
+    opacity: 1;
+  }
+  55% {
+    transform: translateX(-12px) scale(1.05);
+    opacity: 0.95;
+  }
+  65% {
+    transform: translateX(12px) scale(1.05);
+    opacity: 0.9;
+  }
+  75% {
+    transform: translateX(-15px) scale(1.08);
+    opacity: 0.7;
+  }
+  85% {
+    transform: translateX(15px) scale(1.1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(0) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* --- Generic fallback --- */
+.elimGeneric .avatarCircle {
+  animation: elimGeneric 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes elimGeneric {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    filter: brightness(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.3);
+    filter: brightness(0.3);
+    opacity: 0;
+  }
+}

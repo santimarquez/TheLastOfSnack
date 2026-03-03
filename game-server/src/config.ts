@@ -9,4 +9,6 @@ export const config = {
   roomCodeLength: 8,
   reconnectTokenTtlMs: 24 * 60 * 60 * 1000,
   rateLimitMessagesPerSec: 10,
+  /** Duration (ms) to block game during elimination pop-up */
+  eliminationAnimationMs: 5000,
 } as const;

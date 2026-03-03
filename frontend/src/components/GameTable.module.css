@@ -561,6 +561,18 @@
   display: block;
 }
 
+/** Red cross overlay when player is eliminated - snack revealed and crossed out */
+.playerAvatarEliminatedCross {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  --elim-red: #e53935;
+  background: linear-gradient(45deg, transparent 46%, var(--elim-red) 46%, var(--elim-red) 54%, transparent 54%),
+    linear-gradient(-45deg, transparent 46%, var(--elim-red) 46%, var(--elim-red) 54%, transparent 54%);
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.6);
+}
+
 .playerAvatarFoilWrap {
   position: absolute;
   bottom: -2px;

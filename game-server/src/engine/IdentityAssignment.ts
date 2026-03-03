@@ -1,7 +1,7 @@
 import type { Player, Snack } from "../state/types.js";
 import { AVATAR_IDS_BY_SNACK, ALL_AVATAR_IDS } from "./avatars.js";
 
-/** Snacks and their weaknesses from the game design. The Last Snack is the special role. */
+/** Snacks and their weaknesses from the game design. */
 const SNACKS: Snack[] = [
   {
     id: "pizza",
@@ -62,10 +62,11 @@ const SNACKS: Snack[] = [
 ];
 
 export function assignRoles(players: Player[]): void {
-  const lastSnack = SNACKS.find((s) => s.isLastSnack)!;
-  const others = SNACKS.filter((s) => !s.isLastSnack);
-  const shuffled = [...others].sort(() => Math.random() - 0.5);
-  const roles: Snack[] = [lastSnack, ...shuffled.slice(0, players.length - 1)];
+  const pool = SNACKS.filter((s) => !s.isLastSnack);
+  const roles: Snack[] = Array.from(
+    { length: players.length },
+    (_, i) => pool[i % pool.length]!
+  );
   for (let i = roles.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [roles[i], roles[j]] = [roles[j], roles[i]];

@@ -59,7 +59,7 @@ export function LobbyLoadingScreen({ roomCode }: { roomCode: string }) {
           <div
             className={styles.bgImage}
             style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=2070&auto=format&fit=crop')`,
+              backgroundImage: `url('https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/0f8d1244-5af8-4f49-baa9-695aeb046c00/public')`,
             }}
           />
         </div>

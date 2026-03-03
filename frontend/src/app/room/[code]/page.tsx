@@ -14,10 +14,12 @@ import { ChatPanel } from "@/components/ChatPanel";
 import { SpectatorBanner } from "@/components/SpectatorBanner";
 import { EliminationModal } from "@/components/EliminationModal";
 import { CardRevealNotification } from "@/components/CardRevealNotification";
+import { EliminationAnimation } from "@/components/EliminationAnimation";
 import { AssigningIdentitiesScreen } from "@/components/AssigningIdentitiesScreen";
 import { SettingsHelpModal } from "@/components/SettingsHelpModal";
 import { ConnectionLostScreen } from "@/components/ConnectionLostScreen";
 import { LobbyLoadingScreen } from "@/components/LobbyLoadingScreen";
+import { RoundTransitionScreen } from "@/components/RoundTransitionScreen";
 import styles from "./page.module.css";
 
 const LOADING_MIN_MS = 3000;
@@ -39,7 +41,7 @@ export default function RoomPage() {
   );
   const name = displayName?.trim() || getGuestDisplayName(t);
 
-  const { gameState, playerId, connectionStatus, error, setError, showEliminationModal, setShowEliminationModal, showAssigningTransition, setShowAssigningTransition, showSettingsHelpModal, setShowSettingsHelpModal, settingsHelpModalTab, joinFailed } = useGameStore();
+  const { gameState, playerId, connectionStatus, error, setError, showEliminationModal, setShowEliminationModal, showAssigningTransition, setShowAssigningTransition, showRoundTransition, setShowRoundTransition, roundTransitionRound, showSettingsHelpModal, setShowSettingsHelpModal, settingsHelpModalTab, joinFailed } = useGameStore();
   const { send, connect } = useGameSocket(stableRoomCode, name, reconnectToken);
 
   useEffect(() => {
@@ -89,7 +91,7 @@ export default function RoomPage() {
         <LobbyLoadingScreen roomCode={stableRoomCode || roomCode} />
       ) : (
         <>
-      {phase === "lobby" ? <Shell /> : phase === "assigning" ? null : phase === "playing" && showAssigningTransition ? null : (
+      {phase === "lobby" ? <Shell /> : phase === "assigning" ? null : phase === "playing" && (showAssigningTransition || showRoundTransition) ? null : (
         <GameHeader
           playersCount={gameState?.players?.length ?? 0}
           maxPlayers={8}
@@ -119,10 +121,23 @@ export default function RoomPage() {
                 />
               </div>
             </div>
-          ) : phase === "assigning" || (phase === "playing" && showAssigningTransition) ? (
+          ) : phase === "assigning" || (phase === "playing" && showAssigningTransition && !showRoundTransition) ? (
             <AssigningIdentitiesScreen
               roomCode={roomCode}
-              onComplete={phase === "playing" && showAssigningTransition ? () => setShowAssigningTransition(false) : undefined}
+              onComplete={
+                phase === "playing" && showAssigningTransition
+                  ? () => setShowRoundTransition(true, 1)
+                  : undefined
+              }
+            />
+          ) : phase === "playing" && showRoundTransition ? (
+            <RoundTransitionScreen
+              roundNumber={roundTransitionRound}
+              snacksRemaining={gameState?.players?.filter((p) => p.status !== "eliminated" && p.status !== "spectator").length ?? 0}
+              onComplete={() => {
+                setShowRoundTransition(false);
+                setShowAssigningTransition(false);
+              }}
             />
           ) : phase === "ended" ? (
             <GameEndScreen send={send} />
@@ -150,6 +165,7 @@ export default function RoomPage() {
         <EliminationModal onClose={() => setShowEliminationModal(false)} />
       )}
       <CardRevealNotification />
+      <EliminationAnimation />
       {showSettingsHelpModal && (
         <SettingsHelpModal
           onClose={() => setShowSettingsHelpModal(false)}

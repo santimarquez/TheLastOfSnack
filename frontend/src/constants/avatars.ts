@@ -18,3 +18,13 @@ export const AVATAR_URLS: Record<string, string> = {
 };
 
 export const ALL_AVATAR_IDS = Object.keys(AVATAR_URLS) as string[];
+
+/** One avatar URL per snack type (for how-to-play character cards). Fries has no avatar. */
+export const SNACK_AVATAR_URLS: Record<string, string> = {
+  pizza: AVATAR_URLS.pizza_1,
+  donut: AVATAR_URLS.donut_1,
+  burger: AVATAR_URLS.burger_1,
+  ice_cream: AVATAR_URLS.ice_cream_1,
+  sushi: AVATAR_URLS.sushi_1,
+  taco: AVATAR_URLS.taco_1,
+};

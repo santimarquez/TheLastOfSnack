@@ -84,6 +84,8 @@ export interface GameState {
   shieldedCards?: Card[];
   /** Discarded/played cards (face up on table) */
   discardPile?: Card[];
+  /** True during elimination animation - blocks all game actions */
+  eliminationAnimationLock?: boolean;
 }
 
 /** Room settings */
@@ -152,4 +154,6 @@ export interface GameStateView {
   /** Top of discard pile (cards played/discarded, face up) */
   discardPile?: Card[];
   players: PlayerView[];
+  /** True during elimination animation - blocks all game actions */
+  eliminationAnimationLock?: boolean;
 }

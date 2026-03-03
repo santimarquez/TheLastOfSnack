@@ -205,15 +205,14 @@
   max-width: 12rem;
   background: var(--slate-800);
   border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
 }
 
-.goalImage .material-symbols-outlined {
-  font-size: 4rem;
-  color: var(--primary);
-  opacity: 0.9;
+.goalImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .goalContent {
@@ -278,6 +277,50 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 1.25rem;
   }
+}
+
+.subsectionHead {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--slate-200);
+  margin: 2rem 0 1rem;
+}
+
+.actionCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  overflow: visible;
+}
+
+@media (max-width: 639px) {
+  .actionCardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.actionCardCell {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+
+.actionCardCell:hover {
+  z-index: 10;
+}
+
+.actionCardsGrid .actionCardCell > * {
+  width: 100%;
+  min-width: 0;
+  max-width: 11rem;
+  transition: transform 0.2s ease;
+}
+
+.actionCardsGrid .actionCardCell:hover > * {
+  transform: scale(1.5);
+  transform-origin: center center;
 }
 
 .actionCard {
@@ -388,6 +431,118 @@
 .weaknessCard p {
   font-size: 0.8125rem;
   color: var(--slate-400);
+  margin: 0;
+}
+
+/* Character cards */
+.characterCards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .characterCards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .characterCards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.characterCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--slate-800);
+  border: 1px solid rgba(244, 37, 37, 0.15);
+  border-radius: 0.5rem;
+}
+
+.characterAvatar {
+  width: 40%;
+  min-width: 4rem;
+  aspect-ratio: 1;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--slate-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.characterAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.characterAvatar .characterEmoji {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.characterInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.characterInfo strong {
+  font-size: 0.9375rem;
+  color: var(--primary);
+}
+
+.characterWeakness {
+  font-size: 0.75rem;
+  color: var(--slate-400);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.characterQuote {
+  font-size: 0.8125rem;
+  color: var(--slate-400);
+  font-style: italic;
+  margin: 0.25rem 0 0;
+  line-height: 1.4;
+}
+
+/* Game order section */
+.gameOrderBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gameOrderItem {
+  padding: 1.25rem;
+  background: var(--slate-800);
+  border: 1px solid rgba(244, 37, 37, 0.15);
+  border-radius: 0.5rem;
+}
+
+.gameOrderHeadline {
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+  margin: 0 0 0.5rem;
+}
+
+.gameOrderCopy {
+  font-size: 0.9375rem;
+  color: var(--slate-300);
+  line-height: 1.6;
   margin: 0;
 }
 

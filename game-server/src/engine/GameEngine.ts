@@ -9,6 +9,7 @@ import {
 } from "./CardResolutionEngine.js";
 import { cancelTurnTimer, startTurnTimer, getExpiresAt, cancelAllForRoom } from "./TimerSystem.js";
 import { buildGameStateView } from "./EventBroadcasting.js";
+import { AVATAR_URLS, PLACEHOLDER_AVATAR_URL } from "./avatars.js";
 import { config } from "../config.js";
 
 /** Send to all in room. If payloadFn is provided, call it per playerId and send that payload to that player's socket only. */
@@ -103,6 +104,7 @@ export function playCard(
   const room = RoomManager.getRoom(roomCode);
   if (!room) return { error: "Room not found" };
   if (room.gameState.phase !== "playing") return { error: "Not in play" };
+  if (room.gameState.eliminationAnimationLock) return { error: "Game paused during elimination animation" };
   const currentId = getCurrentPlayerId(room);
   if (currentId !== playerId) return { error: "Not your turn" };
   if (!room.gameState.currentTurnDrawn) return { error: "Draw a card first" };
@@ -134,15 +136,39 @@ export function playCard(
     if (!room.gameState.eliminationsByPlayerId) room.gameState.eliminationsByPlayerId = {};
     room.gameState.eliminationsByPlayerId[playerId] =
       (room.gameState.eliminationsByPlayerId[playerId] ?? 0) + result.eliminated.length;
+    room.gameState.eliminationAnimationLock = true;
+    const cardType = result.eliminationCardType ?? "eliminate";
     result.eliminated.forEach((id) => {
-      const revealed = room.players.find((p) => p.id === id)?.role;
+      const eliminatedPlayer = room.players.find((p) => p.id === id);
+      const revealed = eliminatedPlayer?.role;
+      const snackId = revealed?.id;
+      const displayName = eliminatedPlayer?.displayName ?? "?";
+      const avatarUrl = eliminatedPlayer?.avatarId
+        ? AVATAR_URLS[eliminatedPlayer.avatarId] ?? PLACEHOLDER_AVATAR_URL
+        : PLACEHOLDER_AVATAR_URL;
       broadcastToRoomPerPlayer(roomCode, "player_eliminated", (r, forPlayerId) => ({
         playerId: id,
         revealedRole: revealed,
+        cardType,
+        snackId: snackId ?? null,
+        displayName,
+        avatarUrl,
         gameState: buildGameStateView(r, forPlayerId),
       }));
     });
+    if (result.revealed) {
+      broadcastToRoomPerPlayer(roomCode, "room_updated", (r, forPlayerId) => ({
+        players: buildGameStateView(r, forPlayerId).players,
+        gameState: buildGameStateView(r, forPlayerId),
+      }));
+    }
+    const animMs = config.eliminationAnimationMs;
+    setTimeout(() => {
+      finishEliminationAndAdvance(roomCode, result);
+    }, animMs);
+    return { ok: true, result };
   }
+
   if (result.revealed) {
     broadcastToRoomPerPlayer(roomCode, "room_updated", (r, forPlayerId) => ({
       players: buildGameStateView(r, forPlayerId).players,
@@ -180,10 +206,47 @@ export function playCard(
   return { ok: true, result };
 }
 
+function finishEliminationAndAdvance(
+  roomCode: string,
+  result: import("./CardResolutionEngine.js").ResolutionResult
+): void {
+  const room = RoomManager.getRoom(roomCode);
+  if (!room || room.gameState.phase !== "playing") return;
+  room.gameState.eliminationAnimationLock = false;
+
+  const winnerId = getWinnerBySnackPoints(room);
+  if (winnerId) {
+    room.gameState.phase = "ended";
+    room.gameState.winnerId = winnerId;
+    room.gameState.gameEndedAt = Date.now();
+    broadcastToRoomPerPlayer(roomCode, "game_ended", (r, forPlayerId) => ({
+      winnerId,
+      gameState: buildGameStateView(r, forPlayerId),
+    }));
+    return;
+  }
+
+  advanceTurn(room);
+  room.gameState.turnStartedAt = Date.now();
+  room.gameState.currentTurnDrawn = false;
+  const nextId = getCurrentPlayerId(room);
+  const nextPlayer = nextId ? room.players.find((p) => p.id === nextId) : null;
+  if (nextId && !nextPlayer?.isBot) {
+    startTurnTimer(roomCode, nextId, room.settings.turnTimeoutSec, () => onTurnTimeout(roomCode));
+  }
+  broadcastToRoomPerPlayer(roomCode, "turn_started", (r, forPlayerId) => ({
+    currentPlayerId: nextId,
+    expiresAt: getExpiresAt(r.settings.turnTimeoutSec),
+    gameState: buildGameStateView(r, forPlayerId),
+  }));
+  scheduleBotTurnIfNeeded(roomCode);
+}
+
 export function endTurn(roomCode: string, playerId: string): { ok: true } | { error: string } {
   const room = RoomManager.getRoom(roomCode);
   if (!room) return { error: "Room not found" };
   if (room.gameState.phase !== "playing") return { error: "Not in play" };
+  if (room.gameState.eliminationAnimationLock) return { error: "Game paused during elimination animation" };
   const currentId = getCurrentPlayerId(room);
   if (currentId !== playerId) return { error: "Not your turn" };
   if (!room.gameState.currentTurnDrawn) return { error: "Draw a card first" };
@@ -221,6 +284,7 @@ export function drawCard(roomCode: string, playerId: string): { ok: true } | { e
   const room = RoomManager.getRoom(roomCode);
   if (!room) return { error: "Room not found" };
   if (room.gameState.phase !== "playing") return { error: "Not in play" };
+  if (room.gameState.eliminationAnimationLock) return { error: "Game paused during elimination animation" };
   const currentId = getCurrentPlayerId(room);
   if (currentId !== playerId) return { error: "Not your turn" };
   if (room.gameState.currentTurnDrawn) return { error: "Already drew this turn" };
@@ -243,7 +307,7 @@ export function drawCard(roomCode: string, playerId: string): { ok: true } | { e
 
 function onTurnTimeout(roomCode: string): void {
   const room = RoomManager.getRoom(roomCode);
-  if (!room || room.gameState.phase !== "playing") return;
+  if (!room || room.gameState.phase !== "playing" || room.gameState.eliminationAnimationLock) return;
   const currentId = getCurrentPlayerId(room);
   if (!currentId) return;
   const winnerId = getWinnerBySnackPoints(room);

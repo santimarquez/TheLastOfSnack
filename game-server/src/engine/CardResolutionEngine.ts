@@ -19,6 +19,8 @@ function consumeShield(room: Room, targetId: string): boolean {
 
 export interface ResolutionResult {
   eliminated?: string[];
+  /** Card type that caused elimination (for animation) */
+  eliminationCardType?: string;
   revealed?: { playerId: string };
   blocked?: { targetId: string };
   outcome?: string;
@@ -94,6 +96,11 @@ export function resolveCard(
       if (!saltTarget) return { error: "Target not found" };
       if (saltTarget.status !== "active") return { error: "Target is not active" };
       if (saltTarget.id === playerId) return { error: "Cannot target yourself" };
+      if (consumeShield(room, saltTarget.id)) {
+        result.blocked = { targetId: saltTarget.id };
+        result.outcome = "blocked";
+        break;
+      }
       const category = saltTarget.role?.category;
       if (category) {
         if (!room.gameState.revealedCategories) room.gameState.revealedCategories = {};
@@ -110,15 +117,13 @@ export function resolveCard(
       if (!doubleSaltTarget) return { error: "Target not found" };
       if (doubleSaltTarget.status !== "active") return { error: "Target is not active" };
       if (doubleSaltTarget.id === playerId) return { error: "Cannot target yourself" };
-      if (doubleSaltTarget.role?.id === "donut") {
-        if (consumeShield(room, doubleSaltTarget.id)) {
-          result.blocked = { targetId: doubleSaltTarget.id };
-          result.outcome = "blocked";
-        } else {
-          eliminatePlayer(room, doubleSaltTarget.id);
-          result.eliminated = [doubleSaltTarget.id];
-          result.outcome = "eliminated";
-        }
+      if (consumeShield(room, doubleSaltTarget.id)) {
+        result.blocked = { targetId: doubleSaltTarget.id };
+        result.outcome = "blocked";
+      } else if (doubleSaltTarget.role?.id === "donut") {
+        eliminatePlayer(room, doubleSaltTarget.id);
+        result.eliminated = [doubleSaltTarget.id];
+        result.outcome = "eliminated";
       }
       break;
     }
@@ -146,15 +151,13 @@ export function resolveCard(
       if (!spoilTarget) return { error: "Target not found" };
       if (spoilTarget.status !== "active") return { error: "Target is not active" };
       if (spoilTarget.id === playerId) return { error: "Cannot target yourself" };
-      if (spoilTarget.role?.id === "burger") {
-        if (consumeShield(room, spoilTarget.id)) {
-          result.blocked = { targetId: spoilTarget.id };
-          result.outcome = "blocked";
-        } else {
-          eliminatePlayer(room, spoilTarget.id);
-          result.eliminated = [spoilTarget.id];
-          result.outcome = "eliminated";
-        }
+      if (consumeShield(room, spoilTarget.id)) {
+        result.blocked = { targetId: spoilTarget.id };
+        result.outcome = "blocked";
+      } else if (spoilTarget.role?.id === "burger") {
+        eliminatePlayer(room, spoilTarget.id);
+        result.eliminated = [spoilTarget.id];
+        result.outcome = "eliminated";
       }
       break;
     }
@@ -177,6 +180,11 @@ export function resolveCard(
       if (!trashTarget) return { error: "Target not found" };
       if (trashTarget.status !== "active") return { error: "Target is not active" };
       if (trashTarget.id === playerId) return { error: "Cannot target yourself" };
+      if (consumeShield(room, trashTarget.id)) {
+        result.blocked = { targetId: trashTarget.id };
+        result.outcome = "blocked";
+        break;
+      }
       const toDiscard = 2;
       const hand = trashTarget.hand;
       if (hand.length < toDiscard) return { error: "Target has fewer than 2 cards to discard" };
@@ -195,6 +203,11 @@ export function resolveCard(
       if (!swapTarget) return { error: "Target not found" };
       if (swapTarget.status !== "active") return { error: "Target is not active" };
       if (swapTarget.id === playerId) return { error: "Cannot target yourself" };
+      if (consumeShield(room, swapTarget.id)) {
+        result.blocked = { targetId: swapTarget.id };
+        result.outcome = "blocked";
+        break;
+      }
       const playerRole = player.role;
       const playerAvatar = player.avatarId;
       player.role = swapTarget.role;
@@ -245,15 +258,20 @@ export function resolveCard(
       if (!peekTarget) return { error: "Target not found" };
       if (peekTarget.status !== "active") return { error: "Target is not active" };
       if (peekTarget.id === playerId) return { error: "Cannot target yourself" };
+      if (consumeShield(room, peekTarget.id)) {
+        result.blocked = { targetId: peekTarget.id };
+        result.outcome = "blocked";
+        break;
+      }
       if (peekTarget.role) {
         if (!room.gameState.peekedRoles) room.gameState.peekedRoles = {};
         if (!room.gameState.peekedRoles[playerId]) room.gameState.peekedRoles[playerId] = {};
         room.gameState.peekedRoles[playerId][peekTarget.id] = peekTarget.role;
-        result.peekReveal = {
-          targetDisplayName: peekTarget.displayName,
-          snackName: peekTarget.role.name,
-        };
       }
+      result.peekReveal = {
+        targetDisplayName: peekTarget.displayName,
+        snackName: peekTarget.role?.name ?? "?",
+      };
       result.outcome = "peeked";
       break;
     }
@@ -269,6 +287,7 @@ export function resolveCard(
     cardId: card.id,
     ...(targetId && { targetId }),
   };
+  if (result.eliminated?.length) result.eliminationCardType = card.type;
   return result;
 }
 
@@ -291,14 +310,21 @@ function computeSnackPoints(
   return pts;
 }
 
-/** When deck is empty or all eliminated, winner is the player with highest Snack points. */
+/**
+ * Round winner: last snack standing wins. If more than one standing, highest Snack points wins.
+ * Match winner (3 rounds): player with most total Snack points.
+ */
 export function getWinnerBySnackPoints(room: Room): string | null {
   const gs = room.gameState;
+  const standing = room.players.filter(
+    (p) => !gs.eliminatedPlayerIds.includes(p.id)
+  );
   const deckEmpty = gs.deck.length === 0;
-  const allEliminated =
-    room.players.length > 0 &&
-    room.players.every((p) => gs.eliminatedPlayerIds.includes(p.id));
+  const allEliminated = room.players.length > 0 && standing.length === 0;
+
+  if (standing.length === 1) return standing[0]!.id;
   if (!deckEmpty && !allEliminated) return null;
+
   const gameEndedAt = Date.now();
   let bestId: string | null = null;
   let bestPts = -1;

@@ -13,16 +13,18 @@ interface GameEndScreenProps {
   send: SendFn;
 }
 
-/** Snack points formula: base 50 + 10/elimination + 1 per 10s survived */
+/** Snack points formula: base 50 + 10/elimination + 1 per 10s survived + 20 for last snack standing */
 function computeSnackPoints(
   _gs: GameStateView,
   _p: PlayerView,
   eliminations: number,
-  survivalMs: number
+  survivalMs: number,
+  isLastSnackStanding: boolean
 ): number {
   let pts = 50;
   pts += eliminations * 10;
   pts += Math.floor((Number.isFinite(survivalMs) ? survivalMs : 0) / 10_000);
+  if (isLastSnackStanding) pts += 20;
   return pts;
 }
 
@@ -50,7 +52,7 @@ export function GameEndScreen({ send }: GameEndScreenProps) {
   const winnerSurvivalMs = gameStartedAt ? gameEndedAt - gameStartedAt : 0;
   const winnerSnackPoints =
     gameState && winner
-      ? computeSnackPoints(gameState, winner, winnerEliminations, winnerSurvivalMs)
+      ? computeSnackPoints(gameState, winner, winnerEliminations, winnerSurvivalMs, true)
       : 0;
 
   function handlePlayAgain() {
@@ -179,7 +181,7 @@ export function GameEndScreen({ send }: GameEndScreenProps) {
                       : NaN;
                   const snackPts =
                     gameState && p
-                      ? computeSnackPoints(gameState, p, elims, survivalMs)
+                      ? computeSnackPoints(gameState, p, elims, survivalMs, isWinner)
                       : 0;
                   return (
                     <tr key={p.id} className={isWinner ? styles.rowWinner : ""}>

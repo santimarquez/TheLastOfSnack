@@ -38,6 +38,8 @@ interface GameStore {
   error: string | null;
   showEliminationModal: boolean;
   showAssigningTransition: boolean;
+  showRoundTransition: boolean;
+  roundTransitionRound: 1 | 2 | 3;
   showSettingsHelpModal: boolean;
   settingsHelpModalTab: "settings" | "how-to-play";
   joinFailed: boolean;
@@ -63,6 +65,14 @@ interface GameStore {
     | { type: "salt"; targetDisplayName: string; category: string }
     | { type: "peek"; targetDisplayName: string; snackName: string }
     | null;
+  /** Active elimination animation - blocks UI until cleared. */
+  eliminationAnimation: {
+    playerId: string;
+    cardType: string;
+    snackId: string | null;
+    displayName: string;
+    avatarUrl: string;
+  } | null;
   setJoined: (data: {
     playerId: string;
     roomCode: string;
@@ -93,7 +103,17 @@ interface GameStore {
   clearCardRevealNotification: () => void;
   setCardDrawn: (drawnByPlayerId: string, gameState: GameStateView) => void;
   clearDrawAnimation: () => void;
-  setPlayerEliminated: (playerId: string, revealedRole: unknown, gameState: GameStateView) => void;
+  setPlayerEliminated: (
+    playerId: string,
+    revealedRole: unknown,
+    gameState: GameStateView,
+    options?: { cardType?: string; snackId?: string | null; displayName?: string; avatarUrl?: string }
+  ) => void;
+  setEliminationAnimation: (data: GameStore["eliminationAnimation"]) => void;
+  clearEliminationAnimation: () => void;
+  /** When true, GameTable should expand the action log (e.g. from "View Rankings" in elimination pop-up) */
+  requestExpandActionLog: boolean;
+  setRequestExpandActionLog: (value: boolean) => void;
   setGameEnded: (winnerId: string | null, gameState: GameStateView) => void;
   addChat: (msg: ChatMessage) => void;
   setStateSync: (gameState: GameStateView) => void;
@@ -103,6 +123,7 @@ interface GameStore {
   setError: (error: string | null) => void;
   setShowEliminationModal: (show: boolean) => void;
   setShowAssigningTransition: (show: boolean) => void;
+  setShowRoundTransition: (show: boolean, round?: 1 | 2 | 3) => void;
   setShowSettingsHelpModal: (open: boolean, tab?: "settings" | "how-to-play") => void;
   setJoinFailed: (failed: boolean) => void;
   reset: () => void;
@@ -134,6 +155,8 @@ export const useGameStore = create<GameStore>((set) => ({
   error: null,
   showEliminationModal: false,
   showAssigningTransition: false,
+  showRoundTransition: false,
+  roundTransitionRound: 1,
   showSettingsHelpModal: false,
   settingsHelpModalTab: "settings",
   joinFailed: false,
@@ -143,6 +166,8 @@ export const useGameStore = create<GameStore>((set) => ({
   cardPlayedAnimation: null,
   shieldConsumedAnimation: null,
   cardRevealNotification: null,
+  eliminationAnimation: null,
+  requestExpandActionLog: false,
 
   setJoined: (data) =>
     set({
@@ -167,7 +192,8 @@ export const useGameStore = create<GameStore>((set) => ({
   setGameStarted: (gameState) =>
     set({ gameState, showAssigningTransition: true, actionLog: [] }),
 
-  setTurnStarted: (_, __, gameState) => set({ gameState }),
+  setTurnStarted: (_, __, gameState) =>
+    set({ gameState, eliminationAnimation: null }),
 
   setCardPlayed: (playerId, cardId, gameState, options) =>
     set((s) => {
@@ -231,13 +257,30 @@ export const useGameStore = create<GameStore>((set) => ({
 
   clearDrawAnimation: () => set({ drawAnimation: null }),
 
-  setPlayerEliminated: (eliminatedPlayerId, _revealedRole, gameState) =>
+  setPlayerEliminated: (eliminatedPlayerId, _revealedRole, gameState, options) =>
     set((s) => ({
       gameState,
       showEliminationModal: s.playerId === eliminatedPlayerId ? true : s.showEliminationModal,
+      eliminationAnimation:
+        options?.cardType != null && options?.displayName != null && options?.avatarUrl != null
+          ? {
+              playerId: eliminatedPlayerId,
+              cardType: options.cardType,
+              snackId: options.snackId ?? null,
+              displayName: options.displayName,
+              avatarUrl: options.avatarUrl,
+            }
+          : null,
     })),
 
-  setGameEnded: (_, gameState) => set({ gameState }),
+  setEliminationAnimation: (data) => set({ eliminationAnimation: data }),
+
+  clearEliminationAnimation: () => set({ eliminationAnimation: null }),
+
+  setRequestExpandActionLog: (value) => set({ requestExpandActionLog: value }),
+
+  setGameEnded: (_, gameState) =>
+    set({ gameState, eliminationAnimation: null }),
 
   addChat: (msg) =>
     set((s) => ({
@@ -260,6 +303,11 @@ export const useGameStore = create<GameStore>((set) => ({
   setShowEliminationModal: (show) => set({ showEliminationModal: show }),
 
   setShowAssigningTransition: (show) => set({ showAssigningTransition: show }),
+  setShowRoundTransition: (show, round) =>
+    set((s) => ({
+      showRoundTransition: show,
+      ...(round != null ? { roundTransitionRound: round } : {}),
+    })),
 
   setShowSettingsHelpModal: (open, tab) =>
     set((s) => ({
@@ -283,6 +331,8 @@ export const useGameStore = create<GameStore>((set) => ({
       error: null,
       showEliminationModal: false,
       showAssigningTransition: false,
+      showRoundTransition: false,
+      roundTransitionRound: 1,
       showSettingsHelpModal: false,
       settingsHelpModalTab: "settings",
       joinFailed: false,
@@ -292,5 +342,7 @@ export const useGameStore = create<GameStore>((set) => ({
       cardPlayedAnimation: null,
       shieldConsumedAnimation: null,
       cardRevealNotification: null,
+      eliminationAnimation: null,
+      requestExpandActionLog: false,
     }),
 }));

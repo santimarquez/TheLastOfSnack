@@ -1,0 +1,443 @@
+.main {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-dark);
+  color: var(--slate-100);
+  overflow: hidden;
+}
+
+.bgDecor {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bgBlur1 {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 40%;
+  height: 40%;
+  background: rgba(244, 37, 37, 0.2);
+  filter: blur(120px);
+  border-radius: 50%;
+}
+
+.bgBlur2 {
+  position: absolute;
+  bottom: -10%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: rgba(244, 37, 37, 0.1);
+  filter: blur(150px);
+  border-radius: 50%;
+}
+
+.grainOverlay {
+  position: absolute;
+  inset: 0;
+  background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCy6jO1kEfSntXQHZH_QlS6WNiqjnbl1RVeNaByIGdLcBGYNigIdEfcsiEcWEpbxNP2Y-9WO2N8hlsld0WRXoN_APJsFeKPCFfXoklJ_yITJn5KRXZP5teICk5WVsoq7BnCu7le9deH6ZKXFQATrcq5mUnl2Nndd_xKLXUZa8eiq7kxE-c-X2dpwDkPa2AhxQKPHwaQurF-yW21gn-xq0zM14wlXx8YbqBuNIAKR2Nm_nhYsfLTBbpwO3uByhU6Phl4sz4B9K6xJko");
+  opacity: 0.05;
+}
+
+.bgIcons {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.bgIcons .material-symbols-outlined {
+  font-size: 15rem;
+}
+
+.bgIcons .material-symbols-outlined:first-child {
+  transform: rotate(12deg);
+  font-size: 20rem;
+}
+
+.bgIcons .material-symbols-outlined:last-child {
+  transform: rotate(-12deg);
+}
+
+.header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(244, 37, 37, 0.1);
+  background: rgba(34, 16, 16, 0.5);
+  backdrop-filter: blur(12px);
+}
+
+@media (min-width: 768px) {
+  .header {
+    padding: 1rem 2.5rem;
+  }
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logoIcon {
+  padding: 0.5rem;
+  background: var(--primary);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoIcon .material-symbols-outlined {
+  color: white;
+  font-size: 1.25rem;
+}
+
+.logoText {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  font-style: italic;
+  margin: 0;
+  color: var(--slate-100);
+}
+
+.liveBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(244, 37, 37, 0.1);
+  border: 1px solid rgba(244, 37, 37, 0.2);
+  border-radius: 9999px;
+}
+
+.liveBadge .material-symbols-outlined {
+  font-size: 0.875rem;
+  color: var(--primary);
+}
+
+.liveBadge span:last-child {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.phaseBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  background: var(--primary);
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 20px rgba(244, 37, 37, 0.2);
+}
+
+.roundTitle {
+  font-size: clamp(4rem, 12vw, 7rem);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.05em;
+  color: var(--slate-100);
+  margin: 0 0 0.5rem;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.roundNum {
+  color: var(--primary);
+}
+
+.subtitleRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.subtitleLine {
+  width: 3rem;
+  height: 2px;
+  background: rgba(244, 37, 37, 0.4);
+}
+
+.subtitle {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-style: italic;
+  color: var(--primary);
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .subtitle {
+    font-size: 1.25rem;
+  }
+}
+
+.visualCard {
+  position: relative;
+  width: 100%;
+  max-width: 32rem;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 2px solid rgba(244, 37, 37, 0.3);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  margin-bottom: 2rem;
+}
+
+.visualGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--background-dark) 0%,
+    transparent 50%,
+    transparent 100%
+  );
+  z-index: 2;
+}
+
+.visualImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.5) contrast(1.25);
+  transition: transform 0.7s ease;
+}
+
+.visualCard:hover .visualImg {
+  transform: scale(1.1);
+}
+
+.visualIcon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.visualIcon .material-symbols-outlined {
+  font-size: 5rem;
+  color: white;
+  opacity: 0.8;
+}
+
+.progressSection {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.tempLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--primary);
+}
+
+.tempStatus {
+  font-size: 1.25rem;
+  font-weight: 900;
+  font-style: italic;
+  color: var(--slate-100);
+}
+
+.progressPct {
+  font-size: 1.5rem;
+  font-weight: 900;
+  font-style: italic;
+  color: var(--primary);
+}
+
+.progressTrack {
+  height: 1rem;
+  width: 100%;
+  background: rgba(244, 37, 37, 0.1);
+  border-radius: 9999px;
+  padding: 2px;
+  border: 1px solid rgba(244, 37, 37, 0.2);
+  overflow: hidden;
+}
+
+.progressFill {
+  position: relative;
+  height: 100%;
+  background: var(--primary);
+  border-radius: 9999px;
+  transition: width 0.1s linear;
+}
+
+.progressShine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+}
+
+.progressFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding-top: 1rem;
+}
+
+.progressItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(244, 37, 37, 0.6);
+}
+
+.progressItem .material-symbols-outlined {
+  font-size: 1.125rem;
+}
+
+.footer {
+  position: relative;
+  z-index: 10;
+  padding: 1.5rem 1.5rem 2rem;
+  background: rgba(34, 16, 16, 0.8);
+  backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(244, 37, 37, 0.2);
+}
+
+@media (min-width: 768px) {
+  .footer {
+    padding: 1.5rem 2.5rem 2rem;
+  }
+}
+
+.statsGrid {
+  max-width: 72rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background: rgba(244, 37, 37, 0.05);
+  border: 1px solid rgba(244, 37, 37, 0.1);
+  transition: border-color 0.2s ease;
+}
+
+.statCard:hover {
+  border-color: rgba(244, 37, 37, 0.3);
+}
+
+.statHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.statHeader span:first-child {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(244, 37, 37, 0.7);
+}
+
+.statHeader .material-symbols-outlined {
+  font-size: 1.125rem;
+  color: var(--primary);
+}
+
+.statValue {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.statNum {
+  font-size: 1.875rem;
+  font-weight: 900;
+  font-style: italic;
+  color: white;
+  line-height: 1;
+}
+
+.statNumPrimary {
+  color: var(--primary);
+}
+
+.statChange {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.25rem;
+}
+
+.statSpike {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 0.25rem;
+}

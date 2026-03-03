@@ -9,6 +9,10 @@ export function eliminatePlayer(room: Room, playerId: string): void {
   }
   if (!room.gameState.eliminatedAt) room.gameState.eliminatedAt = {};
   room.gameState.eliminatedAt[playerId] = Date.now();
+  /** Reveal the eliminated player's snack so it shows crossed on the board */
+  if (player.role && !room.gameState.revealedRoles[playerId]) {
+    room.gameState.revealedRoles[playerId] = player.role;
+  }
 }
 
 export function isEliminated(room: Room, playerId: string): boolean {

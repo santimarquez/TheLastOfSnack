@@ -24,7 +24,7 @@ const BOT_DELAY_AFTER_DRAW_MS = 3000;
 
 export function runBotTurn(roomCode: string): void {
   const room = RoomManager.getRoom(roomCode);
-  if (!room || room.gameState.phase !== "playing") return;
+  if (!room || room.gameState.phase !== "playing" || room.gameState.eliminationAnimationLock) return;
 
   const currentId = getCurrentPlayerId(room);
   if (!currentId) return;

@@ -66,5 +66,6 @@ export function buildGameStateView(room: Room, forPlayerId: string | null): Game
     shieldedPlayerIds: gameState.shieldedPlayerIds ? [...gameState.shieldedPlayerIds] : undefined,
     discardPile: gameState.discardPile ? [...gameState.discardPile] : undefined,
     players,
+    eliminationAnimationLock: gameState.eliminationAnimationLock,
   };
 }

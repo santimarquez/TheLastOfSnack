@@ -41,7 +41,7 @@ function splitPlayersTopBottom<T>(items: T[], meIndex: number): [T[], T[]] {
 
 export function GameTable({ send }: { send: SendFn }) {
   const { t } = useTranslations();
-  const { gameState, playerId, drawAnimation, clearDrawAnimation, buffetAnimation, clearBuffetAnimation, tradeSeatsAnimation, clearTradeSeatsAnimation, cardPlayedAnimation, clearCardPlayedAnimation, shieldConsumedAnimation, clearShieldConsumedAnimation, actionLog } = useGameStore();
+  const { gameState, playerId, drawAnimation, clearDrawAnimation, buffetAnimation, clearBuffetAnimation, tradeSeatsAnimation, clearTradeSeatsAnimation, cardPlayedAnimation, clearCardPlayedAnimation, shieldConsumedAnimation, clearShieldConsumedAnimation, actionLog, requestExpandActionLog, setRequestExpandActionLog } = useGameStore();
   const isHost = useIsHost();
   const phase = gameState?.phase ?? "lobby";
   const [actionLogCollapsed, setActionLogCollapsed] = useState(true);
@@ -100,6 +100,19 @@ export function GameTable({ send }: { send: SendFn }) {
       if (previewLeaveTimeoutRef.current) clearTimeout(previewLeaveTimeoutRef.current);
     };
   }, [hoveredCard]);
+
+  // Close preview when we play a card (turn ends)
+  useEffect(() => {
+    if (cardPlayedAnimation?.playerId === playerId) {
+      if (previewLeaveTimeoutRef.current) {
+        clearTimeout(previewLeaveTimeoutRef.current);
+        previewLeaveTimeoutRef.current = undefined;
+      }
+      setPreviewCard(null);
+      setPreviewLeaving(false);
+    }
+  }, [cardPlayedAnimation, playerId]);
+
   const revealedRoles = gameState?.revealedRoles ?? {};
   const revealedCategories = gameState?.revealedCategories ?? {};
   const shieldedCounts = (() => {
@@ -137,6 +150,15 @@ export function GameTable({ send }: { send: SendFn }) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [actionLog, actionLogAutoScroll, actionLogCollapsed]);
 
+  // Expand action log when requested (e.g. from "View Rankings" in elimination pop-up)
+  useEffect(() => {
+    if (requestExpandActionLog) {
+      setActionLogCollapsed(false);
+      setActionLogAutoScroll(true);
+      setRequestExpandActionLog(false);
+    }
+  }, [requestExpandActionLog, setRequestExpandActionLog]);
+
   function handleActionLogScroll() {
     const el = actionLogListRef.current;
     if (!el) return;
@@ -164,6 +186,7 @@ export function GameTable({ send }: { send: SendFn }) {
 
   const orderedPlayers = [...topPlayers, ...bottomPlayers];
   const validTargets = orderedPlayers.filter((p) => p.id !== playerId && p.status === "active");
+  const eliminatedSet = new Set(gameState?.eliminatedPlayerIds ?? []);
 
   function parseDragData(e: React.DragEvent): CardDragData | null {
     const raw = e.dataTransfer.getData(CARD_DRAG_TYPE);
@@ -413,6 +436,9 @@ export function GameTable({ send }: { send: SendFn }) {
                       <span className="material-symbols-outlined">lunch_dining</span>
                     )}
                   </div>
+                  {eliminatedSet.has(p.id) && (
+                    <div className={styles.playerAvatarEliminatedCross} aria-hidden title={t("gameTable.eliminated")} />
+                  )}
                   {shieldedCounts.get(p.id) != null &&
                     shieldedCounts.get(p.id)! > 0 &&
                     p.status === "active" && (
@@ -574,6 +600,9 @@ export function GameTable({ send }: { send: SendFn }) {
                         <span className="material-symbols-outlined">lunch_dining</span>
                       )}
                     </div>
+                    {eliminatedSet.has(p.id) && (
+                      <div className={styles.playerAvatarEliminatedCross} aria-hidden title={t("gameTable.eliminated")} />
+                    )}
                     {shieldedCounts.get(p.id) != null &&
                       shieldedCounts.get(p.id)! > 0 &&
                       p.status === "active" && (

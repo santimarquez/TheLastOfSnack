@@ -2,6 +2,11 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 :root {
   --primary: #f42525;
   --background-dark: #221010;
