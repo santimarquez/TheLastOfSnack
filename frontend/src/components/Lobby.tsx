@@ -240,6 +240,20 @@ export function Lobby({ send }: { send: SendFn }) {
                 )}
               </>
             )}
+            {!p.isBot && !p.isHost && isHost && (
+              <button
+                type="button"
+                className={styles.kickPlayerBtn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  send("kick_player", { playerId: p.id });
+                }}
+                aria-label={t("lobby.kickPlayer", { name: p.displayName })}
+                title={t("lobby.kickPlayerTitle")}
+              >
+                <span className="material-symbols-outlined">person_remove</span>
+              </button>
+            )}
             <div className={styles.playerAvatar}>
               {p.avatarUrl ? (
                 <img src={p.avatarUrl} alt="" className={styles.playerAvatarImg} />

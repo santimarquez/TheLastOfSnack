@@ -242,6 +242,33 @@ export function handleMessage(
       return;
     }
 
+    case "kick_player": {
+      const targetPlayerId = (parsed.payload as { playerId?: string }).playerId;
+      if (!targetPlayerId || typeof targetPlayerId !== "string") {
+        sendToSocket(ws, "error", { code: "KICK_FAILED", message: "Player ID required" });
+        return;
+      }
+      const result = RoomManager.kickPlayer(ctx.roomCode, ctx.playerId, targetPlayerId);
+      if ("error" in result) {
+        sendToSocket(ws, "error", { code: "KICK_FAILED", message: result.error });
+        return;
+      }
+      const broadcastFn = broadcast.createBroadcast(sockets);
+      const updatedRoom = RoomManager.getRoom(ctx.roomCode);
+      if (updatedRoom) {
+        broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => roomUpdatedPayload(updatedRoom, forPlayerId));
+      }
+      if (result.kickedSocketId) {
+        const kickedWs = sockets.get(result.kickedSocketId);
+        if (kickedWs) {
+          sendToSocket(kickedWs, "kicked", { message: "You were removed from the room by the host." });
+          broadcast.unregisterSocket(result.kickedSocketId);
+          kickedWs.close();
+        }
+      }
+      return;
+    }
+
     case "chat": {
       const text = (parsed.payload as { text: string }).text;
       const broadcastFn = broadcast.createBroadcast(sockets);
@@ -257,6 +284,19 @@ export function handleMessage(
       const result = GameEngine.restartGame(ctx.roomCode, ctx.playerId);
       if ("error" in result) {
         sendToSocket(ws, "error", { code: "RESTART_FAILED", message: result.error });
+      }
+      return;
+    }
+
+    case "round_transition_complete": {
+      GameEngine.clearRoundTransitionLock(ctx.roomCode);
+      return;
+    }
+
+    case "start_next_round": {
+      const result = GameEngine.startNextRound(ctx.roomCode, ctx.playerId);
+      if ("error" in result) {
+        sendToSocket(ws, "error", { code: "START_NEXT_ROUND_FAILED", message: result.error });
       }
       return;
     }

@@ -44,7 +44,7 @@
     "footerTerms": "Términos",
     "footerSupport": "Soporte",
     "footerDiscord": "Discord",
-    "footerCopy": "© 2024 The Last of the Snacks. Reservados todos los derechos. No tragar las fichas."
+    "footerCopy": "© {year} The Last of the Snacks. Reservados todos los derechos. No tragar las fichas."
   },
   "howToPlay": {
     "rulebookTag": "MANUAL V1.0",
@@ -103,7 +103,7 @@
     "ctaReady": "¿Listo para desmoronarte?",
     "startNewGame": "Nueva partida",
     "goBack": "Volver",
-    "footerCopy": "© 2024 The Last of the Snacks. Calorías incluidas."
+    "footerCopy": "© {year} The Last of the Snacks. Calorías incluidas."
   },
   "lobby": {
     "title": "Cocina lista",
@@ -131,7 +131,9 @@
     "waitingForHost5": "Estamos todos. ¡El anfitrión tiene el botón de empezar!",
     "bot": "Bot",
     "addBot": "Añadir bot",
-    "removeBot": "Quitar bot"
+    "removeBot": "Quitar bot",
+    "kickPlayer": "Expulsar a {name}",
+    "kickPlayerTitle": "Quitar a este jugador de la sala"
   },
   "connectionLost": {
     "crisisSub": "ERROR: LECHE_DERRAMADA",
@@ -139,6 +141,7 @@
     "crisisCopy": "¡Se derramó la leche! Perdimos tu señal en el caos de la cocina. ¡No dejes que se enfríen tus snacks!",
     "rejoinBattle": "Reincorporarse a la batalla",
     "exitToPantry": "Salir a la despensa",
+    "kicked": "Te han expulsado de la sala.",
     "notFoundLabel": "ERROR 404",
     "notFoundTitle": "SNACK",
     "notFoundHighlight": "NO ENCONTRADO",
@@ -147,7 +150,7 @@
     "enterNewRoomCode": "NUEVO CÓDIGO DE SALA",
     "codeHint": "Códigos típicos: BREAD-42, CHIP-X9, SODA-01",
     "emptyBadge": "¡VACÍO!",
-    "footerCopy": "© 2024 The Last of the Snacks. Todas las migas reservadas.",
+    "footerCopy": "© {year} The Last of the Snacks. Todas las migas reservadas.",
     "helpCenter": "Centro de ayuda",
     "recipeGuide": "Guía de recetas",
     "contactChef": "Contactar al chef"
@@ -157,6 +160,10 @@
     "deck": "Mazo"
   },
   "gameEnd": {
+    "podiumTitle": "¡Ganador, ganador, cena de snacks!",
+    "roundComplete": "Ronda {round} completada",
+    "continueToRound": "Continuar a ronda {round}",
+    "finalResults": "Resultados finales",
     "survived": "¡SOBREVIVIÓ!",
     "winner": "¡GANADOR!",
     "winnerNameFallback": "Ganador",
@@ -173,10 +180,10 @@
     "badgeSurvivor": "Superviviente",
     "badgeMvp": "MVP",
     "playAgain": "Jugar de nuevo",
-    "backToLobby": "Volver al lobby",
+    "backToLobby": "Volver al inicio",
     "playAgainTitle": "Empezar una nueva partida",
     "playAgainTitleHostOnly": "Solo el anfitrión puede reiniciar",
-    "footerCopy": "Machacando a la competencia desde 2024"
+    "footerCopy": "Machacando a la competencia desde {year}"
   },
   "roundTransition": {
     "gameTitle": "Last Snack Standing",
@@ -236,7 +243,8 @@
     "emoteSalty": "Salado",
     "emoteSpicy": "Picante",
     "emoteRaw": "Crudo",
-    "emoteBurned": "Quemado"
+    "emoteBurned": "Quemado",
+    "insertEmoji": "Insertar emoji"
   },
   "cards": {
     "microwave": {
@@ -281,7 +289,7 @@
     },
     "foil_wrap": {
       "title": "Papel de aluminio",
-      "action": "Bloquea un ataque"
+      "action": "Bloquea el próximo ataque contra ti. No se puede jugar desde la mano."
     }
   },
   "gameTable": {
@@ -296,12 +304,14 @@
     "timerUnit": "SEG",
     "endTurnTitle": "Juega una carta para completar tu turno o espera al temporizador",
     "drawCard": "Robar carta",
-    "drawCardPrompt": "Arrastra desde el mazo a tu mano para robar",
+    "drawCardPrompt": "Arrastra desde el mazo a tu mano o doble clic para robar",
     "dragDeckHere": "Arrastra una carta del mazo aquí",
     "notYourTurnTitle": "No es tu turno",
     "waitingForTurn": "Esperando el turno de {name}",
     "cardTypeSuffix": "carta",
     "selectTarget": "Elige un objetivo",
+    "dropToTarget": "Suelta para atacar",
+    "dropToDiscard": "Suelta para descartar",
     "selectCardsToDiscard": "Selecciona {count} cartas para descartar",
     "discard": "Descartar",
     "eliminated": "Eliminado",

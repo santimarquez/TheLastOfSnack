@@ -47,7 +47,8 @@ export function resolveCard(
 
   if (!room.gameState.discardPile) room.gameState.discardPile = [];
   const isFoilWrap = card.type === "foil_wrap";
-  if (!isFoilWrap) room.gameState.discardPile.push(card);
+  const deferDiscardForTrash = card.type === "trash";
+  if (!isFoilWrap && !deferDiscardForTrash) room.gameState.discardPile.push(card);
 
   const result: ResolutionResult = { outcome: "played" };
 
@@ -183,6 +184,7 @@ export function resolveCard(
       if (consumeShield(room, trashTarget.id)) {
         result.blocked = { targetId: trashTarget.id };
         result.outcome = "blocked";
+        room.gameState.discardPile!.push(card);
         break;
       }
       const toDiscard = 2;
@@ -191,9 +193,10 @@ export function resolveCard(
       if (!room.gameState.discardPile) room.gameState.discardPile = [];
       for (let i = 0; i < toDiscard && hand.length > 0; i++) {
         const idx = Math.floor(Math.random() * hand.length);
-        const card = hand.splice(idx, 1)[0];
-        if (card) room.gameState.discardPile.push(card);
+        const discarded = hand.splice(idx, 1)[0];
+        if (discarded) room.gameState.discardPile.push(discarded);
       }
+      room.gameState.discardPile.push(card);
       result.outcome = "trash";
       break;
     }
@@ -214,6 +217,15 @@ export function resolveCard(
       player.avatarId = swapTarget.avatarId;
       swapTarget.role = playerRole;
       swapTarget.avatarId = playerAvatar;
+      // Salt-revealed category moves with the identity: swap revealedCategories for the two players
+      if (room.gameState.revealedCategories) {
+        const a = room.gameState.revealedCategories[player.id];
+        const b = room.gameState.revealedCategories[swapTarget.id];
+        if (a !== undefined) room.gameState.revealedCategories[swapTarget.id] = a;
+        else delete room.gameState.revealedCategories[swapTarget.id];
+        if (b !== undefined) room.gameState.revealedCategories[player.id] = b;
+        else delete room.gameState.revealedCategories[player.id];
+      }
       // Clear peeked data for both players since identities changed
       if (room.gameState.peekedRoles) {
         for (const viewerId of Object.keys(room.gameState.peekedRoles)) {
@@ -312,7 +324,6 @@ function computeSnackPoints(
 
 /**
  * Round winner: last snack standing wins. If more than one standing, highest Snack points wins.
- * Match winner (3 rounds): player with most total Snack points.
  */
 export function getWinnerBySnackPoints(room: Room): string | null {
   const gs = room.gameState;
@@ -332,6 +343,49 @@ export function getWinnerBySnackPoints(room: Room): string | null {
     const pts = computeSnackPoints(room, p.id, gameEndedAt);
     if (pts > bestPts) {
       bestPts = pts;
+      bestId = p.id;
+    }
+  }
+  return bestId;
+}
+
+/** Compute snack points for one player in one round from RoundResult. */
+function computeSnackPointsFromRoundResult(
+  room: Room,
+  playerId: string,
+  rr: { eliminationsByPlayerId?: Record<string, number>; eliminatedAt?: Record<string, number>; gameStartedAt: number; gameEndedAt: number; winnerId: string }
+): number {
+  const eliminations = rr.eliminationsByPlayerId?.[playerId] ?? 0;
+  const eliminatedAt = rr.eliminatedAt?.[playerId];
+  const isWinner = rr.winnerId === playerId;
+  const survivalMs = isWinner
+    ? rr.gameEndedAt - rr.gameStartedAt
+    : eliminatedAt != null
+      ? eliminatedAt - rr.gameStartedAt
+      : 0;
+  let pts = 50;
+  pts += eliminations * 10;
+  pts += Math.floor((Number.isFinite(survivalMs) ? survivalMs : 0) / 10_000);
+  if (isWinner) pts += 20;
+  return pts;
+}
+
+/**
+ * Match winner (3 rounds): player with most total Snack points across all roundResults.
+ * Use when phase goes to "ended" after round 3.
+ */
+export function getMatchWinnerByTotalSnackPoints(room: Room): string | null {
+  const roundResults = room.gameState.roundResults;
+  if (!roundResults?.length) return getWinnerBySnackPoints(room);
+  let bestId: string | null = null;
+  let bestTotal = -1;
+  for (const p of room.players) {
+    let total = 0;
+    for (const rr of roundResults) {
+      total += computeSnackPointsFromRoundResult(room, p.id, rr);
+    }
+    if (total > bestTotal) {
+      bestTotal = total;
       bestId = p.id;
     }
   }

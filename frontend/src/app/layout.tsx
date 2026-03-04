@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppProviders } from "@/components/AppProviders";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 
 /** Image used in "ARE YOU READY?" CTA section – used for og:image and social previews */
 const OG_IMAGE_URL =
@@ -53,6 +54,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <GoogleAnalytics />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

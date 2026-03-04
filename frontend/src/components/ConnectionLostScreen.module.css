@@ -90,6 +90,27 @@
   }
 }
 
+/* Kicked from room card */
+.kickedCard {
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(234, 179, 8, 0.1);
+}
+
+.kickedCopy {
+  font-size: 1rem;
+  color: var(--slate-300);
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.kickedCard .btnExit {
+  margin: 0;
+}
+
 /* Connection Crisis card */
 .crisisCard {
   background: rgba(244, 37, 37, 0.08);

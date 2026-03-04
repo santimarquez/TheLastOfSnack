@@ -250,7 +250,7 @@ export default function HowToPlayPage() {
       </main>
 
       <footer className={styles.footer}>
-        <p>{t("howToPlay.footerCopy")}</p>
+        <p>{t("howToPlay.footerCopy", { year: String(new Date().getFullYear()) })}</p>
       </footer>
     </div>
   );

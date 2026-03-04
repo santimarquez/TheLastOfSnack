@@ -21,10 +21,13 @@ const CARD_META: Record<string, { requiresTarget: boolean; requiresDiscardCards?
 const BOT_DRAW_DELAY_MS = 800;
 /** Wait 3 seconds after drawing before playing or ending turn. */
 const BOT_DELAY_AFTER_DRAW_MS = 3000;
+/** When only bots remain, use shorter delays so the game finishes quickly. */
+const BOT_DELAY_AFTER_DRAW_MS_BOTS_ONLY = 600;
+const BOT_DRAW_DELAY_MS_BOTS_ONLY = 300;
 
 export function runBotTurn(roomCode: string): void {
   const room = RoomManager.getRoom(roomCode);
-  if (!room || room.gameState.phase !== "playing" || room.gameState.eliminationAnimationLock) return;
+  if (!room || room.gameState.phase !== "playing" || room.gameState.eliminationAnimationLock || room.gameState.roundTransitionLock) return;
 
   const currentId = getCurrentPlayerId(room);
   if (!currentId) return;
@@ -33,12 +36,18 @@ export function runBotTurn(roomCode: string): void {
   if (!player?.isBot) return;
 
   const { gameState } = room;
+  const activeHumans = room.players.filter(
+    (p) => p.status === "active" && !gameState.eliminatedPlayerIds.includes(p.id) && !p.isBot
+  );
+  const botsOnly = activeHumans.length === 0;
+  const drawDelayMs = botsOnly ? BOT_DRAW_DELAY_MS_BOTS_ONLY : BOT_DRAW_DELAY_MS;
+  const afterDrawDelayMs = botsOnly ? BOT_DELAY_AFTER_DRAW_MS_BOTS_ONLY : BOT_DELAY_AFTER_DRAW_MS;
 
   if (!gameState.currentTurnDrawn) {
     if (room.gameState.deck.length === 0) return;
     setTimeout(() => {
       GameEngine.drawCard(roomCode, currentId);
-    }, BOT_DRAW_DELAY_MS);
+    }, drawDelayMs);
     return;
   }
 
@@ -46,7 +55,7 @@ export function runBotTurn(roomCode: string): void {
   if (hand.length === 0) {
     setTimeout(() => {
       GameEngine.endTurn(roomCode, currentId);
-    }, BOT_DELAY_AFTER_DRAW_MS);
+    }, afterDrawDelayMs);
     return;
   }
 
@@ -85,10 +94,10 @@ export function runBotTurn(roomCode: string): void {
       if ("error" in result) {
         GameEngine.endTurn(roomCode, currentId);
       }
-    }, BOT_DELAY_AFTER_DRAW_MS);
+    }, afterDrawDelayMs);
   } else {
     setTimeout(() => {
       GameEngine.endTurn(roomCode, currentId);
-    }, BOT_DELAY_AFTER_DRAW_MS);
+    }, afterDrawDelayMs);
   }
 }

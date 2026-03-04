@@ -53,10 +53,11 @@ function getFlavorKey(cardType: string): string {
 
 export function EliminationAnimation() {
   const { t } = useTranslations();
+  const playerId = useGameStore((s) => s.playerId);
   const eliminationAnimation = useGameStore((s) => s.eliminationAnimation);
   const eliminationAnimationLock = useGameStore((s) => s.gameState?.eliminationAnimationLock);
   const clearEliminationAnimation = useGameStore((s) => s.clearEliminationAnimation);
-  const setRequestExpandActionLog = useGameStore((s) => s.setRequestExpandActionLog);
+  const setShowRankingModal = useGameStore((s) => s.setShowRankingModal);
 
   useEffect(() => {
     if (!eliminationAnimation) return;
@@ -75,7 +76,7 @@ export function EliminationAnimation() {
   }
 
   function handleViewRankings() {
-    setRequestExpandActionLog(true);
+    setShowRankingModal(true);
     clearEliminationAnimation();
   }
 
@@ -98,12 +99,13 @@ export function EliminationAnimation() {
 
   if (!eliminationAnimation || typeof document === "undefined") return null;
 
+  const isYouEliminated = playerId === eliminationAnimation.playerId;
   const messageKey = getMessageKey(eliminationAnimation.cardType);
   const flavorKey = getFlavorKey(eliminationAnimation.cardType);
 
   return createPortal(
     <div
-      className={`${styles.overlay} ${styles.cameraShake}`}
+      className={`${styles.overlay} ${styles.cameraShake} ${!isYouEliminated ? styles.overlayPositive : ""}`}
       role="alert"
       aria-live="polite"
       aria-label={`${eliminationAnimation.displayName} eliminated`}

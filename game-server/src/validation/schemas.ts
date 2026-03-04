@@ -61,8 +61,11 @@ export const clientMessageSchemas = {
   end_turn: z.object({}),
   add_bot: z.object({}),
   remove_bot: z.object({ playerId: z.string().min(1) }),
+  kick_player: z.object({ playerId: z.string().min(1) }),
   chat: chatPayload,
   restart: z.object({}),
+  round_transition_complete: z.object({}),
+  start_next_round: z.object({}),
 } as const;
 
 export type ClientMessageType = keyof typeof clientMessageSchemas;

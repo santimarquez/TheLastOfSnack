@@ -20,7 +20,7 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
   const { t } = useTranslations();
   const { chatMessages, gameState, playerId } = useGameStore();
   const [input, setInput] = useState("");
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const lastSeenCountRef = useRef(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -30,6 +30,11 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
   useEffect(() => {
     listRef.current?.scrollTo(0, listRef.current.scrollHeight);
   }, [chatMessages]);
+
+  /* Sync initial collapsed state to parent so gameSidebar has collapsed class when chat is collapsed. */
+  useEffect(() => {
+    onCollapsedChange?.(isCollapsed);
+  }, []);
 
   useEffect(() => {
     if (!isCollapsed) {
@@ -43,12 +48,18 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
     lastSeenCountRef.current = chatMessages.length;
   }, [chatMessages, isCollapsed, playerId]);
 
+  const EMOJI_QUICK = ["😀", "😂", "🔥", "👍", "👀", "🙈", "😱", "🎉", "🍕", "🥤"];
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim().slice(0, 500);
     if (!text) return;
     send("chat", { text });
     setInput("");
+  }
+
+  function insertEmoji(emoji: string) {
+    setInput((prev) => (prev + emoji).slice(0, 500));
   }
 
   function openChat() {
@@ -120,6 +131,19 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
                 </div>
               );
             })}
+          </div>
+          <div className={styles.emojiRow}>
+            {EMOJI_QUICK.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                className={styles.emojiBtn}
+                onClick={() => insertEmoji(emoji)}
+                aria-label={t("chatPanel.insertEmoji", { emoji })}
+              >
+                {emoji}
+              </button>
+            ))}
           </div>
           <form onSubmit={handleSubmit} className={styles.form}>
             <input
@@ -210,6 +234,19 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
               </div>
             );
           })}
+        </div>
+        <div className={styles.emojiRow}>
+          {EMOJI_QUICK.map((emoji) => (
+            <button
+              key={emoji}
+              type="button"
+              className={styles.emojiBtn}
+              onClick={() => insertEmoji(emoji)}
+              aria-label={t("chatPanel.insertEmoji", { emoji })}
+            >
+              {emoji}
+            </button>
+          ))}
         </div>
         <form onSubmit={handleSubmit} className={styles.form}>
           <input

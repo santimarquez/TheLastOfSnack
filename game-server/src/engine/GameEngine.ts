@@ -6,6 +6,7 @@ import { initTurnOrder, getCurrentPlayerId, advanceTurn } from "./TurnSystem.js"
 import {
   resolveCard,
   getWinnerBySnackPoints,
+  getMatchWinnerByTotalSnackPoints,
 } from "./CardResolutionEngine.js";
 import { cancelTurnTimer, startTurnTimer, getExpiresAt, cancelAllForRoom } from "./TimerSystem.js";
 import { buildGameStateView } from "./EventBroadcasting.js";
@@ -76,6 +77,9 @@ export function startGame(
   room.gameState.gameStartedAt = Date.now();
   room.gameState.turnStartedAt = Date.now();
   room.gameState.currentTurnDrawn = false;
+  room.gameState.roundTransitionLock = true;
+  room.gameState.currentRound = 1;
+  room.gameState.roundResults = [];
   const timeoutSec = room.settings.turnTimeoutSec;
   const currentId = getCurrentPlayerId(room);
   const currentPlayer = currentId ? room.players.find((p) => p.id === currentId) : null;
@@ -86,6 +90,51 @@ export function startGame(
   broadcastToRoomPerPlayer(roomCode, "game_started", (room, playerId) => ({ gameState: buildGameStateView(room, playerId) }));
   scheduleBotTurnIfNeeded(roomCode);
   return { ok: true };
+}
+
+/** Snapshot current round and either go to round_ended (next round) or ended (game over). */
+function endRoundOrGame(roomCode: string, room: Room): void {
+  const round = room.gameState.currentRound ?? 1;
+  const winnerId = getWinnerBySnackPoints(room);
+  if (!winnerId) return;
+
+  const gameStartedAt = room.gameState.gameStartedAt ?? Date.now();
+  const gameEndedAt = Date.now();
+  const roundResult: import("@last-of-snack/shared").RoundResult = {
+    round,
+    winnerId,
+    eliminationsByPlayerId: { ...(room.gameState.eliminationsByPlayerId ?? {}) },
+    eliminatedAt: { ...(room.gameState.eliminatedAt ?? {}) },
+    gameStartedAt,
+    gameEndedAt,
+  };
+  if (!room.gameState.roundResults) room.gameState.roundResults = [];
+  room.gameState.roundResults.push(roundResult);
+  room.gameState.gameEndedAt = gameEndedAt;
+
+  if (round < 3) {
+    room.gameState.winnerId = winnerId;
+    room.gameState.phase = "round_ended";
+    broadcastToRoomPerPlayer(roomCode, "round_ended", (r, forPlayerId) => ({
+      winnerId,
+      gameState: buildGameStateView(r, forPlayerId),
+    }));
+  } else {
+    const matchWinnerId = getMatchWinnerByTotalSnackPoints(room);
+    room.gameState.winnerId = matchWinnerId;
+    room.gameState.phase = "ended";
+    broadcastToRoomPerPlayer(roomCode, "game_ended", (r, forPlayerId) => ({
+      winnerId: matchWinnerId,
+      gameState: buildGameStateView(r, forPlayerId),
+    }));
+  }
+}
+
+export function clearRoundTransitionLock(roomCode: string): void {
+  const room = RoomManager.getRoom(roomCode);
+  if (!room || room.gameState.phase !== "playing") return;
+  room.gameState.roundTransitionLock = false;
+  scheduleBotTurnIfNeeded(roomCode);
 }
 
 function broadcastToRoomPerPlayer(roomCode: string, event: string, payloadFn: (room: Room, playerId: string) => unknown): void {
@@ -136,6 +185,11 @@ export function playCard(
     if (!room.gameState.eliminationsByPlayerId) room.gameState.eliminationsByPlayerId = {};
     room.gameState.eliminationsByPlayerId[playerId] =
       (room.gameState.eliminationsByPlayerId[playerId] ?? 0) + result.eliminated.length;
+    const eliminationTimestamp = Date.now();
+    if (!room.gameState.eliminatedAt) room.gameState.eliminatedAt = {};
+    for (const id of result.eliminated) {
+      room.gameState.eliminatedAt[id] = eliminationTimestamp;
+    }
     room.gameState.eliminationAnimationLock = true;
     const cardType = result.eliminationCardType ?? "eliminate";
     result.eliminated.forEach((id) => {
@@ -178,13 +232,7 @@ export function playCard(
 
   const winnerId = getWinnerBySnackPoints(room);
   if (winnerId) {
-    room.gameState.phase = "ended";
-    room.gameState.winnerId = winnerId;
-    room.gameState.gameEndedAt = Date.now();
-    broadcastToRoomPerPlayer(roomCode, "game_ended", (r, forPlayerId) => ({
-      winnerId,
-      gameState: buildGameStateView(r, forPlayerId),
-    }));
+    endRoundOrGame(roomCode, room);
     return { ok: true, result };
   }
 
@@ -216,13 +264,7 @@ function finishEliminationAndAdvance(
 
   const winnerId = getWinnerBySnackPoints(room);
   if (winnerId) {
-    room.gameState.phase = "ended";
-    room.gameState.winnerId = winnerId;
-    room.gameState.gameEndedAt = Date.now();
-    broadcastToRoomPerPlayer(roomCode, "game_ended", (r, forPlayerId) => ({
-      winnerId,
-      gameState: buildGameStateView(r, forPlayerId),
-    }));
+    endRoundOrGame(roomCode, room);
     return;
   }
 
@@ -254,13 +296,7 @@ export function endTurn(roomCode: string, playerId: string): { ok: true } | { er
   cancelTurnTimer(roomCode, playerId);
   const winnerId = getWinnerBySnackPoints(room);
   if (winnerId) {
-    room.gameState.phase = "ended";
-    room.gameState.winnerId = winnerId;
-    room.gameState.gameEndedAt = Date.now();
-    broadcastToRoomPerPlayer(roomCode, "game_ended", (r, forPlayerId) => ({
-      winnerId,
-      gameState: buildGameStateView(r, forPlayerId),
-    }));
+    endRoundOrGame(roomCode, room);
     return { ok: true };
   }
   advanceTurn(room);
@@ -312,13 +348,7 @@ function onTurnTimeout(roomCode: string): void {
   if (!currentId) return;
   const winnerId = getWinnerBySnackPoints(room);
   if (winnerId) {
-    room.gameState.phase = "ended";
-    room.gameState.winnerId = winnerId;
-    room.gameState.gameEndedAt = Date.now();
-    broadcastToRoomPerPlayer(roomCode, "game_ended", (r, forPlayerId) => ({
-      winnerId,
-      gameState: buildGameStateView(r, forPlayerId),
-    }));
+    endRoundOrGame(roomCode, room);
     return;
   }
   advanceTurn(room);
@@ -335,6 +365,64 @@ function onTurnTimeout(roomCode: string): void {
     gameState: buildGameStateView(r, forPlayerId),
   }));
   scheduleBotTurnIfNeeded(roomCode);
+}
+
+export function startNextRound(roomCode: string, hostPlayerId: string): { ok: true } | { error: string } {
+  const room = RoomManager.getRoom(roomCode);
+  if (!room) return { error: "Room not found" };
+  if (room.hostId !== hostPlayerId) return { error: "Only host can start next round" };
+  if (room.gameState.phase !== "round_ended") return { error: "Not in round end" };
+  const currentRound = room.gameState.currentRound ?? 1;
+  if (currentRound >= 3) return { error: "Game already finished" };
+
+  const nextRound = (currentRound + 1) as 1 | 2 | 3;
+  room.gameState.currentRound = nextRound;
+  room.gameState.phase = "playing";
+  room.gameState.winnerId = null;
+  room.gameState.gameEndedAt = undefined;
+  room.gameState.gameStartedAt = Date.now();
+  room.gameState.eliminatedPlayerIds = [];
+  room.gameState.eliminationsByPlayerId = {};
+  room.gameState.eliminatedAt = {};
+  room.gameState.revealedRoles = {};
+  room.gameState.revealedCategories = {};
+  room.gameState.peekedRoles = {};
+  room.gameState.shieldedPlayerIds = [];
+  room.gameState.shieldedCards = [];
+  room.gameState.discardPile = [];
+  room.gameState.eliminationAnimationLock = false;
+  room.gameState.currentTurnDrawn = false;
+  room.gameState.lastAction = undefined;
+
+  room.players.forEach((p) => {
+    p.role = null;
+    p.hand = [];
+    p.status = "active";
+  });
+
+  assignRoles(room.players);
+  const deck = createShuffledDeck(room.players.length);
+  const { hands, remainingDeck } = dealHands(deck, room.players.length);
+  room.players.forEach((p, i) => (p.hand = hands[i] ?? []));
+  room.gameState.deck = remainingDeck;
+  initTurnOrder(room);
+  room.gameState.currentTurnIndex = 0;
+  room.gameState.turnStartedAt = Date.now();
+  room.gameState.roundTransitionLock = true;
+
+  const timeoutSec = room.settings.turnTimeoutSec;
+  const currentId = getCurrentPlayerId(room);
+  const currentPlayer = currentId ? room.players.find((p) => p.id === currentId) : null;
+  if (currentId && !currentPlayer?.isBot) {
+    startTurnTimer(roomCode, currentId, timeoutSec, () => onTurnTimeout(roomCode));
+  }
+
+  broadcastToRoomPerPlayer(roomCode, "round_started", (r, forPlayerId) => ({
+    round: nextRound,
+    gameState: buildGameStateView(r, forPlayerId),
+  }));
+  scheduleBotTurnIfNeeded(roomCode);
+  return { ok: true };
 }
 
 export function restartGame(roomCode: string, hostPlayerId: string): { ok: true } | { error: string } {

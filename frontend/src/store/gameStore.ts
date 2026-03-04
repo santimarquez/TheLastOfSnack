@@ -114,6 +114,9 @@ interface GameStore {
   /** When true, GameTable should expand the action log (e.g. from "View Rankings" in elimination pop-up) */
   requestExpandActionLog: boolean;
   setRequestExpandActionLog: (value: boolean) => void;
+  /** When true, show the ranking table modal (from "Ver clasificación" in elimination pop-up). */
+  showRankingModal: boolean;
+  setShowRankingModal: (value: boolean) => void;
   setGameEnded: (winnerId: string | null, gameState: GameStateView) => void;
   addChat: (msg: ChatMessage) => void;
   setStateSync: (gameState: GameStateView) => void;
@@ -168,6 +171,7 @@ export const useGameStore = create<GameStore>((set) => ({
   cardRevealNotification: null,
   eliminationAnimation: null,
   requestExpandActionLog: false,
+  showRankingModal: false,
 
   setJoined: (data) =>
     set({
@@ -278,6 +282,7 @@ export const useGameStore = create<GameStore>((set) => ({
   clearEliminationAnimation: () => set({ eliminationAnimation: null }),
 
   setRequestExpandActionLog: (value) => set({ requestExpandActionLog: value }),
+  setShowRankingModal: (value) => set({ showRankingModal: value }),
 
   setGameEnded: (_, gameState) =>
     set({ gameState, eliminationAnimation: null }),
@@ -344,5 +349,6 @@ export const useGameStore = create<GameStore>((set) => ({
       cardRevealNotification: null,
       eliminationAnimation: null,
       requestExpandActionLog: false,
+      showRankingModal: false,
     }),
 }));

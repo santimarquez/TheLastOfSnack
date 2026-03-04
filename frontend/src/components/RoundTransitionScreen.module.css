@@ -5,7 +5,8 @@
   flex-direction: column;
   background: var(--background-dark);
   color: var(--slate-100);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .bgDecor {

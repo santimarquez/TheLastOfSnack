@@ -13,6 +13,8 @@ interface ConnectionLostScreenProps {
   onRejoin: () => void;
   showConnectionCrisis?: boolean;
   showNotFound?: boolean;
+  /** When set, show a "removed from room" message (use "kicked" for i18n key, or a raw string). */
+  kickedMessage?: string | null;
 }
 
 export function ConnectionLostScreen({
@@ -21,10 +23,12 @@ export function ConnectionLostScreen({
   onRejoin,
   showConnectionCrisis = true,
   showNotFound = true,
+  kickedMessage = null,
 }: ConnectionLostScreenProps) {
   const router = useRouter();
   const { t } = useTranslations();
-  const { setShowSettingsHelpModal, setJoinFailed, reset } = useGameStore();
+  const displayKicked = kickedMessage === "kicked" ? t("connectionLost.kicked") : kickedMessage;
+  const { setShowSettingsHelpModal, setJoinFailed, setError, reset } = useGameStore();
   const [newCodeInput, setNewCodeInput] = useState("");
 
   function handleExitToPantry() {
@@ -37,6 +41,7 @@ export function ConnectionLostScreen({
     const code = newCodeInput.trim().toUpperCase().replace(/\s/g, "").replace(/-/g, "").slice(0, 8);
     if (code.length < 8) return;
     setJoinFailed(false);
+    setError(null);
     router.push(`/room/${code}?displayName=${encodeURIComponent(displayName || t("common.player"))}`);
   }
 
@@ -60,6 +65,14 @@ export function ConnectionLostScreen({
       </header>
 
       <div className={styles.content}>
+        {displayKicked && (
+          <section className={styles.kickedCard} role="alert">
+            <p className={styles.kickedCopy}>{displayKicked}</p>
+            <button type="button" className={styles.btnExit} onClick={handleExitToPantry}>
+              {t("connectionLost.exitToPantry")}
+            </button>
+          </section>
+        )}
         {showConnectionCrisis && (
           <section className={styles.crisisCard}>
             <div className={styles.crisisIconWrap}>
@@ -133,7 +146,7 @@ export function ConnectionLostScreen({
       </div>
 
       <footer className={styles.footer}>
-        <p className={styles.footerCopy}>{t("connectionLost.footerCopy")}</p>
+        <p className={styles.footerCopy}>{t("connectionLost.footerCopy", { year: String(new Date().getFullYear()) })}</p>
         <div className={styles.footerLinks}>
           <button type="button" className={styles.footerLink} onClick={() => setShowSettingsHelpModal(true, "how-to-play")}>
             {t("connectionLost.helpCenter")}

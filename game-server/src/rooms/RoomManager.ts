@@ -242,6 +242,31 @@ export function removeBot(
   return { room };
 }
 
+/**
+ * Kick a human player from the room. Only the host can kick. Returns the kicked player's socketId
+ * so the handler can notify and close their connection.
+ */
+export function kickPlayer(
+  roomCode: string,
+  hostPlayerId: string,
+  targetPlayerId: string
+): { room: Room; kickedSocketId: string | null } | { error: string } {
+  const room = store.getRoom(roomCode);
+  if (!room) return { error: "Room not found" };
+  if (room.gameState.phase !== "lobby") return { error: "Game already started" };
+  if (room.hostId !== hostPlayerId) return { error: "Only host can kick players" };
+  if (targetPlayerId === hostPlayerId) return { error: "Cannot kick yourself" };
+
+  const index = room.players.findIndex((p) => p.id === targetPlayerId);
+  if (index === -1) return { error: "Player not found" };
+  const player = room.players[index];
+  if (player.isBot) return { error: "Use remove bot to remove bots" };
+
+  const kickedSocketId = player.socketId ?? null;
+  room.players.splice(index, 1);
+  return { room, kickedSocketId };
+}
+
 export function setLobbySettings(
   roomCode: string,
   playerId: string,

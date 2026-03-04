@@ -435,6 +435,13 @@ export function GameTable({ send }: { send: SendFn }) {
                     ) : (
                       <span className="material-symbols-outlined">lunch_dining</span>
                     )}
+                    {isDraggingCard && canDrop && (
+                      <span className={`${styles.dropZoneHint} ${styles.dropZoneHintTwoLines}`}>
+                        {t("gameTable.dropToTarget")}
+                        <br />
+                        {p.displayName}
+                      </span>
+                    )}
                   </div>
                   {eliminatedSet.has(p.id) && (
                     <div className={styles.playerAvatarEliminatedCross} aria-hidden title={t("gameTable.eliminated")} />
@@ -473,7 +480,9 @@ export function GameTable({ send }: { send: SendFn }) {
                   <span className={styles.playerSlotRole}>{roleToShow.name}</span>
                 )}
                 {!roleToShow && revealedCategories[p.id] && (
-                  <span className={styles.playerSlotCategory}>{revealedCategories[p.id]}</span>
+                  <span className={styles.playerSlotCategory}>
+                    {t(`gameTable.${(revealedCategories[p.id] ?? "").toLowerCase()}`)}
+                  </span>
                 )}
                 {p.status === "spectator" && <span className={styles.playerSlotOutLabel}>{t("gameTable.out")}</span>}
               </div>
@@ -489,6 +498,11 @@ export function GameTable({ send }: { send: SendFn }) {
                 draggable={needsToDraw}
                 onDragStart={handleDeckDragStart}
                 onDragEnd={handleDragEnd}
+                onDoubleClick={() => {
+                  if (needsToDraw) send("draw_card", {});
+                }}
+                role={needsToDraw ? "button" : undefined}
+                aria-label={needsToDraw ? t("gameTable.drawCard") : undefined}
               >
                 <div className={styles.deckCardWrap} data-deck-source>
                   <div
@@ -520,6 +534,9 @@ export function GameTable({ send }: { send: SendFn }) {
               onDragLeave={() => {}}
               onDrop={handleDiscardDrop}
             >
+              {isDraggingCard && canDropOnDiscard && (
+                <span className={styles.dropZoneHint}>{t("gameTable.dropToDiscard")}</span>
+              )}
               <div className={styles.discardPileStack} data-discard-pile>
                 {discardPile
                   .slice(-8)
@@ -599,6 +616,13 @@ export function GameTable({ send }: { send: SendFn }) {
                       ) : (
                         <span className="material-symbols-outlined">lunch_dining</span>
                       )}
+                      {isDraggingCard && canDrop && (
+                        <span className={`${styles.dropZoneHint} ${styles.dropZoneHintTwoLines}`}>
+                          {t("gameTable.dropToTarget")}
+                          <br />
+                          {p.displayName}
+                        </span>
+                      )}
                     </div>
                     {eliminatedSet.has(p.id) && (
                       <div className={styles.playerAvatarEliminatedCross} aria-hidden title={t("gameTable.eliminated")} />
@@ -637,7 +661,9 @@ export function GameTable({ send }: { send: SendFn }) {
                     <span className={styles.playerSlotRole}>{roleToShow.name}</span>
                   )}
                   {!roleToShow && revealedCategories[p.id] && (
-                    <span className={styles.playerSlotCategory}>{revealedCategories[p.id]}</span>
+                    <span className={styles.playerSlotCategory}>
+                      {t(`gameTable.${(revealedCategories[p.id] ?? "").toLowerCase()}`)}
+                    </span>
                   )}
                   {p.status === "spectator" && <span className={styles.playerSlotOutLabel}>{t("gameTable.out")}</span>}
                 </div>
@@ -778,7 +804,7 @@ export function GameTable({ send }: { send: SendFn }) {
                             <button
                               key={p.id}
                               type="button"
-                              className={styles.targetButton}
+                              className={`${styles.targetButton} ${styles.targetButtonPlayerTarget}`}
                               onClick={() => {
                                 send("play_card", { cardId: pendingCard.id, targetId: p.id });
                                 setPendingCard(null);

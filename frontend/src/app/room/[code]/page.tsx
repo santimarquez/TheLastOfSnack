@@ -9,12 +9,13 @@ import { Shell } from "@/components/Shell";
 import { GameHeader } from "@/components/GameHeader";
 import { Lobby } from "@/components/Lobby";
 import { GameTable } from "@/components/GameTable";
-import { GameEndScreen } from "@/components/GameEndScreen";
+import { RoundEndScreen } from "@/components/RoundEndScreen";
 import { ChatPanel } from "@/components/ChatPanel";
 import { SpectatorBanner } from "@/components/SpectatorBanner";
 import { EliminationModal } from "@/components/EliminationModal";
 import { CardRevealNotification } from "@/components/CardRevealNotification";
 import { EliminationAnimation } from "@/components/EliminationAnimation";
+import { RankingTableModal } from "@/components/RankingTableModal";
 import { AssigningIdentitiesScreen } from "@/components/AssigningIdentitiesScreen";
 import { SettingsHelpModal } from "@/components/SettingsHelpModal";
 import { ConnectionLostScreen } from "@/components/ConnectionLostScreen";
@@ -59,7 +60,12 @@ export default function RoomPage() {
   const loadStartRef = useRef<number | null>(null);
   const [loadingMinElapsed, setLoadingMinElapsed] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [lobbyChatCollapsed, setLobbyChatCollapsed] = useState(false);
+  const [lobbyChatCollapsed, setLobbyChatCollapsed] = useState(true);
+
+  /* In round end / final results view, sidebar is collapsed by default. */
+  useEffect(() => {
+    if (phase === "round_ended" || phase === "ended") setSidebarCollapsed(true);
+  }, [phase]);
 
   useEffect(() => {
     if (!roomCode?.trim() || showConnectionLost) return;
@@ -84,8 +90,9 @@ export default function RoomPage() {
           roomCode={roomCode}
           displayName={name}
           onRejoin={connect}
-          showConnectionCrisis={connectionStatus === "disconnected"}
+          showConnectionCrisis={connectionStatus === "disconnected" && error !== "KICKED"}
           showNotFound={joinFailed}
+          kickedMessage={error === "KICKED" ? "kicked" : error}
         />
       ) : showLoadingScreen ? (
         <LobbyLoadingScreen roomCode={stableRoomCode || roomCode} />
@@ -135,12 +142,30 @@ export default function RoomPage() {
               roundNumber={roundTransitionRound}
               snacksRemaining={gameState?.players?.filter((p) => p.status !== "eliminated" && p.status !== "spectator").length ?? 0}
               onComplete={() => {
+                send("round_transition_complete", {});
                 setShowRoundTransition(false);
                 setShowAssigningTransition(false);
               }}
             />
-          ) : phase === "ended" ? (
-            <GameEndScreen send={send} />
+          ) : phase === "round_ended" || phase === "ended" ? (
+            <div className={`${styles.gameLayout} ${styles.gameLayoutEnded}`}>
+              <div className={styles.gameMain}>
+                <RoundEndScreen
+                  send={send}
+                  isFinalRound={phase === "ended"}
+                />
+              </div>
+              <aside
+                className={`${styles.gameSidebar} ${styles.gameSidebarEnded} ${sidebarCollapsed ? styles.gameSidebarCollapsed : ""}`}
+              >
+                <ChatPanel
+                  send={send}
+                  variant="game"
+                  onCollapsedChange={setSidebarCollapsed}
+                  sidebarCompact={sidebarCollapsed}
+                />
+              </aside>
+            </div>
           ) : (
             <div className={styles.gameLayout}>
               {isSpectator && <SpectatorBanner />}
@@ -166,6 +191,7 @@ export default function RoomPage() {
       )}
       <CardRevealNotification />
       <EliminationAnimation />
+      <RankingTableModal />
       {showSettingsHelpModal && (
         <SettingsHelpModal
           onClose={() => setShowSettingsHelpModal(false)}

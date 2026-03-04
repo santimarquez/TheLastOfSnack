@@ -44,7 +44,7 @@
     "footerTerms": "Terms",
     "footerSupport": "Support",
     "footerDiscord": "Discord",
-    "footerCopy": "© 2024 The Last of the Snacks. All rights reserved. Do not swallow the game pieces."
+    "footerCopy": "© {year} The Last of the Snacks. All rights reserved. Do not swallow the game pieces."
   },
   "howToPlay": {
     "rulebookTag": "RULEBOOK V1.0",
@@ -103,7 +103,7 @@
     "ctaReady": "Ready to Crumble?",
     "startNewGame": "Start New Game",
     "goBack": "Go Back",
-    "footerCopy": "© 2024 The Last of the Snacks. All calories included."
+    "footerCopy": "© {year} The Last of the Snacks. All calories included."
   },
   "lobby": {
     "title": "Kitchen Lobby",
@@ -131,7 +131,9 @@
     "waitingForHost5": "We're all in. The host holds the start button!",
     "bot": "Bot",
     "addBot": "Add Bot",
-    "removeBot": "Remove bot"
+    "removeBot": "Remove bot",
+    "kickPlayer": "Kick {name}",
+    "kickPlayerTitle": "Remove this player from the room"
   },
   "connectionLost": {
     "crisisSub": "SYSTEM ERROR: MILK_OVERFLOW",
@@ -139,6 +141,7 @@
     "crisisCopy": "The milk has spilled! We lost your signal in the kitchen chaos. Don't let your snacks get cold!",
     "rejoinBattle": "Rejoin the Battle",
     "exitToPantry": "Exit to Pantry",
+    "kicked": "You were removed from the room by the host.",
     "notFoundLabel": "ERROR 404",
     "notFoundTitle": "SNACK",
     "notFoundHighlight": "NOT FOUND",
@@ -147,7 +150,7 @@
     "enterNewRoomCode": "ENTER NEW ROOM CODE",
     "codeHint": "Common codes look like: BREAD-42, CHIP-X9, SODA-01",
     "emptyBadge": "EMPTY!",
-    "footerCopy": "© 2024 The Last of the Snacks. All crumbs reserved.",
+    "footerCopy": "© {year} The Last of the Snacks. All crumbs reserved.",
     "helpCenter": "Help Center",
     "recipeGuide": "Recipe Guide",
     "contactChef": "Contact Chef"
@@ -157,6 +160,10 @@
     "deck": "Deck"
   },
   "gameEnd": {
+    "podiumTitle": "Winner Winner Snack Dinner!",
+    "roundComplete": "Round {round} complete",
+    "continueToRound": "Continue to Round {round}",
+    "finalResults": "Final Results",
     "survived": "SURVIVED!",
     "winner": "WINNER!",
     "winnerNameFallback": "Winner",
@@ -173,10 +180,10 @@
     "badgeSurvivor": "Survivor",
     "badgeMvp": "MVP",
     "playAgain": "Play Again",
-    "backToLobby": "Back to Lobby",
+    "backToLobby": "Back to start",
     "playAgainTitle": "Start a new game",
     "playAgainTitleHostOnly": "Only the host can start again",
-    "footerCopy": "Crunching the competition since 2024"
+    "footerCopy": "Crunching the competition since {year}"
   },
   "roundTransition": {
     "gameTitle": "Last Snack Standing",
@@ -236,7 +243,8 @@
     "emoteSalty": "Salty",
     "emoteSpicy": "Spicy",
     "emoteRaw": "Raw",
-    "emoteBurned": "Burned"
+    "emoteBurned": "Burned",
+    "insertEmoji": "Insert emoji"
   },
   "cards": {
     "microwave": {
@@ -281,7 +289,7 @@
     },
     "foil_wrap": {
       "title": "Foil Wrap",
-      "action": "Block one attack"
+      "action": "Blocks the next attack on you. Always applies to the next incoming attack; cannot be played from hand to block—place it on your avatar when you receive it."
     }
   },
   "gameTable": {
@@ -296,12 +304,14 @@
     "timerUnit": "SEC",
     "endTurnTitle": "Play a card to take your turn, or wait for the timer",
     "drawCard": "Draw a card",
-    "drawCardPrompt": "Drag from deck to your hand to draw",
+    "drawCardPrompt": "Drag from deck to your hand or double-click to draw",
     "dragDeckHere": "Drag a card from the deck here",
     "notYourTurnTitle": "Not your turn",
     "waitingForTurn": "Waiting for {name}'s turn",
     "cardTypeSuffix": "card",
     "selectTarget": "Select a target",
+    "dropToTarget": "Drop to target",
+    "dropToDiscard": "Drop to discard",
     "selectCardsToDiscard": "Select {count} cards to discard",
     "discard": "Discard",
     "eliminated": "Eliminated",

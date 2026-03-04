@@ -281,7 +281,7 @@ export default function HomePage() {
             <a href="#">{t("home.footerSupport")}</a>
             <a href="#">{t("home.footerDiscord")}</a>
           </div>
-          <p className={styles.footerCopy}>{t("home.footerCopy")}</p>
+          <p className={styles.footerCopy}>{t("home.footerCopy", { year: String(new Date().getFullYear()) })}</p>
         </footer>
       </div>
     </div>

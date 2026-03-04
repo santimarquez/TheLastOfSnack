@@ -41,6 +41,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
     setCardDrawn,
     setPlayerEliminated,
     setGameEnded,
+    setShowRoundTransition,
     addChat,
     setStateSync,
     addActionLogEntry,
@@ -90,6 +91,11 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
       const p = payload as Record<string, unknown>;
 
       switch (type) {
+        case "kicked":
+          setError((p.message as string) || "KICKED");
+          setJoinFailed(true);
+          setConnectionStatus("disconnected");
+          break;
         case "joined":
           setConnectionStatus("connected");
           setError(null);
@@ -222,6 +228,19 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
           });
           break;
         }
+        case "round_ended": {
+          const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          const winnerId = p.winnerId as string | null;
+          const players = gs?.players ?? [];
+          const winnerName = winnerId ? players.find((pl: { id: string }) => pl.id === winnerId)?.displayName : undefined;
+          addActionLogEntry(
+            winnerName
+              ? { id: `end-${Date.now()}-${Math.random().toString(36).slice(2)}`, kind: "game_over_winner", winnerName }
+              : { id: `end-${Date.now()}-${Math.random().toString(36).slice(2)}`, kind: "game_over_draw" }
+          );
+          setGameEnded(winnerId ?? null, gs);
+          break;
+        }
         case "game_ended": {
           const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
           const winnerId = p.winnerId as string | null;
@@ -232,10 +251,14 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
               ? { id: `end-${Date.now()}-${Math.random().toString(36).slice(2)}`, kind: "game_over_winner", winnerName }
               : { id: `end-${Date.now()}-${Math.random().toString(36).slice(2)}`, kind: "game_over_draw" }
           );
-          setGameEnded(
-            winnerId ?? null,
-            gs
-          );
+          setGameEnded(winnerId ?? null, gs);
+          break;
+        }
+        case "round_started": {
+          const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          const round = (p.round as 1 | 2 | 3) ?? 2;
+          setStateSync(gs);
+          setShowRoundTransition(true, round);
           break;
         }
         case "chat":

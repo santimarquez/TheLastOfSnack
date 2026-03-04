@@ -122,7 +122,7 @@
   right: 0;
   bottom: var(--hand-height);
   width: 20rem;
-  z-index: 10;
+  z-index: 50;
   border-left: 1px solid rgba(244, 37, 37, 0.2);
   background: rgba(34, 16, 16, 0.95);
   backdrop-filter: blur(16px);
@@ -130,12 +130,22 @@
   flex-direction: column;
   min-height: 0;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
-  transition: width var(--transition-normal) ease, box-shadow var(--transition-normal) ease;
+  transition:
+    width var(--transition-normal) ease,
+    box-shadow var(--transition-normal) ease;
 }
 
 .gameSidebarCollapsed {
   width: 3.5rem;
   box-shadow: -2px 0 12px rgba(0, 0, 0, 0.3);
+}
+
+.gameLayoutEnded {
+  --hand-height: 0;
+}
+
+.gameSidebarEnded {
+  bottom: 0;
 }
 
 .footerBar {

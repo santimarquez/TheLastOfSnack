@@ -22,8 +22,8 @@ export function buildGameStateView(room: Room, forPlayerId: string | null): Game
     const isPeeked = Boolean(forPlayerId && gameState.peekedRoles?.[forPlayerId]?.[p.id]);
     const isWinner = p.id === gameState.winnerId;
     const inLobby = gameState.phase === "lobby";
-    const inGame = gameState.phase === "playing" || gameState.phase === "ended";
-    const gameEnded = gameState.phase === "ended";
+    const inGame = gameState.phase === "playing" || gameState.phase === "round_ended" || gameState.phase === "ended";
+    const gameEnded = gameState.phase === "ended" || gameState.phase === "round_ended";
     // In lobby: show real avatar (players choose, no hidden identity yet).
     // In game: show real avatar when viewer is self, peeked, revealed, winner; when game ended, show all.
     if (p.avatarId && (inLobby || inGame)) {
@@ -67,5 +67,7 @@ export function buildGameStateView(room: Room, forPlayerId: string | null): Game
     discardPile: gameState.discardPile ? [...gameState.discardPile] : undefined,
     players,
     eliminationAnimationLock: gameState.eliminationAnimationLock,
+    currentRound: gameState.currentRound,
+    roundResults: gameState.roundResults ? [...gameState.roundResults] : undefined,
   };
 }

@@ -69,6 +69,46 @@
   }
 }
 
+/* When you are NOT eliminated: neutral/positive colors (amber/gold) instead of red */
+.overlayPositive .popupGlow {
+  background: linear-gradient(135deg, #eab308, rgba(234, 179, 8, 0.7));
+  box-shadow: 0 0 50px rgba(234, 179, 8, 0.35);
+}
+
+.overlayPositive .popup {
+  border-color: rgba(234, 179, 8, 0.5);
+}
+
+.overlayPositive .popupBgDeco {
+  background: radial-gradient(
+    circle at center,
+    rgba(234, 179, 8, 0.12),
+    transparent 70%
+  );
+}
+
+.overlayPositive .avatarGlow {
+  background: #eab308;
+}
+
+.overlayPositive .avatarCircle {
+  border-color: #eab308;
+  background: rgba(234, 179, 8, 0.08);
+}
+
+.overlayPositive .alertLabel {
+  color: #eab308;
+}
+
+.overlayPositive .btnPrimary {
+  background: #eab308;
+  box-shadow: 0 4px 14px rgba(234, 179, 8, 0.35);
+}
+
+.overlayPositive .btnPrimary:hover {
+  filter: brightness(1.08);
+}
+
 /* Optional camera shake - subtle */
 .cameraShake {
   animation: cameraShake 0.5s ease-out 0.1s;

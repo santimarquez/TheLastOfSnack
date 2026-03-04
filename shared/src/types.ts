@@ -31,7 +31,17 @@ export interface LastAction {
   targetId?: string;
 }
 
-export type GamePhase = "lobby" | "assigning" | "playing" | "ended";
+export type GamePhase = "lobby" | "assigning" | "playing" | "round_ended" | "ended";
+
+/** Result of one round (1–3) for accumulation. */
+export interface RoundResult {
+  round: 1 | 2 | 3;
+  winnerId: string;
+  eliminationsByPlayerId: Record<string, number>;
+  eliminatedAt: Record<string, number>;
+  gameStartedAt: number;
+  gameEndedAt: number;
+}
 export type PlayerStatus = "active" | "eliminated" | "spectator" | "disconnected";
 
 /** Player (server model). Client view omits role and hand for other players. */
@@ -86,6 +96,12 @@ export interface GameState {
   discardPile?: Card[];
   /** True during elimination animation - blocks all game actions */
   eliminationAnimationLock?: boolean;
+  /** True while client(s) are viewing round transition screen - blocks bot turns */
+  roundTransitionLock?: boolean;
+  /** Current round (1, 2, or 3). Set when game starts and when next round starts. */
+  currentRound?: 1 | 2 | 3;
+  /** Results of completed rounds for accumulated stats. */
+  roundResults?: RoundResult[];
 }
 
 /** Room settings */
@@ -156,4 +172,8 @@ export interface GameStateView {
   players: PlayerView[];
   /** True during elimination animation - blocks all game actions */
   eliminationAnimationLock?: boolean;
+  /** Current round (1, 2, or 3). */
+  currentRound?: 1 | 2 | 3;
+  /** Results of completed rounds for accumulated stats. */
+  roundResults?: RoundResult[];
 }
