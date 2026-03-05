@@ -46,6 +46,12 @@ export const CARD_META: Record<string, CardMeta> = {
       "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/74e951b6-8216-4cf1-10e5-fefb4f01c400/public",
     requiresTarget: true,
   },
+  steam: {
+    type: "steam",
+    imageUrl:
+      "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/e7e501d4-4dd3-4f39-2b10-36be259e6000/public",
+    requiresTarget: true,
+  },
   spoil: {
     type: "spoil",
     imageUrl:

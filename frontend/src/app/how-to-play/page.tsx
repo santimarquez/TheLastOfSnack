@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "@/i18n/context";
 import { ActionCard } from "@/components/ActionCard";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { CARD_META } from "@/config/cards";
 import { SNACK_AVATAR_URLS } from "@/constants/avatars";
 import styles from "./page.module.css";
@@ -23,14 +24,17 @@ export default function HowToPlayPage() {
           </span>
           <h2 className={styles.logoText}>{t("common.appName")}</h2>
         </Link>
-        <button
-          type="button"
-          className={styles.backBtn}
-          onClick={() => router.back()}
-          aria-label={t("common.goBack")}
-        >
-          <span className="material-symbols-outlined">arrow_back</span>
-        </button>
+        <div className={styles.headerActions}>
+          <LocaleSwitcher />
+          <button
+            type="button"
+            className={styles.backBtn}
+            onClick={() => router.back()}
+            aria-label={t("common.goBack")}
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
+        </div>
       </header>
 
       <main className={styles.main}>
@@ -90,78 +94,37 @@ export default function HowToPlayPage() {
             <p className={styles.secretCopy}>
               {t("howToPlay.secretCopy")}
             </p>
-            <div className={styles.characterCards}>
-              <div className={styles.characterCard}>
-                <div className={styles.characterAvatar}>
-                  <img src={SNACK_AVATAR_URLS.pizza} alt="" aria-hidden />
+          </div>
+          <div className={styles.snackCardsGrid}>
+            {[
+              { id: "pizza", nameKey: "characterPizza", weaknessKey: "characterPizzaWeakness", quoteKey: "characterPizzaQuote", avatarUrl: SNACK_AVATAR_URLS.pizza },
+              { id: "sushi", nameKey: "characterSushi", weaknessKey: "characterSushiWeakness", quoteKey: "characterSushiQuote", avatarUrl: SNACK_AVATAR_URLS.sushi },
+              { id: "donut", nameKey: "characterDonut", weaknessKey: "characterDonutWeakness", quoteKey: "characterDonutQuote", avatarUrl: SNACK_AVATAR_URLS.donut },
+              { id: "ice_cream", nameKey: "characterIceCream", weaknessKey: "characterIceCreamWeakness", quoteKey: "characterIceCreamQuote", avatarUrl: SNACK_AVATAR_URLS.ice_cream },
+              { id: "burger", nameKey: "characterBurger", weaknessKey: "characterBurgerWeakness", quoteKey: "characterBurgerQuote", avatarUrl: SNACK_AVATAR_URLS.burger },
+              { id: "taco", nameKey: "characterTaco", weaknessKey: "characterTacoWeakness", quoteKey: "characterTacoQuote", avatarUrl: SNACK_AVATAR_URLS.taco },
+              { id: "fries", nameKey: "characterFries", weaknessKey: "characterFriesWeakness", quoteKey: "characterFriesQuote", avatarUrl: SNACK_AVATAR_URLS.fries },
+            ].map((snack) => (
+              <div key={snack.id} className={styles.snackCard}>
+                <div className={styles.snackCardImage}>
+                  <div className={styles.snackCardImageOverlay} aria-hidden />
+                  <img src={snack.avatarUrl} alt="" aria-hidden />
                 </div>
-                <div className={styles.characterInfo}>
-                  <strong>{t("howToPlay.characterPizza")}</strong>
-                  <span className={styles.characterWeakness}>{t("howToPlay.characterPizzaWeakness")}</span>
-                  <p className={styles.characterQuote}>{t("howToPlay.characterPizzaQuote")}</p>
+                <div className={styles.snackCardBody}>
+                  <h3 className={styles.snackCardName}>{t(`howToPlay.${snack.nameKey}`)}</h3>
+                  <div className={styles.snackCardWeakness}>
+                    <div className={styles.snackCardWeaknessLabel}>
+                      <span className="material-symbols-outlined" aria-hidden>skull</span>
+                      <span>{t("gameTable.weakness")}:</span>
+                    </div>
+                    <p className={styles.snackCardWeaknessValue}>{t(`howToPlay.${snack.weaknessKey}`)}</p>
+                  </div>
                 </div>
+                <footer className={styles.snackCardFooter}>
+                  <p className={styles.snackCardQuote}>{t(`howToPlay.${snack.quoteKey}`)}</p>
+                </footer>
               </div>
-              <div className={styles.characterCard}>
-                <div className={styles.characterAvatar}>
-                  <img src={SNACK_AVATAR_URLS.sushi} alt="" aria-hidden />
-                </div>
-                <div className={styles.characterInfo}>
-                  <strong>{t("howToPlay.characterSushi")}</strong>
-                  <span className={styles.characterWeakness}>{t("howToPlay.characterSushiWeakness")}</span>
-                  <p className={styles.characterQuote}>{t("howToPlay.characterSushiQuote")}</p>
-                </div>
-              </div>
-              <div className={styles.characterCard}>
-                <div className={styles.characterAvatar}>
-                  <img src={SNACK_AVATAR_URLS.donut} alt="" aria-hidden />
-                </div>
-                <div className={styles.characterInfo}>
-                  <strong>{t("howToPlay.characterDonut")}</strong>
-                  <span className={styles.characterWeakness}>{t("howToPlay.characterDonutWeakness")}</span>
-                  <p className={styles.characterQuote}>{t("howToPlay.characterDonutQuote")}</p>
-                </div>
-              </div>
-              <div className={styles.characterCard}>
-                <div className={styles.characterAvatar}>
-                  <img src={SNACK_AVATAR_URLS.ice_cream} alt="" aria-hidden />
-                </div>
-                <div className={styles.characterInfo}>
-                  <strong>{t("howToPlay.characterIceCream")}</strong>
-                  <span className={styles.characterWeakness}>{t("howToPlay.characterIceCreamWeakness")}</span>
-                  <p className={styles.characterQuote}>{t("howToPlay.characterIceCreamQuote")}</p>
-                </div>
-              </div>
-              <div className={styles.characterCard}>
-                <div className={styles.characterAvatar}>
-                  <img src={SNACK_AVATAR_URLS.burger} alt="" aria-hidden />
-                </div>
-                <div className={styles.characterInfo}>
-                  <strong>{t("howToPlay.characterBurger")}</strong>
-                  <span className={styles.characterWeakness}>{t("howToPlay.characterBurgerWeakness")}</span>
-                  <p className={styles.characterQuote}>{t("howToPlay.characterBurgerQuote")}</p>
-                </div>
-              </div>
-              <div className={styles.characterCard}>
-                <div className={styles.characterAvatar}>
-                  <img src={SNACK_AVATAR_URLS.taco} alt="" aria-hidden />
-                </div>
-                <div className={styles.characterInfo}>
-                  <strong>{t("howToPlay.characterTaco")}</strong>
-                  <span className={styles.characterWeakness}>{t("howToPlay.characterTacoWeakness")}</span>
-                  <p className={styles.characterQuote}>{t("howToPlay.characterTacoQuote")}</p>
-                </div>
-              </div>
-              <div className={styles.characterCard}>
-                <div className={styles.characterAvatar} aria-hidden>
-                  <span className={styles.characterEmoji}>🍟</span>
-                </div>
-                <div className={styles.characterInfo}>
-                  <strong>{t("howToPlay.characterFries")}</strong>
-                  <span className={styles.characterWeakness}>{t("howToPlay.characterFriesWeakness")}</span>
-                  <p className={styles.characterQuote}>{t("howToPlay.characterFriesQuote")}</p>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </section>
 

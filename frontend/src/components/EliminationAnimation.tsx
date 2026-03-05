@@ -25,6 +25,8 @@ function getMessageKey(cardType: string): string {
       return "gameTable.eliminationHasBeenSpoiled";
     case "shake":
       return "gameTable.eliminationHasBeenShaken";
+    case "steam":
+      return "gameTable.eliminationHasBeenSteamed";
     default:
       return "gameTable.eliminationHasBeenEliminated";
   }
@@ -46,6 +48,8 @@ function getFlavorKey(cardType: string): string {
       return "gameTable.eliminationFlavorSpoil";
     case "shake":
       return "gameTable.eliminationFlavorShake";
+    case "steam":
+      return "gameTable.eliminationFlavorSteam";
     default:
       return "gameTable.eliminationFlavorGeneric";
   }
@@ -100,6 +104,9 @@ export function EliminationAnimation() {
   if (!eliminationAnimation || typeof document === "undefined") return null;
 
   const isYouEliminated = playerId === eliminationAnimation.playerId;
+  /* When you are eliminated, only show EliminationModal; skip the "cooked" overlay. */
+  if (isYouEliminated) return null;
+
   const messageKey = getMessageKey(eliminationAnimation.cardType);
   const flavorKey = getFlavorKey(eliminationAnimation.cardType);
 

@@ -35,8 +35,17 @@ export function advanceTurn(room: Room): void {
   gameState.currentTurnIndex = idx;
 }
 
+/** Shuffle array in place (Fisher–Yates). */
+function shuffle<T>(arr: T[]): void {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
 export function initTurnOrder(room: Room): void {
-  const order = room.players.map((p) => p.id).sort(() => Math.random() - 0.5);
+  const order = room.players.map((p) => p.id);
+  shuffle(order);
   room.gameState.turnOrder = order;
   room.gameState.currentTurnIndex = 0;
 }

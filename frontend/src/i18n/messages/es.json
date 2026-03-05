@@ -16,6 +16,7 @@
     "host": "Anfitrión",
     "ready": "Listo",
     "share": "Compartir",
+    "linkCopied": "¡Enlace copiado!",
     "saveChanges": "Guardar cambios",
     "leaveGame": "Salir del juego",
     "mute": "Silenciar música",
@@ -183,7 +184,10 @@
     "backToLobby": "Volver al inicio",
     "playAgainTitle": "Empezar una nueva partida",
     "playAgainTitleHostOnly": "Solo el anfitrión puede reiniciar",
-    "footerCopy": "Machacando a la competencia desde {year}"
+    "footerCopy": "Machacando a la competencia desde {year}",
+    "shareTitle": "The Last of the Snacks",
+    "shareText": "¡Mirad mis resultados de la ronda {round}!",
+    "shareTextFinal": "¡Acabo de terminar una partida de The Last of the Snacks!"
   },
   "roundTransition": {
     "gameTitle": "Last Snack Standing",
@@ -261,15 +265,19 @@
     },
     "double_salt": {
       "title": "Doble Sal",
-      "action": "Elimina al Donut al instante"
+      "action": "Elige un jugador. Si es Donut → eliminado"
     },
     "shake": {
       "title": "Agitar",
-      "action": "Elimina al Taco al instante"
+      "action": "Elige un jugador. Si es Taco → eliminado"
+    },
+    "steam": {
+      "title": "Vapor",
+      "action": "Elige un jugador. Si es Patatas fritas → eliminado"
     },
     "spoil": {
       "title": "Echar a perder",
-      "action": "Elimina al Burger al instante"
+      "action": "Elige un jugador. Si es Burger → eliminado"
     },
     "buffet": {
       "title": "Buffet",
@@ -336,12 +344,14 @@
     "eliminationHasBeenSalted": "¡{name} ha sido salado!",
     "eliminationHasBeenSpoiled": "¡{name} ha sido estropeado!",
     "eliminationHasBeenShaken": "¡{name} ha sido sacudido!",
+    "eliminationHasBeenSteamed": "¡{name} ha sido cocido al vapor!",
     "eliminationHasBeenEliminated": "¡{name} ha sido eliminado!",
     "eliminationFlavorMicrowave": "\"El microondas se ha cobrado otra víctima.\"",
     "eliminationFlavorFreeze": "\"Congelado. El frío nunca les molestó... hasta ahora.\"",
     "eliminationFlavorDoubleSalt": "\"¡Demasiada sal! Desintegrado por el sodio.\"",
     "eliminationFlavorSpoil": "\"Pasada su fecha de caducidad. ¡Estropeado!\"",
     "eliminationFlavorShake": "\"Sacudido hasta despedazarse. Agitado, no mezclado... hasta la muerte.\"",
+    "eliminationFlavorSteam": "\"Cocido al vapor hasta empaparse. Otra patata frita muerde el polvo.\"",
     "eliminationFlavorGeneric": "\"Otro snack muerde el polvo.\"",
     "eliminationViewRankings": "Ver clasificación",
     "eliminationDismiss": "Cerrar"

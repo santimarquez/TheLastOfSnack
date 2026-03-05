@@ -20,6 +20,13 @@ const HERO_BG_IMAGE =
 /** Base URL for HTTP API (create room). When empty, use same-origin /api/rooms. */
 const getRoomsUrl = () => (GAME_SERVER ? `${GAME_SERVER}/rooms` : "/api/rooms");
 
+const DISPLAY_NAME_STORAGE_KEY = "last-of-snack-display-name";
+
+function getStoredDisplayNameForForm(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(DISPLAY_NAME_STORAGE_KEY) ?? "";
+}
+
 export default function HomePage() {
   const router = useRouter();
   const { t } = useTranslations();
@@ -29,7 +36,7 @@ export default function HomePage() {
     setShowSettingsHelpModal,
     settingsHelpModalTab,
   } = useGameStore();
-  const [displayName, setDisplayName] = useState("");
+  const [displayName, setDisplayName] = useState(() => getStoredDisplayNameForForm());
   const [joinCode, setJoinCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -37,6 +44,9 @@ export default function HomePage() {
   async function handleCreate() {
     setError("");
     const name = displayName.trim() || getGuestDisplayName(t);
+    if (typeof window !== "undefined" && displayName.trim()) {
+      localStorage.setItem(DISPLAY_NAME_STORAGE_KEY, displayName.trim().slice(0, 32));
+    }
     setLoading(true);
     try {
       const res = await fetch(getRoomsUrl(), {
@@ -71,6 +81,9 @@ export default function HomePage() {
       return;
     }
     const name = displayName.trim() || getGuestDisplayName(t);
+    if (typeof window !== "undefined" && displayName.trim()) {
+      localStorage.setItem(DISPLAY_NAME_STORAGE_KEY, displayName.trim().slice(0, 32));
+    }
     router.push(`/room/${code}?displayName=${encodeURIComponent(name)}`);
   }
 

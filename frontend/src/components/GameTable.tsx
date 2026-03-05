@@ -481,7 +481,7 @@ export function GameTable({ send }: { send: SendFn }) {
                 )}
                 {!roleToShow && revealedCategories[p.id] && (
                   <span className={styles.playerSlotCategory}>
-                    {t(`gameTable.${(revealedCategories[p.id] ?? "").toLowerCase()}`)}
+                    {t(`cardReveal.${(revealedCategories[p.id] ?? "").toLowerCase()}`)}
                   </span>
                 )}
                 {p.status === "spectator" && <span className={styles.playerSlotOutLabel}>{t("gameTable.out")}</span>}
@@ -662,7 +662,7 @@ export function GameTable({ send }: { send: SendFn }) {
                   )}
                   {!roleToShow && revealedCategories[p.id] && (
                     <span className={styles.playerSlotCategory}>
-                      {t(`gameTable.${(revealedCategories[p.id] ?? "").toLowerCase()}`)}
+                      {t(`cardReveal.${(revealedCategories[p.id] ?? "").toLowerCase()}`)}
                     </span>
                   )}
                   {p.status === "spectator" && <span className={styles.playerSlotOutLabel}>{t("gameTable.out")}</span>}

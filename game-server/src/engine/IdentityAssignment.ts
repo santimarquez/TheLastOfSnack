@@ -85,7 +85,7 @@ export function assignRoles(players: Player[]): void {
       p.avatarId = shuffledIds[idx] ?? null;
     });
   }
-  // last and fries have no avatars in AVATAR_IDS_BY_SNACK; assign an unused avatar so everyone has one
+  // last has no avatars in AVATAR_IDS_BY_SNACK; assign an unused avatar so everyone has one
   const used = new Set(
     players.map((p) => p.avatarId).filter(Boolean) as string[],
   );

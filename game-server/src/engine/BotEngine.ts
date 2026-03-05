@@ -10,6 +10,7 @@ const CARD_META: Record<string, { requiresTarget: boolean; requiresDiscardCards?
   salt: { requiresTarget: true },
   double_salt: { requiresTarget: true },
   shake: { requiresTarget: true },
+  steam: { requiresTarget: true },
   spoil: { requiresTarget: true },
   buffet: { requiresTarget: false },
   trash: { requiresTarget: true },

@@ -1,10 +1,16 @@
 "use client";
 
 import { createPortal } from "react-dom";
+import { useState, useCallback } from "react";
 import { useTranslations } from "@/i18n/context";
 import { useGameStore } from "@/store/gameStore";
 import type { GameStateView, PlayerView, RoundResult } from "@last-of-snack/shared";
 import styles from "./GameEndScreen.module.css";
+
+function getShareUrl(): string {
+  if (typeof window === "undefined") return process.env.NEXT_PUBLIC_SITE_URL ?? "https://thelastofsnack.com";
+  return window.location.origin;
+}
 
 function computeSnackPointsForRound(
   _gs: GameStateView,
@@ -87,6 +93,28 @@ export function RankingTableModal() {
   const gameState = useGameStore((s) => s.gameState);
   const playerId = useGameStore((s) => s.playerId);
   const setShowRankingModal = useGameStore((s) => s.setShowRankingModal);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const handleShare = useCallback(async () => {
+    const url = getShareUrl();
+    const title = t("gameEnd.shareTitle");
+    const text = t("gameEnd.shareTextFinal");
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({ title, text, url });
+        return;
+      }
+    } catch (err) {
+      if ((err as { name?: string })?.name === "AbortError") return;
+    }
+    try {
+      await navigator.clipboard?.writeText(url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  }, [t]);
 
   const show = useGameStore((s) => s.showRankingModal);
   if (!show || typeof document === "undefined") return null;
@@ -111,14 +139,31 @@ export function RankingTableModal() {
           <h2 id="ranking-modal-title" style={{ margin: 0, fontSize: "1.25rem" }}>
             {t("gameEnd.matchResults")}
           </h2>
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label={t("common.close")}
-            onClick={() => setShowRankingModal(false)}
-          >
-            <span className="material-symbols-outlined">close</span>
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div className={styles.shareWrap}>
+              <button
+                type="button"
+                className={styles.iconBtn}
+                aria-label={linkCopied ? t("common.linkCopied") : t("common.share")}
+                onClick={handleShare}
+              >
+                <span className="material-symbols-outlined">share</span>
+              </button>
+              {linkCopied && (
+                <span className={styles.shareCopied} role="status" aria-live="polite">
+                  {t("common.linkCopied")}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              className={styles.iconBtn}
+              aria-label={t("common.close")}
+              onClick={() => setShowRankingModal(false)}
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
         </div>
         <div className={styles.tableWrap}>
           <table className={styles.table}>

@@ -7,6 +7,13 @@ import { useGameStore } from "@/store/gameStore";
 import { useSoundStore, MUSIC_ENABLED } from "@/store/soundStore";
 import styles from "./SettingsHelpModal.module.css";
 
+const DISPLAY_NAME_STORAGE_KEY = "last-of-snack-display-name";
+
+function getStoredDisplayName(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(DISPLAY_NAME_STORAGE_KEY) ?? "";
+}
+
 type TabId = "settings" | "how-to-play";
 
 type SendFn = (type: string, payload: Record<string, unknown>) => void;
@@ -29,7 +36,7 @@ export function SettingsHelpModal({
   const { displayName, gameState, playerId, reset } = useGameStore();
   const { volume, setVolume, muted, toggleMuted } = useSoundStore();
   const me = gameState?.players?.find((p) => p.id === playerId);
-  const currentName = me?.displayName ?? displayName ?? "";
+  const currentName = me?.displayName ?? displayName ?? getStoredDisplayName();
 
   const [tab, setTab] = useState<TabId>(initialTab);
   const [nameInput, setNameInput] = useState(currentName);
@@ -54,7 +61,11 @@ export function SettingsHelpModal({
   }, [onClose]);
 
   function handleSave() {
-    const name = nameInput.trim().slice(0, 32) || t("common.player");
+    const trimmed = nameInput.trim().slice(0, 32);
+    const name = trimmed || t("common.player");
+    if (typeof window !== "undefined") {
+      localStorage.setItem(DISPLAY_NAME_STORAGE_KEY, trimmed);
+    }
     if (send && name !== currentName) {
       send("set_name", { displayName: name });
     }

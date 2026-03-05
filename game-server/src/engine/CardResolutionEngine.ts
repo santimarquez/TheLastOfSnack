@@ -146,6 +146,24 @@ export function resolveCard(
       }
       break;
     }
+    case "steam": {
+      if (!targetId) return { error: "Steam requires a target" };
+      const steamTarget = room.players.find((p) => p.id === targetId);
+      if (!steamTarget) return { error: "Target not found" };
+      if (steamTarget.status !== "active") return { error: "Target is not active" };
+      if (steamTarget.id === playerId) return { error: "Cannot target yourself" };
+      if (steamTarget.role?.id === "fries") {
+        if (consumeShield(room, steamTarget.id)) {
+          result.blocked = { targetId: steamTarget.id };
+          result.outcome = "blocked";
+        } else {
+          eliminatePlayer(room, steamTarget.id);
+          result.eliminated = [steamTarget.id];
+          result.outcome = "eliminated";
+        }
+      }
+      break;
+    }
     case "spoil": {
       if (!targetId) return { error: "Spoil requires a target" };
       const spoilTarget = room.players.find((p) => p.id === targetId);
@@ -164,8 +182,12 @@ export function resolveCard(
     }
     case "buffet": {
       const active = room.players.filter((p) => p.status === "active");
+      // Player who played gets a card too: put them first so they're not skipped if deck runs out
+      const caster = active.find((p) => p.id === playerId);
+      const others = active.filter((p) => p.id !== playerId);
+      const ordered = caster ? [caster, ...others] : active;
       let deck = room.gameState.deck;
-      for (const p of active) {
+      for (const p of ordered) {
         const drawn = drawCard(deck);
         if (!drawn) break;
         deck = drawn.remaining;

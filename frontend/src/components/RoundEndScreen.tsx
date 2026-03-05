@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useTranslations } from "@/i18n/context";
 import { useGameStore } from "@/store/gameStore";
 import { useSoundStore, MUSIC_ENABLED } from "@/store/soundStore";
 import type { GameStateView, PlayerView, RoundResult } from "@last-of-snack/shared";
 import styles from "./GameEndScreen.module.css";
+
+function getShareUrl(): string {
+  if (typeof window === "undefined") return process.env.NEXT_PUBLIC_SITE_URL ?? "https://thelastofsnack.com";
+  return window.location.origin;
+}
 
 const REVEAL_INTERVAL_MS = 1200;
 const REVEAL_TRANSITION_MS = 1000;
@@ -113,6 +118,29 @@ export function RoundEndScreen({ send, isFinalRound }: RoundEndScreenProps) {
   const winnerSnackPoints = winnerAcc?.totalSnackPoints ?? 0;
 
   const [podiumRevealStep, setPodiumRevealStep] = useState(0);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const handleShare = useCallback(async () => {
+    const url = getShareUrl();
+    const title = t("gameEnd.shareTitle");
+    const text = isFinalRound ? t("gameEnd.shareTextFinal") : t("gameEnd.shareText", { round: String(currentRound) });
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({ title, text, url });
+        return;
+      }
+    } catch (err) {
+      if ((err as { name?: string })?.name === "AbortError") return;
+    }
+    try {
+      await navigator.clipboard?.writeText(url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  }, [t, isFinalRound, currentRound]);
+
   useEffect(() => {
     if (!isFinalRound) return;
     const t1 = setTimeout(() => setPodiumRevealStep(1), 1 * REVEAL_INTERVAL_MS);
@@ -151,13 +179,21 @@ export function RoundEndScreen({ send, isFinalRound }: RoundEndScreenProps) {
               </span>
             </button>
           )}
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label={t("common.share")}
-          >
-            <span className="material-symbols-outlined">share</span>
-          </button>
+          <div className={styles.shareWrap}>
+            <button
+              type="button"
+              className={styles.iconBtn}
+              aria-label={linkCopied ? t("common.linkCopied") : t("common.share")}
+              onClick={handleShare}
+            >
+              <span className="material-symbols-outlined">share</span>
+            </button>
+            {linkCopied && (
+              <span className={styles.shareCopied} role="status" aria-live="polite">
+                {t("common.linkCopied")}
+              </span>
+            )}
+          </div>
         </div>
       </header>
 
@@ -362,20 +398,27 @@ export function RoundEndScreen({ send, isFinalRound }: RoundEndScreenProps) {
                       <td>{acc.totalSnackPoints}</td>
                       <td>
                         <div className={styles.achievements}>
-                          {roundResults.map((rr, idx) => {
-                            const survived = rr.eliminatedAt[p.id] == null;
-                            return (
-                              <span key={idx} className={styles.achievementsRound}>
-                                {survived ? (
-                                  <span className={styles.badgePrimary}>
-                                    {t("gameEnd.badgeSurvivor")}
-                                  </span>
-                                ) : (
-                                  <span className={styles.badgeNeutral}>—</span>
-                                )}
-                              </span>
-                            );
-                          })}
+                          {(() => {
+                            let survivorShown = false;
+                            return roundResults.map((rr, idx) => {
+                              const survived = rr.eliminatedAt[p.id] == null;
+                              const showSurvivor = survived && !survivorShown;
+                              if (survived) survivorShown = true;
+                              return (
+                                <span key={idx} className={styles.achievementsRound}>
+                                  {showSurvivor ? (
+                                    <span className={styles.badgePrimary}>
+                                      {t("gameEnd.badgeSurvivor")}
+                                    </span>
+                                  ) : survived ? (
+                                    <span className={styles.badgeNeutral}>·</span>
+                                  ) : (
+                                    <span className={styles.badgeNeutral}>—</span>
+                                  )}
+                                </span>
+                              );
+                            });
+                          })()}
                           {winnerId === p.id && (
                             <span className={styles.achievementsRound}>
                               <span className={styles.badgeAmber}>

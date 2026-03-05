@@ -71,7 +71,7 @@
 }
 
 .chatColumn {
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
@@ -95,6 +95,7 @@
   }
 }
 
+
 /* Hand/HUD height - must match GameTable .hud */
 .gameLayout {
   --hand-height: 16rem;
@@ -115,9 +116,9 @@
   overflow: hidden;
 }
 
-/* Chat height = 100% minus hand/HUD area */
+/* Chat height = 100% minus hand/HUD area; fixed to viewport right */
 .gameSidebar {
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   bottom: var(--hand-height);

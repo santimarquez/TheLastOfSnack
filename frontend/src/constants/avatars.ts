@@ -15,11 +15,13 @@ export const AVATAR_URLS: Record<string, string> = {
   sushi_2: "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/3ec99e92-8c99-4a77-4579-339b71f69500/mobile",
   taco_1: "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/4aaa285e-2c67-41fe-3925-323075dd8a00/mobile",
   taco_2: "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/1dc03a6e-a0bd-49b3-69a1-f9d623308000/mobile",
+  fries_1: "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/2acb8578-31d8-4868-be72-e3fb0418fe00/mobile",
+  fries_2: "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/f6dc8744-d157-4f8b-e07a-f605db890100/mobile",
 };
 
 export const ALL_AVATAR_IDS = Object.keys(AVATAR_URLS) as string[];
 
-/** One avatar URL per snack type (for how-to-play character cards). Fries has no avatar. */
+/** One avatar URL per snack type (for how-to-play character cards). */
 export const SNACK_AVATAR_URLS: Record<string, string> = {
   pizza: AVATAR_URLS.pizza_1,
   donut: AVATAR_URLS.donut_1,
@@ -27,4 +29,5 @@ export const SNACK_AVATAR_URLS: Record<string, string> = {
   ice_cream: AVATAR_URLS.ice_cream_1,
   sushi: AVATAR_URLS.sushi_1,
   taco: AVATAR_URLS.taco_1,
+  fries: AVATAR_URLS.fries_1,
 };

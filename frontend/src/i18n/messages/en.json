@@ -16,6 +16,7 @@
     "host": "Host",
     "ready": "Ready",
     "share": "Share",
+    "linkCopied": "Link copied!",
     "saveChanges": "Save Changes",
     "leaveGame": "Leave Game",
     "mute": "Mute music",
@@ -183,7 +184,10 @@
     "backToLobby": "Back to start",
     "playAgainTitle": "Start a new game",
     "playAgainTitleHostOnly": "Only the host can start again",
-    "footerCopy": "Crunching the competition since {year}"
+    "footerCopy": "Crunching the competition since {year}",
+    "shareTitle": "The Last of the Snacks",
+    "shareText": "Check out my round {round} results!",
+    "shareTextFinal": "I just finished a game of The Last of the Snacks!"
   },
   "roundTransition": {
     "gameTitle": "Last Snack Standing",
@@ -261,15 +265,19 @@
     },
     "double_salt": {
       "title": "Double Salt",
-      "action": "Instantly eliminates Donut"
+      "action": "Target a player. If it's Donut → eliminated"
     },
     "shake": {
       "title": "Shake",
-      "action": "Instantly eliminates Taco"
+      "action": "Target a player. If it's Taco → eliminated"
+    },
+    "steam": {
+      "title": "Steam",
+      "action": "Target a player. If it's Fries → eliminated"
     },
     "spoil": {
       "title": "Spoil",
-      "action": "Instantly eliminates Burger"
+      "action": "Target a player. If it's Burger → eliminated"
     },
     "buffet": {
       "title": "Buffet",
@@ -289,7 +297,7 @@
     },
     "foil_wrap": {
       "title": "Foil Wrap",
-      "action": "Blocks the next attack on you. Always applies to the next incoming attack; cannot be played from hand to block—place it on your avatar when you receive it."
+      "action": "Blocks the next attack on you. Cannot be played from hand."
     }
   },
   "gameTable": {
@@ -336,12 +344,14 @@
     "eliminationHasBeenSalted": "{name} has been salted!",
     "eliminationHasBeenSpoiled": "{name} has been spoiled!",
     "eliminationHasBeenShaken": "{name} has been shaken!",
+    "eliminationHasBeenSteamed": "{name} has been steamed!",
     "eliminationHasBeenEliminated": "{name} has been eliminated!",
     "eliminationFlavorMicrowave": "\"The Microwave has claimed another victim.\"",
     "eliminationFlavorFreeze": "\"Frozen solid. The cold never bothered them... until now.\"",
     "eliminationFlavorDoubleSalt": "\"Too much salt! Desintegrated by sodium.\"",
     "eliminationFlavorSpoil": "\"Past its expiration date. Spoiled!\"",
     "eliminationFlavorShake": "\"Shaken to pieces. Shaken, not stirred... to death.\"",
+    "eliminationFlavorSteam": "\"Steamed to sogginess. Another fry bites the dust.\"",
     "eliminationFlavorGeneric": "\"Another snack bites the dust.\"",
     "eliminationViewRankings": "View Rankings",
     "eliminationDismiss": "Dismiss"

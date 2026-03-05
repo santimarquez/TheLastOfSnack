@@ -3,7 +3,7 @@ export const PLACEHOLDER_AVATAR_URL =
   "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/3c60c2cc-6327-45d8-94d9-7e483729a300/public";
 
 /**
- * 12 snack avatars: 2 per type (Pizza, Donut, Burger, Ice cream, Sushi, Taco).
+ * 14 snack avatars: 2 per type (Pizza, Donut, Burger, Ice cream, Sushi, Taco, Fries).
  * Same avatar is never assigned to two players in the same game.
  */
 export const AVATAR_URLS: Record<string, string> = {
@@ -19,6 +19,8 @@ export const AVATAR_URLS: Record<string, string> = {
   sushi_2: "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/3ec99e92-8c99-4a77-4579-339b71f69500/mobile",
   taco_1: "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/4aaa285e-2c67-41fe-3925-323075dd8a00/mobile",
   taco_2: "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/1dc03a6e-a0bd-49b3-69a1-f9d623308000/mobile",
+  fries_1: "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/2acb8578-31d8-4868-be72-e3fb0418fe00/mobile",
+  fries_2: "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/f6dc8744-d157-4f8b-e07a-f605db890100/mobile",
 };
 
 /** All avatar IDs (for lobby assignment). */
@@ -32,4 +34,5 @@ export const AVATAR_IDS_BY_SNACK: Record<string, [string, string]> = {
   ice_cream: ["ice_cream_1", "ice_cream_2"],
   sushi: ["sushi_1", "sushi_2"],
   taco: ["taco_1", "taco_2"],
+  fries: ["fries_1", "fries_2"],
 };
