@@ -21,3 +21,7 @@ export function hasRoom(code: string): boolean {
 export function getAllRoomCodes(): string[] {
   return [...rooms.keys()];
 }
+
+export function getAllRooms(): Room[] {
+  return [...rooms.values()];
+}

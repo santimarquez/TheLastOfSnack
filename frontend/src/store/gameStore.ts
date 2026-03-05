@@ -11,6 +11,8 @@ export interface ChatMessage {
 export interface LobbySettings {
   speedMode: boolean;
   suspicionMeter: boolean;
+  isPrivate?: boolean;
+  maxPlayers?: number;
 }
 
 /** Structured entry for the game action log; formatted with i18n in the UI. */
@@ -151,7 +153,7 @@ export const useGameStore = create<GameStore>((set) => ({
   reconnectToken: null,
   isHost: false,
   gameState: null,
-  lobbySettings: { speedMode: false, suspicionMeter: false },
+  lobbySettings: { speedMode: false, suspicionMeter: false, isPrivate: false, maxPlayers: 8 },
   chatMessages: [],
   actionLog: [],
   connectionStatus: "disconnected",
@@ -180,7 +182,7 @@ export const useGameStore = create<GameStore>((set) => ({
       isHost: data.isHost,
       reconnectToken: data.reconnectToken,
       gameState: data.gameState,
-      lobbySettings: data.lobbySettings ?? { speedMode: false, suspicionMeter: false },
+      lobbySettings: data.lobbySettings ?? { speedMode: false, suspicionMeter: false, isPrivate: false, maxPlayers: 8 },
       displayName: data.gameState.players?.find((p) => p.id === data.playerId)?.displayName ?? "",
       connectionStatus: "connected",
       error: null,
@@ -329,7 +331,7 @@ export const useGameStore = create<GameStore>((set) => ({
       reconnectToken: null,
       isHost: false,
       gameState: null,
-      lobbySettings: { speedMode: false, suspicionMeter: false },
+      lobbySettings: { speedMode: false, suspicionMeter: false, isPrivate: false, maxPlayers: 8 },
       chatMessages: [],
       actionLog: [],
       connectionStatus: "disconnected",

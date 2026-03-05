@@ -7,6 +7,8 @@ import { useTranslations, getGuestDisplayName } from "@/i18n/context";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { useSoundStore, MUSIC_ENABLED } from "@/store/soundStore";
 import { useGameStore } from "@/store/gameStore";
+import { getOrCreateCreatorId } from "@/utils/creatorId";
+import { Analytics, JOIN_METHOD_KEY } from "@/lib/analytics";
 import { SettingsHelpModal } from "@/components/SettingsHelpModal";
 import styles from "./page.module.css";
 
@@ -52,7 +54,7 @@ export default function HomePage() {
       const res = await fetch(getRoomsUrl(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ displayName: name }),
+        body: JSON.stringify({ displayName: name, creatorId: getOrCreateCreatorId() }),
       });
       const data = (await res.json()) as {
         roomCode?: string;
@@ -62,7 +64,11 @@ export default function HomePage() {
       if (!res.ok) {
         throw new Error(data.error ?? t("home.errorCreateRoom"));
       }
-      sessionStorage.setItem(`reconnect_${data.roomCode!}`, data.reconnectToken!);
+      Analytics.arenaCreated("home");
+      if (typeof sessionStorage !== "undefined") {
+        sessionStorage.setItem(JOIN_METHOD_KEY, "create");
+        sessionStorage.setItem(`reconnect_${data.roomCode!}`, data.reconnectToken!);
+      }
       router.push(
         `/room/${data.roomCode}?displayName=${encodeURIComponent(name)}`,
       );
@@ -81,8 +87,11 @@ export default function HomePage() {
       return;
     }
     const name = displayName.trim() || getGuestDisplayName(t);
-    if (typeof window !== "undefined" && displayName.trim()) {
-      localStorage.setItem(DISPLAY_NAME_STORAGE_KEY, displayName.trim().slice(0, 32));
+    if (typeof window !== "undefined") {
+      if (displayName.trim()) {
+        localStorage.setItem(DISPLAY_NAME_STORAGE_KEY, displayName.trim().slice(0, 32));
+      }
+      sessionStorage.setItem(JOIN_METHOD_KEY, "code");
     }
     router.push(`/room/${code}?displayName=${encodeURIComponent(name)}`);
   }
@@ -125,6 +134,9 @@ export default function HomePage() {
                 settings
               </span>
             </button>
+            <Link href="/arenas" className={styles.navLink}>
+              {t("home.openArenas")}
+            </Link>
             <Link href="/how-to-play" className={styles.navLink}>
               {t("home.howToPlay")}
             </Link>

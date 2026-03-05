@@ -21,6 +21,7 @@ import { SettingsHelpModal } from "@/components/SettingsHelpModal";
 import { ConnectionLostScreen } from "@/components/ConnectionLostScreen";
 import { LobbyLoadingScreen } from "@/components/LobbyLoadingScreen";
 import { RoundTransitionScreen } from "@/components/RoundTransitionScreen";
+import { Analytics } from "@/lib/analytics";
 import styles from "./page.module.css";
 
 const LOADING_MIN_MS = 3000;
@@ -45,17 +46,35 @@ export default function RoomPage() {
   const { gameState, playerId, connectionStatus, error, setError, showEliminationModal, setShowEliminationModal, showAssigningTransition, setShowAssigningTransition, showRoundTransition, setShowRoundTransition, roundTransitionRound, showSettingsHelpModal, setShowSettingsHelpModal, settingsHelpModalTab, joinFailed } = useGameStore();
   const { send, connect } = useGameSocket(stableRoomCode, name, reconnectToken);
 
+  const phase = gameState?.phase ?? "lobby";
+  const me = gameState?.players?.find((p) => p.id === playerId);
+  const isSpectator = me?.status === "spectator" || me?.status === "eliminated";
+  const showConnectionLost = connectionStatus === "disconnected" || joinFailed;
+  const hasJoined = !!playerId && !!gameState;
+
   useEffect(() => {
     if (playerId && reconnectToken) {
       sessionStorage.setItem(`reconnect_${roomCode}`, reconnectToken);
     }
   }, [playerId, reconnectToken, roomCode]);
 
-  const phase = gameState?.phase ?? "lobby";
-  const me = gameState?.players?.find((p) => p.id === playerId);
-  const isSpectator = me?.status === "spectator" || me?.status === "eliminated";
-  const showConnectionLost = connectionStatus === "disconnected" || joinFailed;
-  const hasJoined = !!playerId && !!gameState;
+  // Refs so unmount-only cleanup sees current values (cleanup must not run when phase changes, only on unmount).
+  const leaveCheckRef = useRef({ phase, playerId, connectionStatus, send, roomCode });
+  leaveCheckRef.current = { phase, playerId, connectionStatus, send, roomCode };
+
+  // When user leaves the room page (e.g. navigates to arenas or home), leave the lobby so others don't see them.
+  useEffect(() => {
+    return () => {
+      const { phase: p, playerId: pid, connectionStatus: cs, send: sendFn, roomCode: code } = leaveCheckRef.current;
+      if (p === "lobby" && pid && cs === "connected") {
+        Analytics.lobbyLeft();
+        sendFn("leave_room", {});
+        if (typeof sessionStorage !== "undefined") {
+          sessionStorage.removeItem(`reconnect_${code}`);
+        }
+      }
+    };
+  }, []);
 
   const loadStartRef = useRef<number | null>(null);
   const [loadingMinElapsed, setLoadingMinElapsed] = useState(false);
@@ -90,9 +109,13 @@ export default function RoomPage() {
           roomCode={roomCode}
           displayName={name}
           onRejoin={connect}
-          showConnectionCrisis={connectionStatus === "disconnected" && error !== "KICKED"}
+          showConnectionCrisis={
+            connectionStatus === "disconnected" && error !== "KICKED" && error !== "ROOM_CLOSED"
+          }
           showNotFound={joinFailed}
-          kickedMessage={error === "KICKED" ? "kicked" : error}
+          kickedMessage={
+            error === "KICKED" ? "kicked" : error === "ROOM_CLOSED" ? "roomClosed" : error
+          }
         />
       ) : showLoadingScreen ? (
         <LobbyLoadingScreen roomCode={stableRoomCode || roomCode} />

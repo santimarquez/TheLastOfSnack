@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "@/i18n/context";
 import { useGameStore } from "@/store/gameStore";
 import { useSoundStore, MUSIC_ENABLED } from "@/store/soundStore";
+import { Analytics } from "@/lib/analytics";
 import styles from "./SettingsHelpModal.module.css";
 
 const DISPLAY_NAME_STORAGE_KEY = "last-of-snack-display-name";
@@ -34,6 +35,10 @@ export function SettingsHelpModal({
   const router = useRouter();
   const { t } = useTranslations();
   const { displayName, gameState, playerId, reset } = useGameStore();
+
+  useEffect(() => {
+    Analytics.howToPlayOpened(initialTab);
+  }, [initialTab]);
   const { volume, setVolume, muted, toggleMuted } = useSoundStore();
   const me = gameState?.players?.find((p) => p.id === playerId);
   const currentName = me?.displayName ?? displayName ?? getStoredDisplayName();

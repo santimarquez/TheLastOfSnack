@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { useGameStore, type LobbySettings, type ActionLogEntry } from "@/store/gameStore";
+import { Analytics, JOIN_METHOD_KEY } from "@/lib/analytics";
 
 const getWsUrl = () => {
   const base = process.env.NEXT_PUBLIC_GAME_SERVER_HTTP;
@@ -28,6 +29,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
   const retryCount = useRef(0);
   const retryTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closedByCleanupRef = useRef(false);
+  const kickedRef = useRef(false);
   /** Keep join payload in a ref so we don't reconnect when only displayName/reconnectToken changes (e.g. after hydration). */
   const joinPayloadRef = useRef({ displayName, reconnectToken });
   joinPayloadRef.current = { displayName, reconnectToken };
@@ -63,6 +65,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
   const connect = useCallback(() => {
     if (!roomCode?.trim()) return;
     closedByCleanupRef.current = false;
+    kickedRef.current = false;
     const url = getWsUrl();
     setConnectionStatus("connecting");
     setError(null);
@@ -92,11 +95,34 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
 
       switch (type) {
         case "kicked":
-          setError((p.message as string) || "KICKED");
+          kickedRef.current = true;
+          Analytics.playerKicked();
+          setError("KICKED");
           setJoinFailed(true);
           setConnectionStatus("disconnected");
+          if (typeof sessionStorage !== "undefined") {
+            sessionStorage.removeItem(`reconnect_${roomCode}`);
+          }
           break;
-        case "joined":
+        case "room_closed":
+          kickedRef.current = true;
+          Analytics.roomClosed();
+          setError("ROOM_CLOSED");
+          setJoinFailed(true);
+          setConnectionStatus("disconnected");
+          if (typeof sessionStorage !== "undefined") {
+            sessionStorage.removeItem(`reconnect_${roomCode}`);
+          }
+          break;
+        case "joined": {
+          const reconnected = p.reconnected as boolean | undefined;
+          if (reconnected) {
+            Analytics.reconnected();
+          } else if (typeof sessionStorage !== "undefined") {
+            const method = (sessionStorage.getItem(JOIN_METHOD_KEY) ?? "code") as "code" | "quick_join" | "list" | "create";
+            Analytics.arenaJoined(method);
+            sessionStorage.removeItem(JOIN_METHOD_KEY);
+          }
           setConnectionStatus("connected");
           setError(null);
           setJoined({
@@ -108,6 +134,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
             lobbySettings: p.lobbySettings as LobbySettings | undefined,
           });
           break;
+        }
         case "room_updated":
           setRoomUpdated(
             (p.players as import("@last-of-snack/shared").PlayerView[]) ?? [],
@@ -117,11 +144,13 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
           break;
         case "game_started": {
           const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          const players = gs?.players ?? [];
+          const speedMode = gs?.turnTimeoutSec === 20;
+          Analytics.gameStarted(players.length, speedMode);
           setGameStarted(gs!);
           const order = gs?.turnOrder ?? [];
           const idx = (gs?.currentTurnIndex ?? 0) % Math.max(1, order.length);
           const firstId = order[idx];
-          const players = gs?.players ?? [];
           const firstName = firstId ? players.find((pl: { id: string }) => pl.id === firstId)?.displayName : undefined;
           if (firstName) {
             addActionLogEntry({
@@ -210,6 +239,8 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
         }
         case "player_eliminated": {
           const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          const round = (gs?.currentRound ?? 1) as number;
+          Analytics.playerEliminated(round);
           const players = gs?.players ?? [];
           const eliminatedId = p.playerId as string;
           const role = p.revealedRole as { name?: string } | undefined;
@@ -232,6 +263,10 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
           const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
           const winnerId = p.winnerId as string | null;
           const players = gs?.players ?? [];
+          const eliminated = new Set(gs?.eliminatedPlayerIds ?? []);
+          const survivorsCount = players.filter((pl: { id: string }) => !eliminated.has(pl.id)).length;
+          const round = (gs?.currentRound ?? 1) as number;
+          Analytics.roundConcluded(round, survivorsCount);
           const winnerName = winnerId ? players.find((pl: { id: string }) => pl.id === winnerId)?.displayName : undefined;
           addActionLogEntry(
             winnerName
@@ -245,6 +280,8 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
           const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
           const winnerId = p.winnerId as string | null;
           const players = gs?.players ?? [];
+          const totalRounds = (gs?.roundResults?.length ?? gs?.currentRound ?? 3) as number;
+          Analytics.gameEnded(!!winnerId, winnerId ? 1 : 0, totalRounds);
           const winnerName = winnerId ? players.find((pl: { id: string }) => pl.id === winnerId)?.displayName : undefined;
           addActionLogEntry(
             winnerName
@@ -257,6 +294,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
         case "round_started": {
           const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
           const round = (p.round as 1 | 2 | 3) ?? 2;
+          Analytics.roundStarted(round);
           setStateSync(gs);
           setShowRoundTransition(true, round);
           break;
@@ -289,6 +327,10 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
     ws.onclose = () => {
       wsRef.current = null;
       if (closedByCleanupRef.current) return;
+      if (kickedRef.current) {
+        kickedRef.current = false;
+        return;
+      }
       const willRetry = retryCount.current < MAX_RETRIES && !!roomCode?.trim();
       if (willRetry) {
         setConnectionStatus("connecting");
@@ -297,11 +339,15 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
         retryTimeout.current = setTimeout(() => connect(), delay);
       } else {
         setConnectionStatus("disconnected");
+        Analytics.connectionLost("closed");
       }
     };
 
     ws.onerror = () => {
-      if (!closedByCleanupRef.current) setError("Connection error");
+      if (!closedByCleanupRef.current) {
+        setError("Connection error");
+        Analytics.connectionLost("error");
+      }
     };
   }, [roomCode]);
 

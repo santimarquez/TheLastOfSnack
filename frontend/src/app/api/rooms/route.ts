@@ -21,3 +21,28 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const q = new URLSearchParams();
+    const speedMode = searchParams.get("speedMode");
+    const suspicionMeter = searchParams.get("suspicionMeter");
+    const page = searchParams.get("page");
+    const limit = searchParams.get("limit");
+    if (speedMode != null) q.set("speedMode", speedMode);
+    if (suspicionMeter != null) q.set("suspicionMeter", suspicionMeter);
+    if (page != null) q.set("page", page);
+    if (limit != null) q.set("limit", limit);
+    const query = q.toString();
+    const res = await fetch(`${GAME_SERVER}/rooms${query ? `?${query}` : ""}`);
+    const data = await res.json();
+    return NextResponse.json(data, { status: res.status });
+  } catch (e) {
+    console.error("GET /api/rooms proxy error:", e);
+    return NextResponse.json(
+      { error: "Failed to list rooms" },
+      { status: 502 }
+    );
+  }
+}

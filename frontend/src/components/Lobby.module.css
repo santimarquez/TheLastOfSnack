@@ -179,7 +179,72 @@
 .toggles {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 1.5rem;
+}
+
+.maxPlayersRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.maxPlayersLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--neutral-soft);
+  white-space: nowrap;
+}
+
+.maxPlayersStepper {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(244, 37, 37, 0.25);
+  background: var(--background-dark);
+  overflow: hidden;
+}
+
+.maxPlayersBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  background: transparent;
+  color: var(--neutral-soft);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.maxPlayersBtn:hover:not(:disabled) {
+  background: rgba(244, 37, 37, 0.15);
+  color: var(--primary);
+}
+
+.maxPlayersBtn:active:not(:disabled) {
+  background: rgba(244, 37, 37, 0.25);
+}
+
+.maxPlayersBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.maxPlayersBtn .material-symbols-outlined {
+  font-size: 1.25rem;
+}
+
+.maxPlayersValue {
+  min-width: 2rem;
+  padding: 0 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  user-select: none;
 }
 
 .modeDescriptions {

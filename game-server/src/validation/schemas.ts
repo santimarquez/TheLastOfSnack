@@ -38,6 +38,8 @@ const setAvatarPayload = z.object({
 const setLobbySettingsPayload = z.object({
   speedMode: z.boolean().optional(),
   suspicionMeter: z.boolean().optional(),
+  isPrivate: z.boolean().optional(),
+  maxPlayers: z.number().int().min(4).max(8).optional(),
 });
 
 const playCardPayload = z.object({
@@ -62,6 +64,7 @@ export const clientMessageSchemas = {
   add_bot: z.object({}),
   remove_bot: z.object({ playerId: z.string().min(1) }),
   kick_player: z.object({ playerId: z.string().min(1) }),
+  leave_room: z.object({}),
   chat: chatPayload,
   restart: z.object({}),
   round_transition_complete: z.object({}),

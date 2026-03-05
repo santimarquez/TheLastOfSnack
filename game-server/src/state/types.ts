@@ -7,6 +7,7 @@ export type {
   PlayerView,
   Room,
   RoomSettings,
+  RoomSummary,
   Snack,
   SuspicionSystem,
   GamePhase,

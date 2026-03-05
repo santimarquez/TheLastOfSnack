@@ -20,9 +20,24 @@ function createInitialGameState(): GameState {
 export function createRoomEntity(
   code: string,
   hostPlayer: Player,
-  settings?: Partial<RoomSettings>
-): { code: string; hostId: string; players: Player[]; gameState: GameState; createdAt: number; settings: RoomSettings } {
+  options?: Partial<RoomSettings> & { name?: string; isPrivate?: boolean; maxPlayers?: number }
+): {
+  code: string;
+  hostId: string;
+  players: Player[];
+  gameState: GameState;
+  createdAt: number;
+  settings: RoomSettings;
+  name?: string;
+  isPrivate?: boolean;
+  maxPlayers?: number;
+} {
   const gameState = createInitialGameState();
+  const speedMode = options?.speedMode ?? config.speedMode;
+  const maxPlayers = Math.min(
+    config.maxPlayers,
+    Math.max(config.minPlayers, options?.maxPlayers ?? config.maxPlayers)
+  );
   return {
     code,
     hostId: hostPlayer.id,
@@ -30,12 +45,13 @@ export function createRoomEntity(
     gameState,
     createdAt: Date.now(),
     settings: {
-      speedMode: settings?.speedMode ?? config.speedMode,
-      suspicionMeter: settings?.suspicionMeter ?? false,
-      turnTimeoutSec:
-        settings?.turnTimeoutSec ??
-        ((settings?.speedMode ?? config.speedMode) ? 20 : 60),
+      speedMode,
+      suspicionMeter: options?.suspicionMeter ?? false,
+      turnTimeoutSec: options?.turnTimeoutSec ?? (speedMode ? 20 : 60),
     },
+    name: options?.name?.trim().slice(0, 32) || undefined,
+    isPrivate: options?.isPrivate ?? false,
+    maxPlayers,
   };
 }
 

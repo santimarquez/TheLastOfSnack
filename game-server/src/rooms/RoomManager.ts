@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import * as store from "../state/store.js";
-import type { Player, Room } from "../state/types.js";
+import type { Player, Room, RoomSummary } from "../state/types.js";
 import { createRoomEntity, generateRoomCode } from "./Room.js";
 import { config } from "../config.js";
 import { ALL_AVATAR_IDS } from "../engine/avatars.js";
@@ -45,9 +45,50 @@ export function validateReconnectToken(token: string): { playerId: string; roomC
   return { playerId: entry.playerId, roomCode: entry.roomCode };
 }
 
-export function createRoom(displayName: string): { room: Room; player: Player; reconnectToken: string } | { error: string } {
+/** Remove all reconnect tokens for a player in a room (e.g. when they are kicked). */
+function invalidateReconnectTokensForPlayer(playerId: string, roomCode: string): void {
+  const code = roomCode.toUpperCase();
+  for (const [token, entry] of RECONNECT_TOKENS.entries()) {
+    if (entry.playerId === playerId && entry.roomCode === code) RECONNECT_TOKENS.delete(token);
+  }
+}
+
+const KICK_ROOM_HIDE_MS = 5 * 60 * 1000;
+
+/** Room code -> creator id (client-supplied). Used to close previous rooms when same creator makes a new one. */
+const CREATOR_BY_ROOM = new Map<string, string>();
+
+function deleteRoomAndCreator(roomCode: string): void {
+  store.deleteRoom(roomCode);
+  CREATOR_BY_ROOM.delete(roomCode.toUpperCase());
+}
+
+/** Close all rooms owned by this creatorId; invalidate tokens and return socket IDs to notify. */
+function closeRoomsByCreator(creatorId: string): string[] {
+  const all = store.getAllRooms();
+  const toClose = all.filter((room) => CREATOR_BY_ROOM.get(room.code) === creatorId);
+  const socketIds: string[] = [];
+  for (const room of toClose) {
+    const code = room.code.toUpperCase();
+    for (const p of room.players) {
+      if (p.socketId) socketIds.push(p.socketId);
+      invalidateReconnectTokensForPlayer(p.id, code);
+    }
+    deleteRoomAndCreator(code);
+  }
+  return socketIds;
+}
+
+export function createRoom(
+  displayName: string,
+  options?: { name?: string; isPrivate?: boolean; maxPlayers?: number; speedMode?: boolean; suspicionMeter?: boolean },
+  creatorId?: string
+): { room: Room; player: Player; reconnectToken: string; closedRoomSocketIds?: string[] } | { error: string } {
   const name = displayName.trim().slice(0, 32) || "Player";
   if (name.toLowerCase().includes("host")) return { error: "Name cannot contain the word 'host'" };
+
+  const closedRoomSocketIds = creatorId ? closeRoomsByCreator(creatorId) : undefined;
+
   const player: Player = {
     id: randomUUID(),
     displayName: name,
@@ -60,12 +101,13 @@ export function createRoom(displayName: string): { room: Room; player: Player; r
   };
   const existingCodes = store.getAllRoomCodes();
   const code = generateRoomCode(existingCodes);
-  const room = createRoomEntity(code, player) as Room;
+  const room = createRoomEntity(code, player, options) as Room;
   store.setRoom(code, room);
+  if (creatorId) CREATOR_BY_ROOM.set(code, creatorId);
   player.avatarId = pickLobbyAvatar(room.players, null);
   const reconnectToken = generateReconnectToken(player.id, code);
   player.reconnectToken = reconnectToken;
-  return { room, player, reconnectToken };
+  return { room, player, reconnectToken, closedRoomSocketIds };
 }
 
 export function getRoom(roomCode: string): Room | undefined {
@@ -94,7 +136,8 @@ export function joinRoom(
 
   if (!room) return { error: "Room not found" };
   if (room.gameState.phase !== "lobby") return { error: "Game already started" };
-  if (room.players.length >= config.maxPlayers) return { error: "Room is full" };
+  const maxPlayers = room.maxPlayers ?? config.maxPlayers;
+  if (room.players.length >= maxPlayers) return { error: "Room is full" };
 
   const name = displayName.trim().slice(0, 32) || "Player";
   if (name.toLowerCase().includes("host")) return { error: "Name cannot contain the word 'host'" };
@@ -124,6 +167,7 @@ export function leaveRoom(roomCode: string, playerId: string): { room: Room; new
   if (!room) return null;
   const index = room.players.findIndex((p) => p.id === playerId);
   if (index === -1) return null;
+  invalidateReconnectTokensForPlayer(playerId, roomCode);
   room.players.splice(index, 1);
   room.players.forEach((p) => (p.socketId = p.socketId ?? null));
 
@@ -134,7 +178,7 @@ export function leaveRoom(roomCode: string, playerId: string): { room: Room; new
     newHostId = room.hostId;
   }
   if (room.players.length === 0) {
-    store.deleteRoom(roomCode);
+    deleteRoomAndCreator(roomCode);
     return null;
   }
   return { room, newHostId };
@@ -198,7 +242,8 @@ export function addBot(
   if (!room) return { error: "Room not found" };
   if (room.gameState.phase !== "lobby") return { error: "Game already started" };
   if (room.hostId !== hostPlayerId) return { error: "Only host can add bots" };
-  if (room.players.length >= config.maxPlayers) return { error: "Room is full" };
+  const maxPlayers = room.maxPlayers ?? config.maxPlayers;
+  if (room.players.length >= maxPlayers) return { error: "Room is full" };
 
   const usedNames = new Set(room.players.map((p) => p.displayName.toLowerCase()));
   const available = GUEST_NAME_POOL.filter((name) => !usedNames.has(name.toLowerCase()));
@@ -262,6 +307,8 @@ export function kickPlayer(
   const player = room.players[index];
   if (player.isBot) return { error: "Use remove bot to remove bots" };
 
+  invalidateReconnectTokensForPlayer(player.id, roomCode);
+  room.hiddenFromListUntil = Date.now() + KICK_ROOM_HIDE_MS;
   const kickedSocketId = player.socketId ?? null;
   room.players.splice(index, 1);
   return { room, kickedSocketId };
@@ -270,7 +317,12 @@ export function kickPlayer(
 export function setLobbySettings(
   roomCode: string,
   playerId: string,
-  settings: { speedMode?: boolean; suspicionMeter?: boolean }
+  settings: {
+    speedMode?: boolean;
+    suspicionMeter?: boolean;
+    isPrivate?: boolean;
+    maxPlayers?: number;
+  }
 ): boolean {
   const room = store.getRoom(roomCode);
   if (!room || room.gameState.phase !== "lobby") return false;
@@ -282,5 +334,51 @@ export function setLobbySettings(
   if (settings.suspicionMeter !== undefined) {
     room.settings.suspicionMeter = settings.suspicionMeter;
   }
+  if (settings.isPrivate !== undefined) {
+    room.isPrivate = settings.isPrivate;
+  }
+  if (settings.maxPlayers !== undefined) {
+    const n = Math.min(config.maxPlayers, Math.max(config.minPlayers, settings.maxPlayers));
+    if (room.players.length <= n) room.maxPlayers = n;
+  }
   return true;
+}
+
+export interface ListRoomsQuery {
+  speedMode?: boolean;
+  suspicionMeter?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+export function listRooms(query: ListRoomsQuery = {}): { rooms: RoomSummary[]; total: number } {
+  const now = Date.now();
+  const all = store.getAllRooms();
+  const { speedMode, suspicionMeter, page = 1, limit = 12 } = query;
+  let list = all.filter(
+    (room) =>
+      room.gameState.phase === "lobby" &&
+      (room.hiddenFromListUntil == null || room.hiddenFromListUntil <= now)
+  );
+  if (speedMode !== undefined) {
+    list = list.filter((r) => r.settings.speedMode === speedMode);
+  }
+  if (suspicionMeter !== undefined) {
+    list = list.filter((r) => r.settings.suspicionMeter === suspicionMeter);
+  }
+  list.sort((a, b) => b.createdAt - a.createdAt);
+  const total = list.length;
+  const start = (page - 1) * limit;
+  const rooms = list.slice(start, start + limit).map((room): RoomSummary => ({
+    code: room.code,
+    name: room.name,
+    isPrivate: room.isPrivate ?? false,
+    maxPlayers: room.maxPlayers ?? config.maxPlayers,
+    playerCount: room.players.length,
+    phase: room.gameState.phase,
+    speedMode: room.settings.speedMode,
+    suspicionMeter: room.settings.suspicionMeter,
+    createdAt: room.createdAt,
+  }));
+  return { rooms, total };
 }

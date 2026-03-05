@@ -8,7 +8,6 @@ import styles from "./Lobby.module.css";
 
 type SendFn = (type: string, payload: Record<string, unknown>) => void;
 
-const MAX_PLAYERS = 8;
 const MIN_PLAYERS = 4;
 
 const WAITING_FOR_PLAYERS_KEYS = [
@@ -39,6 +38,8 @@ export function Lobby({ send }: { send: SendFn }) {
   const [waitingMessageIndex, setWaitingMessageIndex] = useState(0);
   const speedMode = lobbySettings.speedMode;
   const suspicionMeter = lobbySettings.suspicionMeter;
+  const isPrivate = lobbySettings.isPrivate ?? false;
+  const maxPlayers = lobbySettings.maxPlayers ?? 8;
 
   useEffect(() => {
     if (displayName) setNameInput(displayName);
@@ -56,8 +57,8 @@ export function Lobby({ send }: { send: SendFn }) {
     return () => clearInterval(interval);
   }, [isHost, waitingMessageKeys.length]);
 
-  const canStart = isHost && players.length >= MIN_PLAYERS && players.length <= MAX_PLAYERS;
-  const progressPct = MAX_PLAYERS > 0 ? (players.length / MAX_PLAYERS) * 100 : 0;
+  const canStart = isHost && players.length >= MIN_PLAYERS && players.length <= maxPlayers;
+  const progressPct = maxPlayers > 0 ? (players.length / maxPlayers) * 100 : 0;
 
   const me = playerId ? players.find((p) => p.id === playerId) : null;
   const takenAvatarIds = useMemo(
@@ -87,7 +88,7 @@ export function Lobby({ send }: { send: SendFn }) {
     void navigator.clipboard?.writeText(roomCode);
   }
 
-  const emptySlots = Math.max(0, MAX_PLAYERS - players.length);
+  const emptySlots = Math.max(0, maxPlayers - players.length);
 
   return (
     <div className={styles.wrapper}>
@@ -112,7 +113,7 @@ export function Lobby({ send }: { send: SendFn }) {
         <div className={styles.statCard}>
           <p className={styles.statLabel}>{t("lobby.playersJoined")}</p>
           <div className={styles.statValueRow}>
-            <p className={styles.statValue}>{players.length}/{MAX_PLAYERS}</p>
+            <p className={styles.statValue}>{players.length}/{maxPlayers}</p>
             <div className={styles.progressTrack}>
               <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
             </div>
@@ -145,7 +146,45 @@ export function Lobby({ send }: { send: SendFn }) {
                 <span className={styles.toggleSlider} />
                 <span className={styles.toggleLabel}>{t("lobby.speedMode")}</span>
               </label>
+              <label className={styles.toggleWrap}>
+                <input
+                  type="checkbox"
+                  className={styles.toggleInput}
+                  checked={isPrivate}
+                  onChange={() => isHost && send("set_lobby_settings", { isPrivate: !isPrivate })}
+                  disabled={!isHost}
+                  aria-label={t("lobby.privateRoom")}
+                />
+                <span className={styles.toggleSlider} />
+                <span className={styles.toggleLabel}>{t("lobby.privateRoom")}</span>
+              </label>
             </div>
+            {isHost && (
+              <div className={styles.maxPlayersRow}>
+                <span className={styles.maxPlayersLabel}>{t("lobby.maxPlayers")}</span>
+                <div className={styles.maxPlayersStepper} role="group" aria-label={t("lobby.maxPlayers")}>
+                  <button
+                    type="button"
+                    className={styles.maxPlayersBtn}
+                    onClick={() => send("set_lobby_settings", { maxPlayers: Math.max(MIN_PLAYERS, maxPlayers - 1) })}
+                    disabled={maxPlayers <= MIN_PLAYERS}
+                    aria-label={t("lobby.maxPlayersDecrease")}
+                  >
+                    <span className="material-symbols-outlined" aria-hidden>remove</span>
+                  </button>
+                  <span className={styles.maxPlayersValue}>{maxPlayers}</span>
+                  <button
+                    type="button"
+                    className={styles.maxPlayersBtn}
+                    onClick={() => send("set_lobby_settings", { maxPlayers: Math.min(8, maxPlayers + 1) })}
+                    disabled={maxPlayers >= 8}
+                    aria-label={t("lobby.maxPlayersIncrease")}
+                  >
+                    <span className="material-symbols-outlined" aria-hidden>add</span>
+                  </button>
+                </div>
+              </div>
+            )}
             {(speedMode || suspicionMeter) && (
               <div className={styles.modeDescriptions} aria-live="polite">
                 {speedMode && (
@@ -272,7 +311,7 @@ export function Lobby({ send }: { send: SendFn }) {
             type="button"
             className={styles.addBotSlot}
             onClick={() => send("add_bot", {})}
-            disabled={players.length >= MAX_PLAYERS}
+            disabled={players.length >= maxPlayers}
             aria-label={t("lobby.addBot")}
             title={t("lobby.addBot")}
           >

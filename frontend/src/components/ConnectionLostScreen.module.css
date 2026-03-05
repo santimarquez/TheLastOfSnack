@@ -104,11 +104,56 @@
   font-size: 1rem;
   color: var(--slate-300);
   line-height: 1.6;
+  margin: 0 0 0.75rem;
+}
+
+.kickedInvite {
+  font-size: 0.9375rem;
+  color: var(--slate-400);
+  line-height: 1.5;
   margin: 0 0 1.5rem;
+}
+
+.kickedActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
 }
 
 .kickedCard .btnExit {
   margin: 0;
+}
+
+.btnFindGame {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.5rem;
+  background: var(--primary);
+  color: var(--slate-100);
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: filter var(--transition-normal), transform var(--transition-fast);
+}
+
+.btnFindGame:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.btnFindGame:active {
+  transform: scale(0.97);
+}
+
+.btnFindGame .material-symbols-outlined {
+  font-size: 1.25rem;
 }
 
 /* Connection Crisis card */

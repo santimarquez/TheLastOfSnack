@@ -27,13 +27,23 @@ export function ConnectionLostScreen({
 }: ConnectionLostScreenProps) {
   const router = useRouter();
   const { t } = useTranslations();
-  const displayKicked = kickedMessage === "kicked" ? t("connectionLost.kicked") : kickedMessage;
+  const displayKicked =
+    kickedMessage === "kicked"
+      ? t("connectionLost.kicked")
+      : kickedMessage === "roomClosed"
+        ? t("connectionLost.roomClosed")
+        : kickedMessage;
   const { setShowSettingsHelpModal, setJoinFailed, setError, reset } = useGameStore();
   const [newCodeInput, setNewCodeInput] = useState("");
 
   function handleExitToPantry() {
     reset();
     router.push("/");
+  }
+
+  function handleFindAnotherGame() {
+    reset();
+    router.push("/arenas");
   }
 
   function handleEnterNewCode(e: React.FormEvent) {
@@ -68,12 +78,19 @@ export function ConnectionLostScreen({
         {displayKicked && (
           <section className={styles.kickedCard} role="alert">
             <p className={styles.kickedCopy}>{displayKicked}</p>
-            <button type="button" className={styles.btnExit} onClick={handleExitToPantry}>
-              {t("connectionLost.exitToPantry")}
-            </button>
+            <p className={styles.kickedInvite}>{t("connectionLost.findAnotherGameInvite")}</p>
+            <div className={styles.kickedActions}>
+              <button type="button" className={styles.btnFindGame} onClick={handleFindAnotherGame}>
+                <span className="material-symbols-outlined">search</span>
+                {t("connectionLost.findAnotherGame")}
+              </button>
+              <button type="button" className={styles.btnExit} onClick={handleExitToPantry}>
+                {t("connectionLost.exitToPantry")}
+              </button>
+            </div>
           </section>
         )}
-        {showConnectionCrisis && (
+        {showConnectionCrisis && !displayKicked && (
           <section className={styles.crisisCard}>
             <div className={styles.crisisIconWrap}>
               <span className="material-symbols-outlined">link_off</span>

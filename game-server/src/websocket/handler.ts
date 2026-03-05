@@ -19,6 +19,8 @@ function roomUpdatedPayload(room: Room, forPlayerId: string) {
     lobbySettings: {
       speedMode: room.settings.speedMode,
       suspicionMeter: room.settings.suspicionMeter ?? false,
+      isPrivate: room.isPrivate ?? false,
+      maxPlayers: room.maxPlayers ?? 8,
     },
   };
 }
@@ -99,6 +101,8 @@ export function handleMessage(
         lobbySettings: {
           speedMode: room.settings.speedMode,
           suspicionMeter: room.settings.suspicionMeter ?? false,
+          isPrivate: room.isPrivate ?? false,
+          maxPlayers: room.maxPlayers ?? 8,
         },
       });
       if (!reconnected) {
@@ -238,6 +242,20 @@ export function handleMessage(
         if (updatedRoom) {
           broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => roomUpdatedPayload(updatedRoom, forPlayerId));
         }
+      }
+      return;
+    }
+
+    case "leave_room": {
+      if (room.gameState.phase !== "lobby") {
+        sendToSocket(ws, "error", { code: "INVALID_STATE", message: "Can only leave from lobby" });
+        return;
+      }
+      const result = RoomManager.leaveRoom(ctx.roomCode, ctx.playerId);
+      broadcast.unregisterSocket(socketId);
+      if (result) {
+        const broadcastFn = broadcast.createBroadcast(sockets);
+        broadcastFn(ctx.roomCode, "room_updated", (forPlayerId: string) => roomUpdatedPayload(result.room, forPlayerId));
       }
       return;
     }

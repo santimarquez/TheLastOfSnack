@@ -119,6 +119,27 @@ export interface Room {
   gameState: GameState;
   createdAt: number;
   settings: RoomSettings;
+  /** Optional display name for the room (e.g. "Taco's Tussle") */
+  name?: string;
+  /** If true, room is only joinable by code (still listed in discovery) */
+  isPrivate?: boolean;
+  /** Max players (default from config, 4–config.maxPlayers) */
+  maxPlayers?: number;
+  /** If set, room is hidden from list until this timestamp (e.g. after a kick). */
+  hiddenFromListUntil?: number;
+}
+
+/** Public room summary for listing (no sensitive data) */
+export interface RoomSummary {
+  code: string;
+  name?: string;
+  isPrivate: boolean;
+  maxPlayers: number;
+  playerCount: number;
+  phase: GamePhase;
+  speedMode?: boolean;
+  suspicionMeter?: boolean;
+  createdAt: number;
 }
 
 /** Client-safe player view: no role/hand for others */
