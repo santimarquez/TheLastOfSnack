@@ -37,15 +37,20 @@ docker compose $COMPOSE_OPTS build --no-cache frontend-${NEXT} game-server-${NEX
 echo "Starting $NEXT slot..."
 docker compose $COMPOSE_OPTS up -d --force-recreate frontend-${NEXT} game-server-${NEXT}
 
-# 3) Wait for app to be ready (game-server health)
+# 3) Wait for app to be ready (game-server health; node:alpine has no wget/curl)
 echo "Waiting for $NEXT to be healthy..."
-sleep 3
-for i in 1 2 3 4 5 6 7 8 9 10; do
-  if docker compose $COMPOSE_OPTS exec -T game-server-${NEXT} wget -q -O- http://localhost:4000/health 2>/dev/null | grep -q ok; then
+sleep 5
+for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+  if docker compose $COMPOSE_OPTS exec -T game-server-${NEXT} node -e "
+    require('http').get('http://localhost:4000/health', r => {
+      let d = ''; r.on('data', c => d += c);
+      r.on('end', () => process.exit(d.includes('ok') ? 0 : 1));
+    }).on('error', () => process.exit(1));
+  " 2>/dev/null; then
     echo "$NEXT is healthy."
     break
   fi
-  [ $i -eq 10 ] && { echo "Health check failed for $NEXT"; exit 1; }
+  [ $i -eq 12 ] && { echo "Health check failed for $NEXT (is the game-server listening on 4000?)"; exit 1; }
   sleep 2
 done
 

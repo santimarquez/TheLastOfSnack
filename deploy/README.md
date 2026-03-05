@@ -35,6 +35,16 @@ The script will:
 
 For production, set `TRAEFIK_LASTOFSNACK_URL` (and other `TRAEFIK_*` vars) so the script adds `-f docker-compose.prod.bg.yml` automatically.
 
+## Orphan containers
+
+If you see a warning about orphan containers (`thelastofsnack-frontend-1`, `thelastofsnack-game-server-1`), those are from the old single-stack compose. After you’ve switched to blue/green and confirmed everything works, remove them with:
+
+```bash
+docker compose -f docker-compose.bluegreen.yml -f docker-compose.prod.bg.yml up -d --remove-orphans
+```
+
+(Or run your normal `up` command with `--remove-orphans` once.)
+
 ## Files
 
 - `docker-compose.bluegreen.yml` – blue/green stack (frontend-blue/green, game-server-blue/green, nginx)
