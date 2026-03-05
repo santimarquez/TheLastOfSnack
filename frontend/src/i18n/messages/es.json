@@ -171,7 +171,8 @@
     "addBot": "Añadir bot",
     "removeBot": "Quitar bot",
     "kickPlayer": "Expulsar a {name}",
-    "kickPlayerTitle": "Quitar a este jugador de la sala"
+    "kickPlayerTitle": "Quitar a este jugador de la sala",
+    "arenaClosesIn": "La arena se cierra en {time} si no se inicia la partida"
   },
   "connectionLost": {
     "crisisSub": "ERROR: LECHE_DERRAMADA",
@@ -181,6 +182,7 @@
     "exitToPantry": "Salir a la despensa",
     "kicked": "Te han expulsado de la sala por el anfitrión.",
     "roomClosed": "El anfitrión cerró esta sala.",
+    "roomClosedTimeout": "Esta arena se cerró porque no se inició la partida a tiempo.",
     "findAnotherGameInvite": "Busca otra arena y vuelve a la batalla de snacks.",
     "findAnotherGame": "Buscar otra partida",
     "notFoundLabel": "ERROR 404",

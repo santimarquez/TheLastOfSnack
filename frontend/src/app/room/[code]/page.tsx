@@ -110,11 +110,11 @@ export default function RoomPage() {
           displayName={name}
           onRejoin={connect}
           showConnectionCrisis={
-            connectionStatus === "disconnected" && error !== "KICKED" && error !== "ROOM_CLOSED"
+            connectionStatus === "disconnected" && error !== "KICKED" && error !== "ROOM_CLOSED" && error !== "ROOM_CLOSED_TIMEOUT"
           }
           showNotFound={joinFailed}
           kickedMessage={
-            error === "KICKED" ? "kicked" : error === "ROOM_CLOSED" ? "roomClosed" : error
+            error === "KICKED" ? "kicked" : error === "ROOM_CLOSED_TIMEOUT" ? "roomClosedTimeout" : error === "ROOM_CLOSED" ? "roomClosed" : error
           }
         />
       ) : showLoadingScreen ? (

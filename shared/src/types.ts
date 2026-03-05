@@ -197,4 +197,8 @@ export interface GameStateView {
   currentRound?: 1 | 2 | 3;
   /** Results of completed rounds for accumulated stats. */
   roundResults?: RoundResult[];
+  /** Room creation timestamp (ms) for lobby countdown. */
+  roomCreatedAt?: number;
+  /** Lobby auto-close timeout in ms (e.g. 600000). */
+  lobbyTimeoutMs?: number;
 }

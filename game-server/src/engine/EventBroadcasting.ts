@@ -1,5 +1,6 @@
 import type { Room } from "../state/types.js";
 import type { GameStateView, PlayerView } from "../state/types.js";
+import { config } from "../config.js";
 import { AVATAR_URLS, PLACEHOLDER_AVATAR_URL } from "./avatars.js";
 
 export function buildGameStateView(room: Room, forPlayerId: string | null): GameStateView {
@@ -69,5 +70,7 @@ export function buildGameStateView(room: Room, forPlayerId: string | null): Game
     eliminationAnimationLock: gameState.eliminationAnimationLock,
     currentRound: gameState.currentRound,
     roundResults: gameState.roundResults ? [...gameState.roundResults] : undefined,
+    roomCreatedAt: room.createdAt,
+    lobbyTimeoutMs: config.lobbyTimeoutMs,
   };
 }

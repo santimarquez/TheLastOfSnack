@@ -107,7 +107,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
         case "room_closed":
           kickedRef.current = true;
           Analytics.roomClosed();
-          setError("ROOM_CLOSED");
+          setError(p.reason === "timeout" ? "ROOM_CLOSED_TIMEOUT" : "ROOM_CLOSED");
           setJoinFailed(true);
           setConnectionStatus("disconnected");
           if (typeof sessionStorage !== "undefined") {

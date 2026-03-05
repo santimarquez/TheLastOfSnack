@@ -171,7 +171,8 @@
     "addBot": "Add Bot",
     "removeBot": "Remove bot",
     "kickPlayer": "Kick {name}",
-    "kickPlayerTitle": "Remove this player from the room"
+    "kickPlayerTitle": "Remove this player from the room",
+    "arenaClosesIn": "Arena closes in {time} if game isn't started"
   },
   "connectionLost": {
     "crisisSub": "SYSTEM ERROR: MILK_OVERFLOW",
@@ -181,6 +182,7 @@
     "exitToPantry": "Exit to Pantry",
     "kicked": "You were removed from the room by the host.",
     "roomClosed": "This room was closed by the host.",
+    "roomClosedTimeout": "This arena was closed because the game was not started in time.",
     "findAnotherGameInvite": "Find a new arena and jump back into the snack battle!",
     "findAnotherGame": "Search for another game",
     "notFoundLabel": "ERROR 404",

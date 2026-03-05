@@ -100,3 +100,16 @@ fastify.get("/ws", { websocket: true }, (socket, req) => {
 
 await fastify.listen({ port: config.port, host: "0.0.0.0" });
 console.log(`Game server listening on port ${config.port}`);
+
+setInterval(() => {
+  const closed = RoomManager.closeStaleLobbyRooms();
+  for (const { socketIds } of closed) {
+    for (const socketId of socketIds) {
+      const ws = sockets.get(socketId);
+      if (ws) {
+        sendToSocket(ws, "room_closed", { reason: "timeout" });
+        ws.close();
+      }
+    }
+  }
+}, 60 * 1000);

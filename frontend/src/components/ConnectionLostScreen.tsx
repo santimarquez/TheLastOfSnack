@@ -30,9 +30,11 @@ export function ConnectionLostScreen({
   const displayKicked =
     kickedMessage === "kicked"
       ? t("connectionLost.kicked")
-      : kickedMessage === "roomClosed"
-        ? t("connectionLost.roomClosed")
-        : kickedMessage;
+      : kickedMessage === "roomClosedTimeout"
+        ? t("connectionLost.roomClosedTimeout")
+        : kickedMessage === "roomClosed"
+          ? t("connectionLost.roomClosed")
+          : kickedMessage;
   const { setShowSettingsHelpModal, setJoinFailed, setError, reset } = useGameStore();
   const [newCodeInput, setNewCodeInput] = useState("");
 

@@ -344,6 +344,22 @@ export function setLobbySettings(
   return true;
 }
 
+/** Close lobby rooms that have been idle past lobbyTimeoutMs; return their socket IDs for notification. */
+export function closeStaleLobbyRooms(): { roomCode: string; socketIds: string[] }[] {
+  const now = Date.now();
+  const all = store.getAllRooms();
+  const result: { roomCode: string; socketIds: string[] }[] = [];
+  for (const room of all) {
+    if (room.gameState.phase !== "lobby") continue;
+    if (now - room.createdAt < config.lobbyTimeoutMs) continue;
+    const socketIds = room.players.map((p) => p.socketId).filter(Boolean) as string[];
+    for (const p of room.players) invalidateReconnectTokensForPlayer(p.id, room.code);
+    deleteRoomAndCreator(room.code);
+    result.push({ roomCode: room.code, socketIds });
+  }
+  return result;
+}
+
 export interface ListRoomsQuery {
   speedMode?: boolean;
   suspicionMeter?: boolean;

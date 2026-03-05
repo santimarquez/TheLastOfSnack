@@ -33,6 +33,12 @@
   font-size: 1rem;
 }
 
+.lobbyCountdown {
+  color: var(--neutral-soft);
+  margin: 0;
+  font-size: 0.875rem;
+}
+
 .roomCodeBox {
   display: flex;
   align-items: center;

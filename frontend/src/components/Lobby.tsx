@@ -31,11 +31,19 @@ function formatRoomCode(code: string): string {
   return `${code.slice(0, 4)}-${code.slice(4)}`;
 }
 
+function formatLobbyCountdown(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 export function Lobby({ send }: { send: SendFn }) {
   const { gameState, playerId, roomCode, isHost, displayName, lobbySettings } = useGameStore();
   const { t } = useTranslations();
   const [nameInput, setNameInput] = useState(displayName || "");
   const [waitingMessageIndex, setWaitingMessageIndex] = useState(0);
+  const [lobbyRemainingMs, setLobbyRemainingMs] = useState<number | null>(null);
   const speedMode = lobbySettings.speedMode;
   const suspicionMeter = lobbySettings.suspicionMeter;
   const isPrivate = lobbySettings.isPrivate ?? false;
@@ -56,6 +64,22 @@ export function Lobby({ send }: { send: SendFn }) {
     }, 10000);
     return () => clearInterval(interval);
   }, [isHost, waitingMessageKeys.length]);
+
+  const roomCreatedAt = gameState?.roomCreatedAt;
+  const lobbyTimeoutMs = gameState?.lobbyTimeoutMs ?? 10 * 60 * 1000;
+  useEffect(() => {
+    if (roomCreatedAt == null || lobbyTimeoutMs <= 0) {
+      setLobbyRemainingMs(null);
+      return;
+    }
+    const tick = () => {
+      const remaining = Math.max(0, roomCreatedAt + lobbyTimeoutMs - Date.now());
+      setLobbyRemainingMs(remaining);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [roomCreatedAt, lobbyTimeoutMs]);
 
   const canStart = isHost && players.length >= MIN_PLAYERS && players.length <= maxPlayers;
   const progressPct = maxPlayers > 0 ? (players.length / maxPlayers) * 100 : 0;
@@ -108,6 +132,11 @@ export function Lobby({ send }: { send: SendFn }) {
           </button>
         </div>
       </div>
+      {lobbyRemainingMs !== null && lobbyRemainingMs > 0 && (
+        <p className={styles.lobbyCountdown} role="timer" aria-live="polite">
+          {t("lobby.arenaClosesIn", { time: formatLobbyCountdown(lobbyRemainingMs) })}
+        </p>
+      )}
 
       <div className={styles.statsRow}>
         <div className={styles.statCard}>

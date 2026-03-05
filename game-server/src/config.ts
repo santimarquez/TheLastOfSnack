@@ -11,4 +11,6 @@ export const config = {
   rateLimitMessagesPerSec: 10,
   /** Duration (ms) to block game during elimination pop-up */
   eliminationAnimationMs: 5000,
+  /** Close lobby rooms that never started after this many ms (e.g. 10 min) */
+  lobbyTimeoutMs: 10 * 60 * 1000,
 } as const;
