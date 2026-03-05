@@ -1,0 +1,23 @@
+# Production override for blue/green (Traefik). Use with docker-compose.bluegreen.yml
+# Run: docker compose -f docker-compose.bluegreen.yml -f docker-compose.prod.bg.yml up -d ...
+# Required env: TRAEFIK_STACK_ENV, TRAEFIK_LASTOFSNACK_NAME, TRAEFIK_LASTOFSNACK_PORT, TRAEFIK_LASTOFSNACK_URL
+
+services:
+  nginx:
+    ports: []
+    networks:
+      - default
+      - inverseproxy_shared
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=inverseproxy_shared"
+      - "traefik.http.services.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}.loadbalancer.server.port=${TRAEFIK_LASTOFSNACK_PORT}"
+      - "traefik.http.routers.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}-https.entrypoints=websecure"
+      - "traefik.http.routers.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}-https.rule=Host(`${TRAEFIK_LASTOFSNACK_URL}`)"
+      - "traefik.http.routers.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}-https.tls=true"
+      - "traefik.http.routers.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}-https.service=${TRAEFIK_STACK_ENV}-${TRAEFIK_LASTOFSNACK_NAME}"
+
+networks:
+  inverseproxy_shared:
+    external: true

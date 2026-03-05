@@ -1,0 +1,50 @@
+# Blue/green deployment: two identical app stacks (blue and green).
+# Nginx routes to the "active" stack; upgrade script switches and recreates.
+# Use: docker compose -f docker-compose.bluegreen.yml [-f docker-compose.prod.bg.yml] up -d
+# Upgrade: ./deploy/upgrade.sh
+
+services:
+  frontend-blue:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - GAME_SERVER_HTTP=http://game-server-blue:4000
+    restart: unless-stopped
+
+  game-server-blue:
+    build:
+      context: .
+      dockerfile: game-server/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - ALLOWED_ORIGINS=
+    restart: unless-stopped
+
+  frontend-green:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - GAME_SERVER_HTTP=http://game-server-green:4000
+    restart: unless-stopped
+
+  game-server-green:
+    build:
+      context: .
+      dockerfile: game-server/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - ALLOWED_ORIGINS=
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./deploy/active:/etc/nginx/conf.d:ro
+    depends_on: []  # no hard dependency; we start active slot before nginx
+    restart: unless-stopped
