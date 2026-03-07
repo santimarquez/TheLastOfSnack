@@ -5,7 +5,11 @@ import { AVATAR_IDS_BY_SNACK, ALL_AVATAR_IDS } from "./avatars.js";
 export function assignRoles(players: Player[]): void {
   const pool = ALL_SNACKS.filter((s) => !s.isLastSnack);
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  const roles = shuffled.slice(0, players.length) as Snack[];
+  // Allow snack repetition when players > snacks (e.g. 8 players, 7 snacks → one snack repeated)
+  const roles = Array.from(
+    { length: players.length },
+    (_, i) => shuffled[i % shuffled.length]!,
+  );
   players.forEach((p, i) => {
     p.role = roles[i] ?? null;
   });
