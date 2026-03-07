@@ -61,6 +61,7 @@ done
 # 4) Point nginx at the new slot
 echo "🔀 Switching nginx to $NEXT..."
 cp "deploy/nginx-${NEXT}.conf" "deploy/active/default.conf"
+docker compose $COMPOSE_OPTS up -d nginx
 docker compose $COMPOSE_OPTS exec -T nginx nginx -s reload
 
 # 5) Stop the old slot
