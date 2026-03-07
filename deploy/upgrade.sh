@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Blue/green upgrade: build new slot, switch nginx to it, stop old slot. Zero-downtime.
 # Run from repo root: ./deploy/upgrade.sh
-# For prod (Traefik): set TRAEFIK_* env vars and use -f docker-compose.prod.bg.yml (script auto-adds if TRAEFIK_LASTOFSNACK_URL is set).
+# For prod (Traefik): set env and script auto-adds -f docker-compose.prod.bg.yml:
+#   TRAEFIK_LASTOFSNACK_URL=your-domain.com
+#   TRAEFIK_LASTOFSNACK_NAME=lastofsnack (or your service name)
+#   TRAEFIK_LASTOFSNACK_PORT=80
+#   TRAEFIK_STACK_ENV=prod (or your stack env)
 
 set -e
 
@@ -11,6 +15,9 @@ cd "$REPO_ROOT"
 COMPOSE_OPTS="-f docker-compose.bluegreen.yml"
 if [ -n "${TRAEFIK_LASTOFSNACK_URL:-}" ] && [ -f docker-compose.prod.bg.yml ]; then
   COMPOSE_OPTS="$COMPOSE_OPTS -f docker-compose.prod.bg.yml"
+  TRAEFIK_MODE=1
+else
+  TRAEFIK_MODE=
 fi
 
 STATE_FILE="deploy/current-slot"
@@ -28,6 +35,7 @@ else
 fi
 
 echo "🔄 Current slot: $CURRENT → upgrading to: $NEXT"
+[ -n "${TRAEFIK_MODE:-}" ] && echo "🌐 Traefik mode (TRAEFIK_LASTOFSNACK_URL set)"
 
 # 1) Build images (shared by both slots)
 echo "📦 Building images..."
@@ -61,7 +69,12 @@ done
 # 4) Point nginx at the new slot
 echo "🔀 Switching nginx to $NEXT..."
 cp "deploy/nginx-${NEXT}.conf" "deploy/active/default.conf"
-docker compose $COMPOSE_OPTS up -d nginx
+# With Traefik: force-recreate nginx so it gets labels and joins inverseproxy_shared (fixes 404 if nginx was ever started without prod overlay)
+if [ -n "${TRAEFIK_MODE:-}" ]; then
+  docker compose $COMPOSE_OPTS up -d --force-recreate nginx
+else
+  docker compose $COMPOSE_OPTS up -d nginx
+fi
 docker compose $COMPOSE_OPTS exec -T nginx nginx -s reload
 
 # 5) Stop the old slot
