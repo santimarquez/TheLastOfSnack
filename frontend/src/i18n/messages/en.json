@@ -344,7 +344,7 @@
     },
     "foil_wrap": {
       "title": "Foil Wrap",
-      "action": "Blocks the next attack on you. Played when you're targeted (not by dragging)."
+      "action": "Blocks the next attack you receive. Must be in play to use."
     }
   },
   "gameTable": {
@@ -372,6 +372,7 @@
     "cardTypeSuffix": "card",
     "selectTarget": "Select a target",
     "dropToTarget": "Drop to target",
+    "dropToProtect": "Drop to protect",
     "dropToDiscard": "Drop to discard",
     "selectCardsToDiscard": "Select {count} cards to discard",
     "discard": "Discard",

@@ -344,7 +344,7 @@
     },
     "foil_wrap": {
       "title": "Papel de aluminio",
-      "action": "Bloquea el próximo ataque contra ti. Se juega cuando te atacan (no arrastrando)."
+      "action": "Bloquea el próximo ataque que recibas. Debe estar en juego para usarse."
     }
   },
   "gameTable": {
@@ -372,6 +372,7 @@
     "cardTypeSuffix": "carta",
     "selectTarget": "Elige un objetivo",
     "dropToTarget": "Suelta para atacar",
+    "dropToProtect": "Suelta para proteger",
     "dropToDiscard": "Suelta para descartar",
     "selectCardsToDiscard": "Selecciona {count} cartas para descartar",
     "discard": "Descartar",

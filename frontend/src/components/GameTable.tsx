@@ -540,15 +540,25 @@ export function GameTable({ send }: { send: SendFn }) {
                       key={p.id}
                       className={`${styles.playerSlot} ${isYou ? styles.playerSlotYou : ""} ${isCurrent ? styles.playerSlotCurrent : ""} ${p.status === "spectator" ? styles.playerSlotOut : ""}`}>
                       {isCurrent && isYou && (
-                        <div className={styles.yourTurnBadge}>
-                          {t("gameTable.yourTurn")}
+                        <div
+                          className={styles.yourTurnBadge}
+                          role="status"
+                          aria-label={t("gameTable.yourTurn")}>
+                          <span className="material-symbols-outlined" aria-hidden>
+                            expand_more
+                          </span>
                         </div>
                       )}
                       {isCurrent && !isYou && (
-                        <div className={styles.theirTurnBadge}>
-                          {t("gameTable.waitingForTurn", {
+                        <div
+                          className={styles.theirTurnBadge}
+                          role="status"
+                          aria-label={t("gameTable.waitingForTurn", {
                             name: p.displayName,
-                          })}
+                          })}>
+                          <span className="material-symbols-outlined" aria-hidden>
+                            expand_more
+                          </span>
                         </div>
                       )}
                       <div className={styles.playerAvatarWrap}>
@@ -576,7 +586,9 @@ export function GameTable({ send }: { send: SendFn }) {
                           {isDraggingCard && canDrop && (
                             <span
                               className={`${styles.dropZoneHint} ${styles.dropZoneHintTwoLines}`}>
-                              {t("gameTable.dropToTarget")}
+                              {draggedCardData?.type === "foil_wrap" && p.id === playerId
+                                ? t("gameTable.dropToProtect")
+                                : t("gameTable.dropToTarget")}
                               <br />
                               {p.displayName}
                             </span>
@@ -770,15 +782,25 @@ export function GameTable({ send }: { send: SendFn }) {
                       key={p.id}
                       className={`${styles.playerSlot} ${isYou ? styles.playerSlotYou : ""} ${isCurrent ? styles.playerSlotCurrent : ""} ${p.status === "spectator" ? styles.playerSlotOut : ""}`}>
                       {isCurrent && isYou && (
-                        <div className={styles.yourTurnBadge}>
-                          {t("gameTable.yourTurn")}
+                        <div
+                          className={styles.yourTurnBadge}
+                          role="status"
+                          aria-label={t("gameTable.yourTurn")}>
+                          <span className="material-symbols-outlined" aria-hidden>
+                            expand_more
+                          </span>
                         </div>
                       )}
                       {isCurrent && !isYou && (
-                        <div className={styles.theirTurnBadge}>
-                          {t("gameTable.waitingForTurn", {
+                        <div
+                          className={styles.theirTurnBadge}
+                          role="status"
+                          aria-label={t("gameTable.waitingForTurn", {
                             name: p.displayName,
-                          })}
+                          })}>
+                          <span className="material-symbols-outlined" aria-hidden>
+                            expand_more
+                          </span>
                         </div>
                       )}
                       <div className={styles.playerAvatarWrap}>
@@ -806,7 +828,9 @@ export function GameTable({ send }: { send: SendFn }) {
                           {isDraggingCard && canDrop && (
                             <span
                               className={`${styles.dropZoneHint} ${styles.dropZoneHintTwoLines}`}>
-                              {t("gameTable.dropToTarget")}
+                              {draggedCardData?.type === "foil_wrap" && p.id === playerId
+                                ? t("gameTable.dropToProtect")
+                                : t("gameTable.dropToTarget")}
                               <br />
                               {p.displayName}
                             </span>
