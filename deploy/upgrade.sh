@@ -39,10 +39,10 @@ docker compose $COMPOSE_OPTS up -d --force-recreate frontend-${NEXT} game-server
 
 # 3) Wait for app to be ready (game-server health; node:alpine has no wget/curl)
 echo "Waiting for $NEXT to be healthy..."
-sleep 5
-for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+sleep 10
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
   if docker compose $COMPOSE_OPTS exec -T game-server-${NEXT} node -e "
-    require('http').get('http://localhost:4000/health', r => {
+    require('http').get('http://127.0.0.1:4000/health', r => {
       let d = ''; r.on('data', c => d += c);
       r.on('end', () => process.exit(d.includes('ok') ? 0 : 1));
     }).on('error', () => process.exit(1));
@@ -50,7 +50,11 @@ for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
     echo "$NEXT is healthy."
     break
   fi
-  [ $i -eq 12 ] && { echo "Health check failed for $NEXT (is the game-server listening on 4000?)"; exit 1; }
+  if [ $i -eq 15 ]; then
+    echo "Health check failed for $NEXT (game-server not responding on 127.0.0.1:4000). Last 20 lines of game-server log:"
+    docker compose $COMPOSE_OPTS logs --tail=20 game-server-${NEXT} 2>/dev/null || true
+    exit 1
+  fi
   sleep 2
 done
 
