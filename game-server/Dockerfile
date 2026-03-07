@@ -13,6 +13,7 @@ WORKDIR /app
 COPY --from=builder /app/game-server/dist ./dist
 COPY --from=builder /app/game-server/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/shared/package.json ./node_modules/@last-of-snack/shared/package.json
 COPY --from=builder /app/shared/dist ./node_modules/@last-of-snack/shared/dist
 ENV NODE_ENV=production
 EXPOSE 4000
