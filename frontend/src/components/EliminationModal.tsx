@@ -14,6 +14,7 @@ export function EliminationModal({ onClose }: EliminationModalProps) {
   const me = gameState?.players?.find((p) => p.id === playerId);
   const revealedRole = playerId ? gameState?.revealedRoles?.[playerId] : undefined;
   const roleName = revealedRole?.name ?? me?.role?.name ?? "Snack";
+  const isGameOver = gameState?.phase === "ended";
 
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="elimination-title">
@@ -80,9 +81,11 @@ export function EliminationModal({ onClose }: EliminationModalProps) {
             </div>
 
             <div className={styles.actions}>
-              <button type="button" className={styles.btnPrimary} onClick={onClose}>
-                {t("eliminationModal.continueWatching")}
-              </button>
+              {!isGameOver && (
+                <button type="button" className={styles.btnPrimary} onClick={onClose}>
+                  {t("eliminationModal.continueWatching")}
+                </button>
+              )}
               <button type="button" className={styles.btnSecondary} onClick={onClose}>
                 {t("eliminationModal.viewStandings")}
               </button>

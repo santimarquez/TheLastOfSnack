@@ -96,6 +96,8 @@ export interface GameState {
   discardPile?: Card[];
   /** True during elimination animation - blocks all game actions */
   eliminationAnimationLock?: boolean;
+  /** When set (ms timestamp), draw is blocked until Date.now() >= value (buffet card-flying). */
+  buffetAnimationLockUntil?: number;
   /** True while client(s) are viewing round transition screen - blocks bot turns */
   roundTransitionLock?: boolean;
   /** Current round (1, 2, or 3). Set when game starts and when next round starts. */
@@ -140,6 +142,10 @@ export interface RoomSummary {
   speedMode?: boolean;
   suspicionMeter?: boolean;
   createdAt: number;
+  /** Host/creator display name for arena card */
+  creatorDisplayName?: string;
+  /** Host/creator avatar id (e.g. pizza_1) for arena card */
+  creatorAvatarId?: string | null;
 }
 
 /** Client-safe player view: no role/hand for others */

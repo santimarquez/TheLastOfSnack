@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "@/i18n/context";
 import styles from "./RoundTransitionScreen.module.css";
 
 const TRANSITION_DURATION_MS = 4500;
+const SAFETY_TIMEOUT_MS = 6000;
 const IMAGE_URL =
   "https://imagedelivery.net/F646Wun-eua00pA0NmkORQ/c41e7396-3168-473d-969d-f83664373f00/public";
 
@@ -29,6 +30,15 @@ export function RoundTransitionScreen({
 }: RoundTransitionScreenProps) {
   const { t } = useTranslations();
   const [progress, setProgress] = useState(0);
+  const completedRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
+  const finish = () => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    onCompleteRef.current();
+  };
 
   useEffect(() => {
     const start = Date.now();
@@ -44,10 +54,15 @@ export function RoundTransitionScreen({
 
   useEffect(() => {
     if (progress >= 100) {
-      const t = setTimeout(onComplete, 150);
-      return () => clearTimeout(t);
+      const id = setTimeout(finish, 150);
+      return () => clearTimeout(id);
     }
-  }, [progress, onComplete]);
+  }, [progress]);
+
+  useEffect(() => {
+    const id = setTimeout(finish, SAFETY_TIMEOUT_MS);
+    return () => clearTimeout(id);
+  }, []);
 
   const changeText =
     changeSinceLastRound != null && roundNumber > 1

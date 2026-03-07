@@ -109,7 +109,10 @@ export function Lobby({ send }: { send: SendFn }) {
   }
 
   function handleCopyCode() {
-    void navigator.clipboard?.writeText(roomCode);
+    const code = (roomCode ?? "").replace(/-/g, "").slice(0, 8);
+    const url = typeof window !== "undefined" ? window.location.origin : "";
+    const text = t("lobby.copyInviteText", { code, url });
+    void navigator.clipboard?.writeText(text);
   }
 
   const emptySlots = Math.max(0, maxPlayers - players.length);

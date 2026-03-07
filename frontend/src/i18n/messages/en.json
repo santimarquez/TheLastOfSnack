@@ -131,7 +131,7 @@
     "section4RoundsHeadline": "3 Rounds",
     "section4RoundsCopy": "A match consists of 3 rounds. Round winner: the last snack standing wins. If more than one snack is standing when the round ends, the one with more Snack Points wins. Match winner: after 3 rounds, the player with the most total Snack Points wins the game.",
     "section4TurnHeadline": "How a Turn Works",
-    "section4TurnCopy": "On your turn: (1) Draw a card from the deck — you must draw before playing. (2) Play one card from your hand — attack, defend, peek, or use a special action. (3) End your turn. Play passes clockwise. You can play Defend cards out of turn when you're targeted.",
+    "section4TurnCopy": "On your turn: (1) Draw a card from the deck — you must draw before playing. (2) Drag a card to a player or the discard pile to play it — attack, defend, peek, or use a special action. (3) End your turn. Play passes clockwise.",
     "section4PointsHeadline": "Snack Points",
     "section4PointsCopy": "Snack Points decide round and match winners. You earn: 50 base points, +10 per opponent eliminated, +1 per 10 seconds survived, and +20 for being the last snack standing in the round. Round winner: last snack standing, or highest points if multiple remain. Match winner: highest total Snack Points after 3 rounds.",
     "ctaReady": "Ready to Crumble?",
@@ -172,7 +172,8 @@
     "removeBot": "Remove bot",
     "kickPlayer": "Kick {name}",
     "kickPlayerTitle": "Remove this player from the room",
-    "arenaClosesIn": "Arena closes in {time} if game isn't started"
+    "arenaClosesIn": "Arena closes in {time} if game isn't started",
+    "copyInviteText": "Join my game of The Last of the Snacks — be the last snack standing! Room code: {code}. Play free: {url}"
   },
   "connectionLost": {
     "crisisSub": "SYSTEM ERROR: MILK_OVERFLOW",
@@ -200,7 +201,8 @@
   },
   "gameHeader": {
     "players": "Players",
-    "deck": "Deck"
+    "deck": "Deck",
+    "round": "Round"
   },
   "gameEnd": {
     "podiumTitle": "Winner Winner Snack Dinner!",
@@ -229,7 +231,9 @@
     "footerCopy": "Crunching the competition since {year}",
     "shareTitle": "The Last of the Snacks",
     "shareText": "Check out my round {round} results!",
-    "shareTextFinal": "I just finished a game of The Last of the Snacks!"
+    "shareTextFinal": "I just finished a game of The Last of the Snacks!",
+    "shareCopyText": "Check out my round {round} results in The Last of the Snacks — the party game where you're a snack and only one survives! Try it: {url}",
+    "shareCopyTextFinal": "I just finished a game of The Last of the Snacks! Join the fun — be the last snack standing. Play free: {url}"
   },
   "roundTransition": {
     "gameTitle": "Last Snack Standing",
@@ -290,7 +294,8 @@
     "emoteSpicy": "Spicy",
     "emoteRaw": "Raw",
     "emoteBurned": "Burned",
-    "insertEmoji": "Insert emoji"
+    "insertEmoji": "Insert emoji",
+    "writing": "{name} is writing…"
   },
   "cards": {
     "microwave": {
@@ -339,7 +344,7 @@
     },
     "foil_wrap": {
       "title": "Foil Wrap",
-      "action": "Blocks the next attack on you. Cannot be played from hand."
+      "action": "Blocks the next attack on you. Played when you're targeted (not by dragging)."
     }
   },
   "gameTable": {
@@ -350,12 +355,18 @@
     "out": "OUT",
     "secretIdentity": "Secret Identity",
     "weakness": "Weakness",
+    "weaknessHelper": "Snacks & weaknesses",
+    "weaknessTableTitle": "Snacks and their weaknesses",
+    "weaknessTableSnack": "Snack",
+    "weaknessTableWeakness": "Weakness",
+    "weaknessTableEliminatedBy": "Eliminated by",
     "endTurn": "End Turn",
     "timerUnit": "SEC",
     "endTurnTitle": "Play a card to take your turn, or wait for the timer",
     "drawCard": "Draw a card",
     "drawCardPrompt": "Drag from deck to your hand or double-click to draw",
     "dragDeckHere": "Drag a card from the deck here",
+    "cardDisabledHint": "Draw first, then drag cards to play",
     "notYourTurnTitle": "Not your turn",
     "waitingForTurn": "Waiting for {name}'s turn",
     "cardTypeSuffix": "card",
@@ -416,7 +427,7 @@
     "howToPlayTitle": "HOW TO PLAY",
     "rule1": "Join or create a room. Share the 8-character code so friends can join.",
     "rule2": "Everyone gets a secret snack identity. Don't reveal it—others will try to eliminate you.",
-    "rule3": "On your turn, play a card from your hand. Cards can target others or protect you.",
+    "rule3": "On your turn, drag a card to a player or the discard pile to play it. Cards can target others or protect you.",
     "rule4": "If your weakness is triggered, you're eliminated. Last snack standing wins.",
     "rule5": "Use the kitchen chat to bluff, accuse, or stay quiet. Defend your crumbs!",
     "viewFullGuide": "View full How to Play guide",

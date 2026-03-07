@@ -7,6 +7,7 @@ import { useTranslations } from "@/i18n/context";
 import { getGuestDisplayName } from "@/i18n/context";
 import { getOrCreateCreatorId } from "@/utils/creatorId";
 import { Analytics, JOIN_METHOD_KEY } from "@/lib/analytics";
+import { AVATAR_URLS } from "@/constants/avatars";
 import styles from "./page.module.css";
 
 const DISPLAY_NAME_STORAGE_KEY = "last-of-snack-display-name";
@@ -24,6 +25,8 @@ export interface RoomSummary {
   speedMode?: boolean;
   suspicionMeter?: boolean;
   createdAt: number;
+  creatorDisplayName?: string;
+  creatorAvatarId?: string | null;
 }
 
 function getStoredDisplayName(): string {
@@ -104,7 +107,7 @@ export default function ArenasPage() {
       if (data.roomCode) {
         Analytics.arenaCreated("arenas");
         sessionStorage.setItem(JOIN_METHOD_KEY, "create");
-        sessionStorage.setItem(`reconnect_${data.roomCode}`, data.reconnectToken ?? "");
+        sessionStorage.setItem(`reconnect_${(data.roomCode ?? "").toUpperCase()}`, data.reconnectToken ?? "");
         router.push(`/room/${data.roomCode}?displayName=${encodeURIComponent(displayName)}`);
       }
     } catch (e) {
@@ -313,6 +316,22 @@ export default function ArenasPage() {
                       <span className={styles.roomModeDot} />
                       {modeLabel}
                     </p>
+                    {(room.creatorDisplayName || room.creatorAvatarId) && (
+                      <div className={styles.roomCreator}>
+                        {room.creatorAvatarId && AVATAR_URLS[room.creatorAvatarId] && (
+                          <img
+                            src={AVATAR_URLS[room.creatorAvatarId]}
+                            alt=""
+                            className={styles.roomCreatorAvatar}
+                          />
+                        )}
+                        {room.creatorDisplayName && (
+                          <span className={styles.roomCreatorName}>
+                            {room.creatorDisplayName}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     {room.isPrivate ? (
                       <div className={styles.roomPrivateJoin}>
                         <input

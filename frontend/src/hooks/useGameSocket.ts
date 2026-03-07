@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { useGameStore, type LobbySettings, type ActionLogEntry } from "@/store/gameStore";
+import { SoundManager } from "@/audio";
 import { Analytics, JOIN_METHOD_KEY } from "@/lib/analytics";
 
 const getWsUrl = () => {
@@ -44,7 +45,10 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
     setPlayerEliminated,
     setGameEnded,
     setShowRoundTransition,
+    setRoundStarted,
     addChat,
+    setChatTyping,
+    clearChatTyping,
     setStateSync,
     addActionLogEntry,
     setConnectionStatus,
@@ -101,7 +105,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
           setJoinFailed(true);
           setConnectionStatus("disconnected");
           if (typeof sessionStorage !== "undefined") {
-            sessionStorage.removeItem(`reconnect_${roomCode}`);
+            sessionStorage.removeItem(`reconnect_${roomCode.toUpperCase()}`);
           }
           break;
         case "room_closed":
@@ -111,7 +115,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
           setJoinFailed(true);
           setConnectionStatus("disconnected");
           if (typeof sessionStorage !== "undefined") {
-            sessionStorage.removeItem(`reconnect_${roomCode}`);
+            sessionStorage.removeItem(`reconnect_${roomCode.toUpperCase()}`);
           }
           break;
         case "joined": {
@@ -218,11 +222,13 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
               targetId: (p as { targetId?: string }).targetId,
               cardType,
               startRect,
+              trashDiscarded: (p as { trashDiscarded?: { targetId: string; cards: Array<{ id: string; type: string }> } }).trashDiscarded,
             }
           );
           break;
         }
         case "card_drawn": {
+          SoundManager.playRandomPitch("draw_card");
           const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
           const players = gs?.players ?? [];
           const playerName = players.find((pl: { id: string }) => pl.id === (p.playerId as string))?.displayName ?? "?";
@@ -295,8 +301,7 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
           const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
           const round = (p.round as 1 | 2 | 3) ?? 2;
           Analytics.roundStarted(round);
-          setStateSync(gs);
-          setShowRoundTransition(true, round);
+          setRoundStarted(gs, round);
           break;
         }
         case "chat":
@@ -305,10 +310,22 @@ export function useGameSocket(roomCode: string, displayName: string, reconnectTo
             displayName: p.displayName as string,
             text: p.text as string,
           });
+          clearChatTyping(p.playerId as string);
           break;
-        case "state_sync":
-          setStateSync(p.gameState as import("@last-of-snack/shared").GameStateView);
+        case "chat_typing":
+          setChatTyping(p.playerId as string, (p.displayName as string) ?? "Someone");
           break;
+        case "state_sync": {
+          const gs = p.gameState as import("@last-of-snack/shared").GameStateView;
+          const currentPhase = useGameStore.getState().gameState?.phase;
+          const syncRound = (gs?.currentRound ?? 1) as number;
+          if (gs?.phase === "playing" && syncRound >= 2 && currentPhase === "round_ended") {
+            setRoundStarted(gs, (syncRound ?? 2) as 1 | 2 | 3);
+          } else {
+            setStateSync(gs);
+          }
+          break;
+        }
         case "error": {
           const message = (p.message as string) ?? "Error";
           const code = p.code as string;

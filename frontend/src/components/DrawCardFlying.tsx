@@ -6,15 +6,19 @@ import { CARD_BACK_IMAGE_URL } from "@/config/cards";
 import styles from "./GameTable.module.css";
 
 const DECK_SELECTOR = "[data-deck-source]";
-const AVATAR_SELECTOR = (playerId: string) => `[data-player-avatar="${playerId}"]`;
+const AVATAR_SELECTOR = (playerId: string) =>
+  `[data-player-avatar="${playerId}"]`;
+const MY_HAND_SELECTOR = "[data-my-hand]";
 
 const FLY_DURATION_MS = 1200;
 
 export function DrawCardFlying({
   targetPlayerId,
+  currentPlayerId,
   onComplete,
 }: {
   targetPlayerId: string;
+  currentPlayerId: string | null;
   onComplete: () => void;
 }) {
   const [coords, setCoords] = useState<{
@@ -31,19 +35,23 @@ export function DrawCardFlying({
     const raf = requestAnimationFrame(() => {
       if (cancelled) return;
       const deckEl = document.querySelector(DECK_SELECTOR);
-      const avatarEl = document.querySelector(AVATAR_SELECTOR(targetPlayerId));
-      if (!deckEl || !avatarEl) {
+      const isSelf =
+        currentPlayerId != null && targetPlayerId === currentPlayerId;
+      const endEl = isSelf
+        ? document.querySelector(MY_HAND_SELECTOR)
+        : document.querySelector(AVATAR_SELECTOR(targetPlayerId));
+      if (!deckEl || !endEl) {
         onComplete();
         return;
       }
       const deckRect = deckEl.getBoundingClientRect();
-      const avatarRect = avatarEl.getBoundingClientRect();
+      const endRect = endEl.getBoundingClientRect();
       const cardW = deckRect.width;
       const cardH = deckRect.height;
       const startX = deckRect.left + deckRect.width / 2 - cardW / 2;
       const startY = deckRect.top + deckRect.height / 2 - cardH / 2;
-      const endX = avatarRect.left + avatarRect.width / 2 - cardW / 2;
-      const endY = avatarRect.top + avatarRect.height / 2 - cardH / 2;
+      const endX = endRect.left + endRect.width / 2 - cardW / 2;
+      const endY = endRect.top + endRect.height / 2 - cardH / 2;
       setCoords({
         startX,
         startY,
@@ -57,7 +65,7 @@ export function DrawCardFlying({
       cancelled = true;
       cancelAnimationFrame(raf);
     };
-  }, [targetPlayerId, onComplete]);
+  }, [targetPlayerId, currentPlayerId, onComplete]);
 
   useLayoutEffect(() => {
     if (!coords) return;
@@ -80,13 +88,12 @@ export function DrawCardFlying({
           "--fly-card-w": `${coords.cardW}px`,
           "--fly-card-h": `${coords.cardH}px`,
         } as React.CSSProperties
-      }
-    >
+      }>
       <div
         className={styles.drawCardFlyingCard}
         style={{ backgroundImage: `url(${CARD_BACK_IMAGE_URL})` }}
       />
     </div>,
-    document.body
+    document.body,
   );
 }

@@ -20,7 +20,13 @@ export type ActionLogEntry =
   | { id: string; kind: "turn"; playerName: string }
   | { id: string; kind: "draw"; playerName: string }
   | { id: string; kind: "play"; playerName: string; cardType: string }
-  | { id: string; kind: "play_target"; playerName: string; targetName: string; cardType: string }
+  | {
+      id: string;
+      kind: "play_target";
+      playerName: string;
+      targetName: string;
+      cardType: string;
+    }
   | { id: string; kind: "eliminated"; playerName: string; roleName: string }
   | { id: string; kind: "game_over_winner"; winnerName: string }
   | { id: string; kind: "game_over_draw" };
@@ -34,6 +40,8 @@ interface GameStore {
   gameState: GameStateView | null;
   lobbySettings: LobbySettings;
   chatMessages: ChatMessage[];
+  /** Player IDs currently typing in chat -> displayName (excludes self in UI). */
+  chatTyping: Record<string, string>;
   /** Log of in-game actions (turn, draw, play, eliminated, game over). */
   actionLog: ActionLogEntry[];
   connectionStatus: "disconnected" | "connecting" | "connected";
@@ -58,10 +66,20 @@ interface GameStore {
     playerId: string;
     destination: "discard" | "avatar";
     /** Captured before state update; null for other players' cards. */
-    startRect?: { left: number; top: number; width: number; height: number } | null;
+    startRect?: {
+      left: number;
+      top: number;
+      width: number;
+      height: number;
+    } | null;
   } | null;
   /** Foil wrap consumed: fly from avatar to discard. */
   shieldConsumedAnimation: { targetPlayerId: string } | null;
+  /** Trash: two cards fly from target's avatar to discard pile (0.3s stagger). */
+  trashDiscardAnimation: {
+    targetId: string;
+    cards: Array<{ id: string; type: string }>;
+  } | null;
   /** Salt/Peek result notification - only for the player who used the card. */
   cardRevealNotification:
     | { type: "salt"; targetDisplayName: string; category: string }
@@ -83,33 +101,54 @@ interface GameStore {
     gameState: GameStateView;
     lobbySettings?: LobbySettings;
   }) => void;
-  setRoomUpdated: (players: PlayerView[], gameState: GameStateView, lobbySettings?: LobbySettings) => void;
+  setRoomUpdated: (
+    players: PlayerView[],
+    gameState: GameStateView,
+    lobbySettings?: LobbySettings,
+  ) => void;
   setGameStarted: (gameState: GameStateView) => void;
-  setTurnStarted: (currentPlayerId: string, expiresAt: number, gameState: GameStateView) => void;
+  setTurnStarted: (
+    currentPlayerId: string,
+    expiresAt: number,
+    gameState: GameStateView,
+  ) => void;
   setCardPlayed: (
     playerId: string,
     cardId: string,
     gameState: GameStateView,
-    options?: {
+      options?: {
       revealNotification?: GameStore["cardRevealNotification"];
       outcome?: string;
       targetId?: string;
       cardType?: string;
-      startRect?: { left: number; top: number; width: number; height: number } | null;
-    }
+      startRect?: {
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+      } | null;
+      trashDiscarded?: { targetId: string; cards: Array<{ id: string; type: string }> };
+    },
   ) => void;
   clearBuffetAnimation: () => void;
   clearTradeSeatsAnimation: () => void;
   clearCardPlayedAnimation: () => void;
   clearShieldConsumedAnimation: () => void;
+  clearTrashDiscardAnimation: () => void;
   clearCardRevealNotification: () => void;
   setCardDrawn: (drawnByPlayerId: string, gameState: GameStateView) => void;
+  setDrawAnimation: (data: { playerId: string } | null) => void;
   clearDrawAnimation: () => void;
   setPlayerEliminated: (
     playerId: string,
     revealedRole: unknown,
     gameState: GameStateView,
-    options?: { cardType?: string; snackId?: string | null; displayName?: string; avatarUrl?: string }
+    options?: {
+      cardType?: string;
+      snackId?: string | null;
+      displayName?: string;
+      avatarUrl?: string;
+    },
   ) => void;
   setEliminationAnimation: (data: GameStore["eliminationAnimation"]) => void;
   clearEliminationAnimation: () => void;
@@ -121,7 +160,11 @@ interface GameStore {
   setShowRankingModal: (value: boolean) => void;
   setGameEnded: (winnerId: string | null, gameState: GameStateView) => void;
   addChat: (msg: ChatMessage) => void;
+  setChatTyping: (playerId: string, displayName: string) => void;
+  clearChatTyping: (playerId: string) => void;
   setStateSync: (gameState: GameStateView) => void;
+  /** Sync state and show round transition in one update (so non-host reliably sees Round 2+ start). */
+  setRoundStarted: (gameState: GameStateView, round: 1 | 2 | 3) => void;
   addActionLogEntry: (entry: ActionLogEntry) => void;
   clearActionLog: () => void;
   setConnectionStatus: (status: GameStore["connectionStatus"]) => void;
@@ -129,7 +172,10 @@ interface GameStore {
   setShowEliminationModal: (show: boolean) => void;
   setShowAssigningTransition: (show: boolean) => void;
   setShowRoundTransition: (show: boolean, round?: 1 | 2 | 3) => void;
-  setShowSettingsHelpModal: (open: boolean, tab?: "settings" | "how-to-play") => void;
+  setShowSettingsHelpModal: (
+    open: boolean,
+    tab?: "settings" | "how-to-play",
+  ) => void;
   setJoinFailed: (failed: boolean) => void;
   reset: () => void;
 }
@@ -153,8 +199,14 @@ export const useGameStore = create<GameStore>((set) => ({
   reconnectToken: null,
   isHost: false,
   gameState: null,
-  lobbySettings: { speedMode: false, suspicionMeter: false, isPrivate: false, maxPlayers: 8 },
+  lobbySettings: {
+    speedMode: false,
+    suspicionMeter: false,
+    isPrivate: false,
+    maxPlayers: 8,
+  },
   chatMessages: [],
+  chatTyping: {},
   actionLog: [],
   connectionStatus: "disconnected",
   error: null,
@@ -170,6 +222,7 @@ export const useGameStore = create<GameStore>((set) => ({
   tradeSeatsAnimation: null,
   cardPlayedAnimation: null,
   shieldConsumedAnimation: null,
+  trashDiscardAnimation: null,
   cardRevealNotification: null,
   eliminationAnimation: null,
   requestExpandActionLog: false,
@@ -182,8 +235,15 @@ export const useGameStore = create<GameStore>((set) => ({
       isHost: data.isHost,
       reconnectToken: data.reconnectToken,
       gameState: data.gameState,
-      lobbySettings: data.lobbySettings ?? { speedMode: false, suspicionMeter: false, isPrivate: false, maxPlayers: 8 },
-      displayName: data.gameState.players?.find((p) => p.id === data.playerId)?.displayName ?? "",
+      lobbySettings: data.lobbySettings ?? {
+        speedMode: false,
+        suspicionMeter: false,
+        isPrivate: false,
+        maxPlayers: 8,
+      },
+      displayName:
+        data.gameState.players?.find((p) => p.id === data.playerId)
+          ?.displayName ?? "",
       connectionStatus: "connected",
       error: null,
       joinFailed: false,
@@ -222,13 +282,22 @@ export const useGameStore = create<GameStore>((set) => ({
               cardId,
               cardType,
               playerId,
-              destination: (isFoilWrap ? "avatar" : "discard") as "discard" | "avatar",
+              destination: (isFoilWrap ? "avatar" : "discard") as
+                | "discard"
+                | "avatar",
               startRect: options?.startRect ?? undefined,
             }
           : null;
       const shieldConsumed =
         options?.outcome === "blocked" && options?.targetId
           ? { targetPlayerId: options.targetId }
+          : null;
+      const trashDiscard =
+        options?.outcome === "trash" && options?.trashDiscarded?.cards?.length
+          ? {
+              targetId: options.trashDiscarded.targetId,
+              cards: options.trashDiscarded.cards,
+            }
           : null;
       return {
         gameState,
@@ -240,7 +309,10 @@ export const useGameStore = create<GameStore>((set) => ({
           : {}),
         ...(tradeSeats != null ? { tradeSeatsAnimation: tradeSeats } : {}),
         ...(cardPlayed != null ? { cardPlayedAnimation: cardPlayed } : {}),
-        ...(shieldConsumed != null ? { shieldConsumedAnimation: shieldConsumed } : {}),
+        ...(shieldConsumed != null
+          ? { shieldConsumedAnimation: shieldConsumed }
+          : {}),
+        ...(trashDiscard != null ? { trashDiscardAnimation: trashDiscard } : {}),
       };
     }),
 
@@ -252,23 +324,36 @@ export const useGameStore = create<GameStore>((set) => ({
 
   clearShieldConsumedAnimation: () => set({ shieldConsumedAnimation: null }),
 
+  clearTrashDiscardAnimation: () => set({ trashDiscardAnimation: null }),
+
   clearCardRevealNotification: () => set({ cardRevealNotification: null }),
 
   setCardDrawn: (drawnByPlayerId, gameState) =>
     set((s) => ({
       gameState,
       drawAnimation:
-        s.playerId !== drawnByPlayerId ? { playerId: drawnByPlayerId } : null,
+        s.playerId !== drawnByPlayerId
+          ? { playerId: drawnByPlayerId }
+          : s.drawAnimation,
     })),
 
+  setDrawAnimation: (data) => set({ drawAnimation: data }),
   clearDrawAnimation: () => set({ drawAnimation: null }),
 
-  setPlayerEliminated: (eliminatedPlayerId, _revealedRole, gameState, options) =>
+  setPlayerEliminated: (
+    eliminatedPlayerId,
+    _revealedRole,
+    gameState,
+    options,
+  ) =>
     set((s) => ({
       gameState,
-      showEliminationModal: s.playerId === eliminatedPlayerId ? true : s.showEliminationModal,
+      showEliminationModal:
+        s.playerId === eliminatedPlayerId ? true : s.showEliminationModal,
       eliminationAnimation:
-        options?.cardType != null && options?.displayName != null && options?.avatarUrl != null
+        options?.cardType != null &&
+        options?.displayName != null &&
+        options?.avatarUrl != null
           ? {
               playerId: eliminatedPlayerId,
               cardType: options.cardType,
@@ -292,9 +377,33 @@ export const useGameStore = create<GameStore>((set) => ({
   addChat: (msg) =>
     set((s) => ({
       chatMessages: [...s.chatMessages.slice(-99), msg],
+      chatTyping: (() => {
+        const next = { ...s.chatTyping };
+        delete next[msg.playerId];
+        return next;
+      })(),
     })),
 
+  setChatTyping: (playerId, displayName) =>
+    set((s) => ({
+      chatTyping: { ...s.chatTyping, [playerId]: displayName },
+    })),
+
+  clearChatTyping: (playerId) =>
+    set((s) => {
+      const next = { ...s.chatTyping };
+      delete next[playerId];
+      return { chatTyping: next };
+    }),
+
   setStateSync: (gameState) => set({ gameState }),
+
+  setRoundStarted: (gameState, round) =>
+    set({
+      gameState,
+      showRoundTransition: true,
+      roundTransitionRound: round,
+    }),
 
   addActionLogEntry: (entry) =>
     set((s) => ({
@@ -331,8 +440,14 @@ export const useGameStore = create<GameStore>((set) => ({
       reconnectToken: null,
       isHost: false,
       gameState: null,
-      lobbySettings: { speedMode: false, suspicionMeter: false, isPrivate: false, maxPlayers: 8 },
+      lobbySettings: {
+        speedMode: false,
+        suspicionMeter: false,
+        isPrivate: false,
+        maxPlayers: 8,
+      },
       chatMessages: [],
+      chatTyping: {},
       actionLog: [],
       connectionStatus: "disconnected",
       error: null,
@@ -348,6 +463,7 @@ export const useGameStore = create<GameStore>((set) => ({
       tradeSeatsAnimation: null,
       cardPlayedAnimation: null,
       shieldConsumedAnimation: null,
+      trashDiscardAnimation: null,
       cardRevealNotification: null,
       eliminationAnimation: null,
       requestExpandActionLog: false,

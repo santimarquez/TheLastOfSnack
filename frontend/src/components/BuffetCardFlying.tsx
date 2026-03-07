@@ -1,15 +1,16 @@
 "use client";
 
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { CARD_BACK_IMAGE_URL } from "@/config/cards";
+import { SoundManager } from "@/audio/SoundManager";
 import styles from "./GameTable.module.css";
 
 const DECK_SELECTOR = "[data-deck-source]";
 const AVATAR_SELECTOR = (playerId: string) => `[data-player-avatar="${playerId}"]`;
 
 const FLY_DURATION_MS = 1200;
-const STAGGER_MS = 120;
+const STAGGER_MS = 300;
 
 export function BuffetCardFlying({
   playerIds,
@@ -78,6 +79,19 @@ export function BuffetCardFlying({
     const t = setTimeout(onComplete, totalMs);
     return () => clearTimeout(t);
   }, [cards.length, onComplete]);
+
+  // Play draw_card sound at the start of each card's transition (synced to animation)
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => {
+    if (cards.length === 0) return;
+    timeoutsRef.current = cards.map((c) =>
+      setTimeout(() => SoundManager.playRandomPitch("draw_card"), c.delayMs)
+    );
+    return () => {
+      timeoutsRef.current.forEach(clearTimeout);
+      timeoutsRef.current = [];
+    };
+  }, [cards]);
 
   if (cards.length === 0 || typeof document === "undefined") return null;
 

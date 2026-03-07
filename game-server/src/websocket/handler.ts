@@ -97,6 +97,7 @@ export function handleMessage(
         roomCode: room.code,
         isHost: player.isHost,
         reconnectToken: token,
+        reconnected: reconnected ?? false,
         gameState,
         lobbySettings: {
           speedMode: room.settings.speedMode,
@@ -294,6 +295,15 @@ export function handleMessage(
         playerId: ctx.playerId,
         displayName: player.displayName,
         text,
+      });
+      return;
+    }
+
+    case "chat_typing": {
+      const broadcastFn = broadcast.createBroadcast(sockets);
+      broadcastFn(ctx.roomCode, "chat_typing", {
+        playerId: ctx.playerId,
+        displayName: player.displayName,
       });
       return;
     }

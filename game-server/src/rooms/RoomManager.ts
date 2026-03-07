@@ -385,16 +385,21 @@ export function listRooms(query: ListRoomsQuery = {}): { rooms: RoomSummary[]; t
   list.sort((a, b) => b.createdAt - a.createdAt);
   const total = list.length;
   const start = (page - 1) * limit;
-  const rooms = list.slice(start, start + limit).map((room): RoomSummary => ({
-    code: room.code,
-    name: room.name,
-    isPrivate: room.isPrivate ?? false,
-    maxPlayers: room.maxPlayers ?? config.maxPlayers,
-    playerCount: room.players.length,
-    phase: room.gameState.phase,
-    speedMode: room.settings.speedMode,
-    suspicionMeter: room.settings.suspicionMeter,
-    createdAt: room.createdAt,
-  }));
+  const rooms = list.slice(start, start + limit).map((room): RoomSummary => {
+    const host = room.players.find((p) => p.id === room.hostId);
+    return {
+      code: room.code,
+      name: room.name,
+      isPrivate: room.isPrivate ?? false,
+      maxPlayers: room.maxPlayers ?? config.maxPlayers,
+      playerCount: room.players.length,
+      phase: room.gameState.phase,
+      speedMode: room.settings.speedMode,
+      suspicionMeter: room.settings.suspicionMeter,
+      createdAt: room.createdAt,
+      creatorDisplayName: host?.displayName,
+      creatorAvatarId: host?.avatarId ?? null,
+    };
+  });
   return { rooms, total };
 }

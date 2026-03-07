@@ -19,13 +19,15 @@ interface ActionCardProps {
   playable?: boolean;
   onClick?: () => void;
   disabled?: boolean;
+  /** Tooltip when card is disabled (e.g. "Draw first, then drag cards to play"). */
+  disabledTitle?: string;
   /** When true, card is draggable. onDragStart receives data for drop handlers. */
   draggable?: boolean;
   onDragStart?: (e: React.DragEvent, data: CardDragData) => void;
   onDragEnd?: () => void;
 }
 
-export function ActionCard({ card, playable, onClick, disabled, draggable, onDragStart, onDragEnd }: ActionCardProps) {
+export function ActionCard({ card, playable, onClick, disabled, disabledTitle, draggable, onDragStart, onDragEnd }: ActionCardProps) {
   const { t } = useTranslations();
   const meta = getCardMeta(card.type);
   const titleKey = `cards.${card.type}.title`;
@@ -54,7 +56,7 @@ export function ActionCard({ card, playable, onClick, disabled, draggable, onDra
       className={`${styles.card} ${playable ? styles.cardPlayable : ""}`}
       onClick={onClick}
       disabled={disabled}
-      title={action}
+      title={disabled && disabledTitle ? disabledTitle : action}
       draggable={draggable && playable && !disabled}
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}

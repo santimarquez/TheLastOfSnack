@@ -38,7 +38,7 @@ export default function RoomPage() {
     if (roomCode?.trim()) setStableRoomCode((prev) => roomCode.trim());
   }, [roomCode]);
   const reconnectToken = useMemo(
-    () => (typeof window !== "undefined" ? sessionStorage.getItem(`reconnect_${roomCode}`) : null),
+    () => (typeof window !== "undefined" ? sessionStorage.getItem(`reconnect_${roomCode.toUpperCase()}`) : null),
     [roomCode]
   );
   const name = displayName?.trim() || getGuestDisplayName(t);
@@ -54,7 +54,7 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (playerId && reconnectToken) {
-      sessionStorage.setItem(`reconnect_${roomCode}`, reconnectToken);
+      sessionStorage.setItem(`reconnect_${roomCode.toUpperCase()}`, reconnectToken);
     }
   }, [playerId, reconnectToken, roomCode]);
 
@@ -70,7 +70,7 @@ export default function RoomPage() {
         Analytics.lobbyLeft();
         sendFn("leave_room", {});
         if (typeof sessionStorage !== "undefined") {
-          sessionStorage.removeItem(`reconnect_${code}`);
+          sessionStorage.removeItem(`reconnect_${code.toUpperCase()}`);
         }
       }
     };
@@ -126,6 +126,7 @@ export default function RoomPage() {
           playersCount={gameState?.players?.length ?? 0}
           maxPlayers={8}
           deckCount={gameState?.deckCount ?? 0}
+          currentRound={phase === "playing" ? (gameState?.currentRound ?? 1) : undefined}
         />
       )}
       {error && (

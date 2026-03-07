@@ -131,7 +131,7 @@
     "section4RoundsHeadline": "3 rondas",
     "section4RoundsCopy": "Una partida consta de 3 rondas. Ganador de ronda: gana el último snack en pie. Si queda más de un snack cuando termina la ronda, gana el que tenga más Puntos Snack. Ganador de partida: tras 3 rondas, gana el jugador con más Puntos Snack en total.",
     "section4TurnHeadline": "Cómo funciona un turno",
-    "section4TurnCopy": "En tu turno: (1) Roba una carta del mazo — debes robar antes de jugar. (2) Juega una carta de tu mano — ataca, defiende, observa o usa una acción especial. (3) Termina tu turno. El turno pasa en sentido horario. Puedes jugar cartas de Defensa fuera de turno cuando te ataquen.",
+    "section4TurnCopy": "En tu turno: (1) Roba una carta del mazo — debes robar antes de jugar. (2) Arrastra una carta a un jugador o al descarte para jugarla — ataca, defiende, observa o usa una acción especial. (3) Termina tu turno. El turno pasa en sentido horario.",
     "section4PointsHeadline": "Puntos Snack",
     "section4PointsCopy": "Los Puntos Snack deciden el ganador de ronda y partida. Ganas: 50 puntos base, +10 por rival eliminado, +1 por cada 10 segundos sobrevividos y +20 por ser el último snack en pie. Ganador de ronda: último snack en pie, o si quedan varios, el de más puntos. Ganador de partida: más Puntos Snack al final de las 3 rondas.",
     "ctaReady": "¿Listo para desmoronarte?",
@@ -172,7 +172,8 @@
     "removeBot": "Quitar bot",
     "kickPlayer": "Expulsar a {name}",
     "kickPlayerTitle": "Quitar a este jugador de la sala",
-    "arenaClosesIn": "La arena se cierra en {time} si no se inicia la partida"
+    "arenaClosesIn": "La arena se cierra en {time} si no se inicia la partida",
+    "copyInviteText": "¡Uníos a mi partida de The Last of the Snacks — sed el último snack en pie! Código de sala: {code}. Jugad gratis: {url}"
   },
   "connectionLost": {
     "crisisSub": "ERROR: LECHE_DERRAMADA",
@@ -200,7 +201,8 @@
   },
   "gameHeader": {
     "players": "Jugadores",
-    "deck": "Mazo"
+    "deck": "Mazo",
+    "round": "Ronda"
   },
   "gameEnd": {
     "podiumTitle": "¡Ganador, ganador, cena de snacks!",
@@ -229,7 +231,9 @@
     "footerCopy": "Machacando a la competencia desde {year}",
     "shareTitle": "The Last of the Snacks",
     "shareText": "¡Mirad mis resultados de la ronda {round}!",
-    "shareTextFinal": "¡Acabo de terminar una partida de The Last of the Snacks!"
+    "shareTextFinal": "¡Acabo de terminar una partida de The Last of the Snacks!",
+    "shareCopyText": "Mirad mis resultados de la ronda {round} en The Last of the Snacks — ¡el party game donde eres un snack y solo uno sobrevive! Probad: {url}",
+    "shareCopyTextFinal": "¡Acabo de terminar una partida de The Last of the Snacks! Uníos: sed el último snack en pie. Jugad gratis: {url}"
   },
   "roundTransition": {
     "gameTitle": "Last Snack Standing",
@@ -290,7 +294,8 @@
     "emoteSpicy": "Picante",
     "emoteRaw": "Crudo",
     "emoteBurned": "Quemado",
-    "insertEmoji": "Insertar emoji"
+    "insertEmoji": "Insertar emoji",
+    "writing": "{name} está escribiendo…"
   },
   "cards": {
     "microwave": {
@@ -339,7 +344,7 @@
     },
     "foil_wrap": {
       "title": "Papel de aluminio",
-      "action": "Bloquea el próximo ataque contra ti. No se puede jugar desde la mano."
+      "action": "Bloquea el próximo ataque contra ti. Se juega cuando te atacan (no arrastrando)."
     }
   },
   "gameTable": {
@@ -350,12 +355,18 @@
     "out": "FUERA",
     "secretIdentity": "Identidad secreta",
     "weakness": "Debilidad",
+    "weaknessHelper": "Snacks y debilidades",
+    "weaknessTableTitle": "Snacks y sus debilidades",
+    "weaknessTableSnack": "Snack",
+    "weaknessTableWeakness": "Debilidad",
+    "weaknessTableEliminatedBy": "Eliminado por",
     "endTurn": "Terminar turno",
     "timerUnit": "SEG",
     "endTurnTitle": "Juega una carta para completar tu turno o espera al temporizador",
     "drawCard": "Robar carta",
     "drawCardPrompt": "Arrastra desde el mazo a tu mano o doble clic para robar",
     "dragDeckHere": "Arrastra una carta del mazo aquí",
+    "cardDisabledHint": "Primero roba, luego arrastra cartas para jugar",
     "notYourTurnTitle": "No es tu turno",
     "waitingForTurn": "Esperando el turno de {name}",
     "cardTypeSuffix": "carta",
@@ -416,7 +427,7 @@
     "howToPlayTitle": "CÓMO JUGAR",
     "rule1": "Únete o crea una sala. Comparte el código de 8 caracteres para que se unan tus amigos.",
     "rule2": "Cada uno recibe una identidad secreta de snack. No la reveles: intentarán eliminarte.",
-    "rule3": "En tu turno, juega una carta de tu mano. Las cartas pueden atacar a otros o protegerte.",
+    "rule3": "En tu turno, arrastra una carta a un jugador o al descarte para jugarla. Las cartas pueden atacar a otros o protegerte.",
     "rule4": "Si activan tu debilidad, quedas eliminado. Gana el último snack en pie.",
     "rule5": "Usa el chat de cocina para farolear, acusar o callar. ¡Defiende tus migas!",
     "viewFullGuide": "Ver guía completa Cómo jugar",

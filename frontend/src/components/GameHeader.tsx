@@ -11,9 +11,10 @@ interface GameHeaderProps {
   playersCount: number;
   maxPlayers: number;
   deckCount: number;
+  currentRound?: 1 | 2 | 3;
 }
 
-export function GameHeader({ playersCount, maxPlayers, deckCount }: GameHeaderProps) {
+export function GameHeader({ playersCount, maxPlayers, deckCount, currentRound }: GameHeaderProps) {
   const { t } = useTranslations();
   const setShowSettingsHelpModal = useGameStore((s) => s.setShowSettingsHelpModal);
   const { muted, toggleMuted } = useSoundStore();
@@ -25,6 +26,12 @@ export function GameHeader({ playersCount, maxPlayers, deckCount }: GameHeaderPr
         <h1 className={styles.title}>{t("common.appName")}</h1>
       </Link>
       <div className={styles.stats}>
+        {currentRound != null && (
+          <div className={styles.statRound}>
+            <span className="material-symbols-outlined">layers</span>
+            <span>{t("gameHeader.round")} {currentRound}</span>
+          </div>
+        )}
         <div className={styles.stat}>
           <span className="material-symbols-outlined">groups</span>
           <span>{t("gameHeader.players")}: {playersCount}/{maxPlayers}</span>

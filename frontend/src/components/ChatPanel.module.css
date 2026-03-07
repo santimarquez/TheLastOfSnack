@@ -206,6 +206,14 @@
   word-break: break-word;
 }
 
+.typingIndicator {
+  font-size: 0.8rem;
+  color: var(--slate-400);
+  font-style: italic;
+  margin: 0.25rem 0 0;
+  padding: 0 0.5rem;
+}
+
 .emojiRow {
   display: flex;
   flex-wrap: wrap;

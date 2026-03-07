@@ -171,6 +171,7 @@ export function playCard(
       gameState: buildGameStateView(r, forPlayerId),
     };
     if (targetId) payload.targetId = targetId;
+    if (result.trashDiscarded) payload.trashDiscarded = result.trashDiscarded;
     if (forPlayerId === playerId) {
       if (result.saltReveal) {
         payload.revealNotification = { type: "salt", ...result.saltReveal };
@@ -191,7 +192,7 @@ export function playCard(
       room.gameState.eliminatedAt[id] = eliminationTimestamp;
     }
     room.gameState.eliminationAnimationLock = true;
-    const cardType = result.eliminationCardType ?? "eliminate";
+    const cardType = result.eliminationCardType ?? "microwave";
     result.eliminated.forEach((id) => {
       const eliminatedPlayer = room.players.find((p) => p.id === id);
       const revealed = eliminatedPlayer?.role;
@@ -230,9 +231,36 @@ export function playCard(
     }));
   }
 
+  if (result.outcome === "buffet") {
+    room.gameState.buffetAnimationLockUntil = Date.now() + config.buffetAnimationMs;
+  }
+
   const winnerId = getWinnerBySnackPoints(room);
   if (winnerId) {
     endRoundOrGame(roomCode, room);
+    return { ok: true, result };
+  }
+
+  if (result.outcome === "buffet") {
+    // Defer turn advance until buffet animation ends so next player (e.g. bot) can draw.
+    setTimeout(() => {
+      const r = RoomManager.getRoom(roomCode);
+      if (!r || r.gameState.phase !== "playing") return;
+      advanceTurn(r);
+      r.gameState.turnStartedAt = Date.now();
+      r.gameState.currentTurnDrawn = false;
+      const nextId = getCurrentPlayerId(r);
+      const nextPlayer = nextId ? r.players.find((p) => p.id === nextId) : null;
+      if (nextId && !nextPlayer?.isBot) {
+        startTurnTimer(roomCode, nextId, r.settings.turnTimeoutSec, () => onTurnTimeout(roomCode));
+      }
+      broadcastToRoomPerPlayer(roomCode, "turn_started", (room, forPlayerId) => ({
+        currentPlayerId: nextId,
+        expiresAt: getExpiresAt(room.settings.turnTimeoutSec),
+        gameState: buildGameStateView(room, forPlayerId),
+      }));
+      scheduleBotTurnIfNeeded(roomCode);
+    }, config.buffetAnimationMs);
     return { ok: true, result };
   }
 
@@ -321,6 +349,9 @@ export function drawCard(roomCode: string, playerId: string): { ok: true } | { e
   if (!room) return { error: "Room not found" };
   if (room.gameState.phase !== "playing") return { error: "Not in play" };
   if (room.gameState.eliminationAnimationLock) return { error: "Game paused during elimination animation" };
+  if (room.gameState.buffetAnimationLockUntil != null && Date.now() < room.gameState.buffetAnimationLockUntil) {
+    return { error: "Please wait for buffet animation" };
+  }
   const currentId = getCurrentPlayerId(room);
   if (currentId !== playerId) return { error: "Not your turn" };
   if (room.gameState.currentTurnDrawn) return { error: "Already drew this turn" };

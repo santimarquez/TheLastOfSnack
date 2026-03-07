@@ -132,8 +132,11 @@ export function RoundEndScreen({ send, isFinalRound }: RoundEndScreenProps) {
     } catch (err) {
       if ((err as { name?: string })?.name === "AbortError") return;
     }
+    const copyText = isFinalRound
+      ? t("gameEnd.shareCopyTextFinal", { url })
+      : t("gameEnd.shareCopyText", { round: String(currentRound), url });
     try {
-      await navigator.clipboard?.writeText(url);
+      await navigator.clipboard?.writeText(copyText);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     } catch {

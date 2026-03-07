@@ -5,6 +5,9 @@ import { useTranslations } from "@/i18n/context";
 import { useGameStore } from "@/store/gameStore";
 import styles from "./ChatPanel.module.css";
 
+const TYPING_THROTTLE_MS = 1200;
+const TYPING_EXPIRE_MS = 3500;
+
 type SendFn = (type: string, payload: Record<string, unknown>) => void;
 
 interface ChatPanelProps {
@@ -18,12 +21,13 @@ interface ChatPanelProps {
 
 export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarCompact }: ChatPanelProps) {
   const { t } = useTranslations();
-  const { chatMessages, gameState, playerId } = useGameStore();
+  const { chatMessages, chatTyping, gameState, playerId, setChatTyping, clearChatTyping } = useGameStore();
   const [input, setInput] = useState("");
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const lastSeenCountRef = useRef(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const typingSentAtRef = useRef<number>(0);
 
   const isGameVariant = variant === "game";
 
@@ -47,6 +51,25 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
     if (fromOthers > 0) setUnreadCount((prev) => prev + fromOthers);
     lastSeenCountRef.current = chatMessages.length;
   }, [chatMessages, isCollapsed, playerId]);
+
+  // Throttled "typing" indicator: send chat_typing when user types
+  useEffect(() => {
+    if (!input.trim()) return;
+    const now = Date.now();
+    if (now - typingSentAtRef.current < TYPING_THROTTLE_MS) return;
+    typingSentAtRef.current = now;
+    send("chat_typing", {});
+  }, [input, send]);
+
+  // Expire typing indicators after TYPING_EXPIRE_MS
+  useEffect(() => {
+    const entries = Object.entries(chatTyping).filter(([id]) => id !== playerId);
+    if (entries.length === 0) return;
+    const timeouts = entries.map(([id]) =>
+      setTimeout(() => clearChatTyping(id), TYPING_EXPIRE_MS)
+    );
+    return () => timeouts.forEach(clearTimeout);
+  }, [chatTyping, playerId, clearChatTyping]);
 
   const EMOJI_QUICK = ["😀", "😂", "🔥", "👍", "👀", "🙈", "😱", "🎉", "🍕", "🥤"];
 
@@ -131,6 +154,14 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
                 </div>
               );
             })}
+            {Object.entries(chatTyping)
+              .filter(([id]) => id !== playerId)
+              .slice(0, 1)
+              .map(([id, name]) => (
+                <p key={id} className={styles.typingIndicator} aria-live="polite">
+                  {t("chatPanel.writing", { name })}
+                </p>
+              ))}
           </div>
           <div className={styles.emojiRow}>
             {EMOJI_QUICK.map((emoji) => (
@@ -234,6 +265,14 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
               </div>
             );
           })}
+          {Object.entries(chatTyping)
+            .filter(([id]) => id !== playerId)
+            .slice(0, 1)
+            .map(([id, name]) => (
+              <p key={id} className={styles.typingIndicator} aria-live="polite">
+                {t("chatPanel.writing", { name })}
+              </p>
+            ))}
         </div>
         <div className={styles.emojiRow}>
           {EMOJI_QUICK.map((emoji) => (

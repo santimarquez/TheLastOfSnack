@@ -28,6 +28,8 @@ export interface ResolutionResult {
   saltReveal?: { targetDisplayName: string; category: string };
   /** Peek: notify only the player who used it (target's snack name) */
   peekReveal?: { targetDisplayName: string; snackName: string };
+  /** Trash: target discarded these cards (for client animation) */
+  trashDiscarded?: { targetId: string; cards: Array<{ id: string; type: string }> };
 }
 
 export function resolveCard(
@@ -134,15 +136,13 @@ export function resolveCard(
       if (!shakeTarget) return { error: "Target not found" };
       if (shakeTarget.status !== "active") return { error: "Target is not active" };
       if (shakeTarget.id === playerId) return { error: "Cannot target yourself" };
-      if (shakeTarget.role?.id === "taco") {
-        if (consumeShield(room, shakeTarget.id)) {
-          result.blocked = { targetId: shakeTarget.id };
-          result.outcome = "blocked";
-        } else {
-          eliminatePlayer(room, shakeTarget.id);
-          result.eliminated = [shakeTarget.id];
-          result.outcome = "eliminated";
-        }
+      if (consumeShield(room, shakeTarget.id)) {
+        result.blocked = { targetId: shakeTarget.id };
+        result.outcome = "blocked";
+      } else if (shakeTarget.role?.id === "taco") {
+        eliminatePlayer(room, shakeTarget.id);
+        result.eliminated = [shakeTarget.id];
+        result.outcome = "eliminated";
       }
       break;
     }
@@ -152,15 +152,13 @@ export function resolveCard(
       if (!steamTarget) return { error: "Target not found" };
       if (steamTarget.status !== "active") return { error: "Target is not active" };
       if (steamTarget.id === playerId) return { error: "Cannot target yourself" };
-      if (steamTarget.role?.id === "fries") {
-        if (consumeShield(room, steamTarget.id)) {
-          result.blocked = { targetId: steamTarget.id };
-          result.outcome = "blocked";
-        } else {
-          eliminatePlayer(room, steamTarget.id);
-          result.eliminated = [steamTarget.id];
-          result.outcome = "eliminated";
-        }
+      if (consumeShield(room, steamTarget.id)) {
+        result.blocked = { targetId: steamTarget.id };
+        result.outcome = "blocked";
+      } else if (steamTarget.role?.id === "fries") {
+        eliminatePlayer(room, steamTarget.id);
+        result.eliminated = [steamTarget.id];
+        result.outcome = "eliminated";
       }
       break;
     }
@@ -188,7 +186,15 @@ export function resolveCard(
       const ordered = caster ? [caster, ...others] : active;
       let deck = room.gameState.deck;
       for (const p of ordered) {
-        const drawn = drawCard(deck);
+        let drawn = drawCard(deck);
+        if (!drawn && (room.gameState.discardPile?.length ?? 0) > 0) {
+          // Refill deck from discard so everyone can get a card
+          const discard = room.gameState.discardPile!;
+          const shuffled = [...discard].sort(() => Math.random() - 0.5);
+          deck = [...shuffled, ...deck];
+          room.gameState.discardPile = [];
+          drawn = drawCard(deck);
+        }
         if (!drawn) break;
         deck = drawn.remaining;
         p.hand.push(drawn.card);
@@ -213,13 +219,18 @@ export function resolveCard(
       const hand = trashTarget.hand;
       if (hand.length < toDiscard) return { error: "Target has fewer than 2 cards to discard" };
       if (!room.gameState.discardPile) room.gameState.discardPile = [];
+      room.gameState.discardPile.push(card);
+      const discarded: Array<{ id: string; type: string }> = [];
       for (let i = 0; i < toDiscard && hand.length > 0; i++) {
         const idx = Math.floor(Math.random() * hand.length);
-        const discarded = hand.splice(idx, 1)[0];
-        if (discarded) room.gameState.discardPile.push(discarded);
+        const discardedCard = hand.splice(idx, 1)[0];
+        if (discardedCard) {
+          room.gameState.discardPile.push(discardedCard);
+          discarded.push({ id: discardedCard.id, type: discardedCard.type });
+        }
       }
-      room.gameState.discardPile.push(card);
       result.outcome = "trash";
+      result.trashDiscarded = { targetId, cards: discarded };
       break;
     }
     case "trade_seats": {
@@ -256,26 +267,6 @@ export function resolveCard(
         }
       }
       result.outcome = "swapped";
-      break;
-    }
-    case "reveal": {
-      if (!room.gameState.revealedRoles[playerId]) {
-        room.gameState.revealedRoles[playerId] = player.role!;
-      }
-      result.revealed = { playerId };
-      result.outcome = "revealed";
-      break;
-    }
-    case "eliminate": {
-      const active = room.players.filter(
-        (p) => p.status === "active" && p.id !== playerId
-      );
-      if (active.length > 0) {
-        const target = active[Math.floor(Math.random() * active.length)];
-        eliminatePlayer(room, target.id);
-        result.eliminated = [target.id];
-        result.outcome = "eliminated";
-      }
       break;
     }
     case "foil_wrap": {

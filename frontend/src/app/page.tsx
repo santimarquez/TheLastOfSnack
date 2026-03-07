@@ -67,7 +67,7 @@ export default function HomePage() {
       Analytics.arenaCreated("home");
       if (typeof sessionStorage !== "undefined") {
         sessionStorage.setItem(JOIN_METHOD_KEY, "create");
-        sessionStorage.setItem(`reconnect_${data.roomCode!}`, data.reconnectToken!);
+        sessionStorage.setItem(`reconnect_${(data.roomCode ?? "").toUpperCase()}`, data.reconnectToken!);
       }
       router.push(
         `/room/${data.roomCode}?displayName=${encodeURIComponent(name)}`,
@@ -113,6 +113,12 @@ export default function HomePage() {
             <h2 className={styles.logoText}>{t("common.appName")}</h2>
           </div>
           <div className={styles.nav}>
+            <Link href="/arenas" className={styles.navLink}>
+              {t("home.openArenas")}
+            </Link>
+            <Link href="/how-to-play" className={styles.navLink}>
+              {t("home.howToPlay")}
+            </Link>
             <LocaleSwitcher />
             {MUSIC_ENABLED && (
               <button
@@ -134,12 +140,6 @@ export default function HomePage() {
                 settings
               </span>
             </button>
-            <Link href="/arenas" className={styles.navLink}>
-              {t("home.openArenas")}
-            </Link>
-            <Link href="/how-to-play" className={styles.navLink}>
-              {t("home.howToPlay")}
-            </Link>
           </div>
         </header>
 

@@ -66,6 +66,7 @@ export const clientMessageSchemas = {
   kick_player: z.object({ playerId: z.string().min(1) }),
   leave_room: z.object({}),
   chat: chatPayload,
+  chat_typing: z.object({}).optional(),
   restart: z.object({}),
   round_transition_complete: z.object({}),
   start_next_round: z.object({}),

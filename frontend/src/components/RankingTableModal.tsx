@@ -107,8 +107,9 @@ export function RankingTableModal() {
     } catch (err) {
       if ((err as { name?: string })?.name === "AbortError") return;
     }
+    const copyText = t("gameEnd.shareCopyTextFinal", { url });
     try {
-      await navigator.clipboard?.writeText(url);
+      await navigator.clipboard?.writeText(copyText);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     } catch {

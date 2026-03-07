@@ -1,76 +1,11 @@
 import type { Player, Snack } from "../state/types.js";
+import { ALL_SNACKS } from "@last-of-snack/shared";
 import { AVATAR_IDS_BY_SNACK, ALL_AVATAR_IDS } from "./avatars.js";
 
-/** Snacks and their weaknesses from the game design. */
-const SNACKS: Snack[] = [
-  {
-    id: "pizza",
-    name: "🍕 Pizza",
-    isLastSnack: false,
-    category: "Savory",
-    weakness: "Cold",
-    eliminatedBy: "❄️ Freeze",
-  },
-  {
-    id: "sushi",
-    name: "🍣 Sushi",
-    isLastSnack: false,
-    category: "Savory",
-    weakness: "Heat",
-    eliminatedBy: "🔥 Microwave",
-  },
-  {
-    id: "donut",
-    name: "🍩 Donut",
-    isLastSnack: false,
-    category: "Sweet",
-    weakness: "Salt",
-    eliminatedBy: "🧂 Double Salt",
-  },
-  {
-    id: "ice_cream",
-    name: "🍦 Ice Cream",
-    isLastSnack: false,
-    category: "Sweet",
-    weakness: "Heat",
-    eliminatedBy: "🔥 Microwave",
-  },
-  {
-    id: "burger",
-    name: "🍔 Burger",
-    isLastSnack: false,
-    category: "Savory",
-    weakness: "Mold",
-    eliminatedBy: "🦠 Spoil",
-  },
-  {
-    id: "taco",
-    name: "🌮 Taco",
-    isLastSnack: false,
-    category: "Savory",
-    weakness: "Shake",
-    eliminatedBy: "🌪️ Shake",
-  },
-  {
-    id: "fries",
-    name: "🍟 Fries",
-    isLastSnack: false,
-    category: "Savory",
-    weakness: "Soggy",
-    eliminatedBy: "💧 Steam",
-  },
-];
-
 export function assignRoles(players: Player[]): void {
-  const pool = SNACKS.filter((s) => !s.isLastSnack);
-  const roles: Snack[] = Array.from(
-    { length: players.length },
-    (_, i) => pool[i % pool.length]!
-  );
-  for (let i = roles.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [roles[i], roles[j]] = [roles[j], roles[i]];
-  }
+  const pool = ALL_SNACKS.filter((s) => !s.isLastSnack);
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  const roles = shuffled.slice(0, players.length) as Snack[];
   players.forEach((p, i) => {
     p.role = roles[i] ?? null;
   });
