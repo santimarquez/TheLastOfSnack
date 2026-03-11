@@ -352,6 +352,21 @@
   transform: translateY(0) scale(1);
 }
 
+.podiumSubtitle {
+  font-size: 1rem;
+  color: var(--slate-300);
+  margin: 0 0 1rem;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s;
+}
+
+.podiumSubtitle.podiumReveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .podiumRow {
   display: flex;
   align-items: flex-end;
@@ -745,17 +760,23 @@
   font-style: italic;
 }
 
+.achievementsCell {
+  min-width: 10rem;
+}
+
 .achievements {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
 .achievementsRound {
   display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  margin-right: 0.5rem;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 0.25rem;
 }
 .achievementsRound:last-of-type {
   margin-right: 0;

@@ -212,6 +212,14 @@ export function RoundEndScreen({ send, isFinalRound }: RoundEndScreenProps) {
                 >
                   {t("gameEnd.podiumTitle")}
                 </h1>
+                {winner && (
+                  <p
+                    className={`${styles.podiumSubtitle} ${podiumRevealStep >= 3 ? styles.podiumReveal : ""}`}
+                    aria-hidden={podiumRevealStep < 3}
+                  >
+                    {t("gameEnd.winnerSubtitleFinal", { name: winner.displayName ?? winnerName })}
+                  </p>
+                )}
                 <div className={styles.podiumRow}>
                   {second && (
                     <div
@@ -399,7 +407,7 @@ export function RoundEndScreen({ send, isFinalRound }: RoundEndScreenProps) {
                       <td>{acc.totalEliminations}</td>
                       <td>{formatSurvivalTime(acc.totalSurvivalMs)}</td>
                       <td>{acc.totalSnackPoints}</td>
-                      <td>
+                      <td className={styles.achievementsCell}>
                         <div className={styles.achievements}>
                           {(() => {
                             let survivorShown = false;

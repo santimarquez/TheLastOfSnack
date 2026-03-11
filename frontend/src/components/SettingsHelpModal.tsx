@@ -34,7 +34,7 @@ export function SettingsHelpModal({
 }: SettingsHelpModalProps) {
   const router = useRouter();
   const { t } = useTranslations();
-  const { displayName, gameState, playerId, reset } = useGameStore();
+  const { displayName, gameState, playerId, roomCode, reset } = useGameStore();
 
   useEffect(() => {
     Analytics.howToPlayOpened(initialTab);
@@ -81,6 +81,9 @@ export function SettingsHelpModal({
     if (!canLeaveGame) return;
     if (typeof window !== "undefined" && !window.confirm(t("settingsHelp.leaveConfirm"))) return;
     onClose();
+    if (typeof sessionStorage !== "undefined" && roomCode) {
+      sessionStorage.removeItem(`reconnect_${roomCode.toUpperCase()}`);
+    }
     reset();
     router.push("/");
   }
@@ -202,17 +205,16 @@ export function SettingsHelpModal({
                 <li>{t("settingsHelp.rule4")}</li>
                 <li>{t("settingsHelp.rule5")}</li>
               </ol>
-              <button
-                type="button"
+              <a
+                href="/how-to-play"
+                target="_blank"
+                rel="noopener noreferrer"
                 className={styles.fullGuideBtn}
-                onClick={() => {
-                  onClose();
-                  router.push("/how-to-play");
-                }}
+                onClick={() => onClose()}
               >
                 {t("settingsHelp.viewFullGuide")}
                 <span className="material-symbols-outlined">arrow_forward</span>
-              </button>
+              </a>
             </div>
           )}
         </div>

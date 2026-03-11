@@ -76,6 +76,7 @@ export function GameTable({ send }: { send: SendFn }) {
   const phase = gameState?.phase ?? "lobby";
   const [actionLogCollapsed, setActionLogCollapsed] = useState(true);
   const [actionLogAutoScroll, setActionLogAutoScroll] = useState(true);
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
   const actionLogListRef = useRef<HTMLDivElement>(null);
   const me = gameState?.players?.find((p) => p.id === playerId);
   const players = gameState?.players ?? [];
@@ -764,12 +765,53 @@ export function GameTable({ send }: { send: SendFn }) {
                           );
                         })}
                     </div>
+                    <button
+                    type="button"
+                    className={styles.discardLabelBtn}
+                    onClick={() => setShowDiscardModal(true)}
+                    title={t("gameTable.viewDiscardPile")}
+                  >
                     <span className={styles.discardLabel}>
                       {t("gameTable.discardPile")}
                     </span>
+                    <span className="material-symbols-outlined" aria-hidden>visibility</span>
+                  </button>
                   </div>
                 </div>
               </div>
+              {showDiscardModal && createPortal(
+                <div className={styles.discardModalOverlay} role="dialog" aria-modal="true" aria-label={t("gameTable.discardPile")}>
+                  <div className={styles.discardModalBackdrop} onClick={() => setShowDiscardModal(false)} aria-hidden />
+                  <div className={styles.discardModal}>
+                    <div className={styles.discardModalHeader}>
+                      <h3>{t("gameTable.discardPile")}</h3>
+                      <button type="button" className={styles.discardModalClose} onClick={() => setShowDiscardModal(false)} aria-label={t("common.close")}>
+                        <span className="material-symbols-outlined">close</span>
+                      </button>
+                    </div>
+                    <div className={styles.discardModalList}>
+                      {[...discardPile].reverse().map((card) => {
+                        const meta = getCardMeta(card.type);
+                        return (
+                          <div key={card.id} className={styles.discardModalCard}>
+                            <div
+                              className={styles.discardModalCardBg}
+                              style={meta.imageUrl ? { backgroundImage: `url(${meta.imageUrl})` } : undefined}
+                            />
+                            <span className={styles.discardModalCardTitle}>
+                              {t(`cards.${card.type}.title`) !== `cards.${card.type}.title` ? t(`cards.${card.type}.title`) : card.type}
+                            </span>
+                          </div>
+                        );
+                      })}
+                      {discardPile.length === 0 && (
+                        <p className={styles.discardModalEmpty}>{t("gameTable.discardPileEmpty")}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>,
+                document.body
+              )}
               <div className={styles.playersRowBottom}>
                 {bottomPlayers.map((p) => {
                   const isYou = p.id === playerId;

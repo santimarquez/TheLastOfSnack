@@ -63,15 +63,13 @@ export default function RoomPage() {
   leaveCheckRef.current = { phase, playerId, connectionStatus, send, roomCode };
 
   // When user leaves the room page (e.g. navigates to arenas or home), leave the lobby so others don't see them.
+  // Do not clear reconnect token here so that refresh keeps the token and user can rejoin.
   useEffect(() => {
     return () => {
-      const { phase: p, playerId: pid, connectionStatus: cs, send: sendFn, roomCode: code } = leaveCheckRef.current;
+      const { phase: p, playerId: pid, connectionStatus: cs, send: sendFn } = leaveCheckRef.current;
       if (p === "lobby" && pid && cs === "connected") {
         Analytics.lobbyLeft();
         sendFn("leave_room", {});
-        if (typeof sessionStorage !== "undefined") {
-          sessionStorage.removeItem(`reconnect_${code.toUpperCase()}`);
-        }
       }
     };
   }, []);
@@ -119,7 +117,16 @@ export default function RoomPage() {
         />
       ) : showLoadingScreen ? (
         <LobbyLoadingScreen roomCode={stableRoomCode || roomCode} />
-      ) : (
+      ) : null}
+      {showSettingsHelpModal && (
+        <SettingsHelpModal
+          onClose={() => setShowSettingsHelpModal(false)}
+          initialTab={settingsHelpModalTab}
+          send={connectionStatus === "connected" || hasJoined ? send : undefined}
+          canLeaveGame
+        />
+      )}
+      {!showLoadingScreen && !showConnectionLost ? (
         <>
       {phase === "lobby" ? <Shell /> : phase === "assigning" ? null : phase === "playing" && (showAssigningTransition || showRoundTransition) ? null : (
         <GameHeader
@@ -216,17 +223,9 @@ export default function RoomPage() {
       <CardRevealNotification />
       <EliminationAnimation />
       <RankingTableModal />
-      {showSettingsHelpModal && (
-        <SettingsHelpModal
-          onClose={() => setShowSettingsHelpModal(false)}
-          initialTab={settingsHelpModalTab}
-          send={connectionStatus === "connected" || hasJoined ? send : undefined}
-          canLeaveGame
-        />
-      )}
       <div className={styles.footerBar} aria-hidden />
         </>
-      )}
+      ) : null}
     </main>
   );
 }

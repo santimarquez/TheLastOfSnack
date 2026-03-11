@@ -206,10 +206,11 @@
   },
   "gameEnd": {
     "podiumTitle": "Winner Winner Snack Dinner!",
+    "winnerSubtitleFinal": "{name} — the only snack left in the bowl!",
     "roundComplete": "Round {round} complete",
     "continueToRound": "Continue to Round {round}",
     "finalResults": "Final Results",
-    "survived": "SURVIVED!",
+    "survived": "ATE THE COMPETITION!",
     "winner": "WINNER!",
     "winnerNameFallback": "Winner",
     "eliminations": "Eliminations",
@@ -350,6 +351,8 @@
   "gameTable": {
     "cardsLeft": "{count} cards left in deck",
     "discardPile": "Discard Pile",
+    "viewDiscardPile": "View all cards in discard pile",
+    "discardPileEmpty": "No cards in the discard pile yet.",
     "yourTurn": "YOUR TURN",
     "you": "YOU",
     "out": "OUT",

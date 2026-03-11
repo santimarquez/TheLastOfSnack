@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "@/i18n/context";
+import { useGameStore } from "@/store/gameStore";
 import styles from "./RoundTransitionScreen.module.css";
 
 const TRANSITION_DURATION_MS = 4500;
@@ -29,6 +31,7 @@ export function RoundTransitionScreen({
   onComplete,
 }: RoundTransitionScreenProps) {
   const { t } = useTranslations();
+  const setShowSettingsHelpModal = useGameStore((s) => s.setShowSettingsHelpModal);
   const [progress, setProgress] = useState(0);
   const completedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
@@ -85,15 +88,25 @@ export function RoundTransitionScreen({
       </div>
 
       <header className={styles.header}>
-        <div className={styles.logoRow}>
+        <Link href="/" className={styles.logoRow}>
           <div className={styles.logoIcon}>
             <span className="material-symbols-outlined">restaurant</span>
           </div>
           <h2 className={styles.logoText}>{t("roundTransition.gameTitle")}</h2>
-        </div>
-        <div className={styles.liveBadge}>
-          <span className="material-symbols-outlined">local_fire_department</span>
-          <span>{t("roundTransition.liveArena")}</span>
+        </Link>
+        <div className={styles.headerRight}>
+          <div className={styles.liveBadge}>
+            <span className="material-symbols-outlined">local_fire_department</span>
+            <span>{t("roundTransition.liveArena")}</span>
+          </div>
+          <button
+            type="button"
+            className={styles.iconBtn}
+            aria-label={t("common.settings")}
+            onClick={() => setShowSettingsHelpModal(true, "settings")}
+          >
+            <span className="material-symbols-outlined">settings</span>
+          </button>
         </div>
       </header>
 

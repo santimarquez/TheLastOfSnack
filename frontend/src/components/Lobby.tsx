@@ -245,6 +245,12 @@ export function Lobby({ send }: { send: SendFn }) {
             className={styles.nameInput}
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSetName();
+              }
+            }}
             placeholder={t("common.yourName")}
             maxLength={32}
           />

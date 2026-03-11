@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "@/i18n/context";
 import { useGameStore } from "@/store/gameStore";
@@ -31,12 +32,12 @@ export function LobbyLoadingScreen({ roomCode }: { roomCode: string }) {
   return (
     <div className={styles.wrapper}>
       <header className={styles.header}>
-        <div className={styles.logoRow}>
+        <Link href="/" className={styles.logoRow}>
           <div className={styles.logoIcon}>
             <span className="material-symbols-outlined">restaurant</span>
           </div>
           <h2 className={styles.logoText}>{t("common.appName")}</h2>
-        </div>
+        </Link>
         <div className={styles.headerRight}>
           <div className={styles.roomCodeBox}>
             <span className={styles.roomCodeLabel}>{t("lobby.roomCode")}</span>

@@ -21,8 +21,8 @@ interface ChatPanelProps {
 
 export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarCompact }: ChatPanelProps) {
   const { t } = useTranslations();
-  const { chatMessages, chatTyping, gameState, playerId, setChatTyping, clearChatTyping } = useGameStore();
-  const [input, setInput] = useState("");
+  const { chatMessages, chatTyping, gameState, playerId, setChatTyping, clearChatTyping, chatDraft, setChatDraft } = useGameStore();
+  const [input, setInput] = useState(chatDraft);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const lastSeenCountRef = useRef(0);
@@ -79,10 +79,17 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
     if (!text) return;
     send("chat", { text });
     setInput("");
+    setChatDraft("");
+  }
+
+  function setInputAndDraft(value: string) {
+    const next = value.slice(0, 500);
+    setInput(next);
+    setChatDraft(next);
   }
 
   function insertEmoji(emoji: string) {
-    setInput((prev) => (prev + emoji).slice(0, 500));
+    setInputAndDraft(input + emoji);
   }
 
   function openChat() {
@@ -180,7 +187,7 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
             <input
               className={styles.input}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => setInputAndDraft(e.target.value)}
               placeholder={t("chatPanel.placeholder")}
               maxLength={500}
               aria-label={t("chatPanel.placeholder")}
@@ -291,7 +298,7 @@ export function ChatPanel({ send, variant = "lobby", onCollapsedChange, sidebarC
           <input
             className={styles.input}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => setInputAndDraft(e.target.value)}
             placeholder={t("chatPanel.placeholder")}
             maxLength={500}
             aria-label={t("chatPanel.placeholder")}

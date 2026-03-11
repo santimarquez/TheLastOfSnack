@@ -568,6 +568,116 @@
   letter-spacing: 0.1em;
 }
 
+.discardLabelBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  color: inherit;
+}
+.discardLabelBtn:hover .discardLabel,
+.discardLabelBtn .material-symbols-outlined {
+  color: var(--primary);
+}
+.discardLabelBtn .material-symbols-outlined {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.discardModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.discardModalBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+.discardModal {
+  position: relative;
+  background: var(--background-dark);
+  border: 1px solid rgba(244, 37, 37, 0.3);
+  border-radius: 1rem;
+  max-width: 24rem;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 40px rgba(244, 37, 37, 0.15);
+}
+.discardModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(244, 37, 37, 0.15);
+}
+.discardModalHeader h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--slate-100);
+  text-transform: uppercase;
+}
+.discardModalClose {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: rgba(244, 37, 37, 0.1);
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.discardModalList {
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.discardModalCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0.5rem;
+  border: 1px solid rgba(244, 37, 37, 0.1);
+}
+.discardModalCardBg {
+  width: 3rem;
+  height: 3.375rem;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--slate-700);
+  border-radius: 0.35rem;
+  flex-shrink: 0;
+}
+.discardModalCardTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--slate-200);
+  text-transform: uppercase;
+}
+.discardModalEmpty {
+  margin: 0;
+  color: var(--slate-400);
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 1rem;
+}
+
 /* Player slot (in row layout) */
 .playerSlot {
   position: relative;

@@ -40,6 +40,8 @@ interface GameStore {
   gameState: GameStateView | null;
   lobbySettings: LobbySettings;
   chatMessages: ChatMessage[];
+  /** Unsent chat input; persists when switching lobby/game/round end screens. */
+  chatDraft: string;
   /** Player IDs currently typing in chat -> displayName (excludes self in UI). */
   chatTyping: Record<string, string>;
   /** Log of in-game actions (turn, draw, play, eliminated, game over). */
@@ -177,6 +179,7 @@ interface GameStore {
     tab?: "settings" | "how-to-play",
   ) => void;
   setJoinFailed: (failed: boolean) => void;
+  setChatDraft: (draft: string) => void;
   reset: () => void;
 }
 
@@ -206,6 +209,7 @@ export const useGameStore = create<GameStore>((set) => ({
     maxPlayers: 8,
   },
   chatMessages: [],
+  chatDraft: "",
   chatTyping: {},
   actionLog: [],
   connectionStatus: "disconnected",
@@ -433,6 +437,8 @@ export const useGameStore = create<GameStore>((set) => ({
 
   setJoinFailed: (failed) => set({ joinFailed: failed }),
 
+  setChatDraft: (draft) => set({ chatDraft: draft }),
+
   reset: () =>
     set({
       roomCode: "",
@@ -447,6 +453,7 @@ export const useGameStore = create<GameStore>((set) => ({
         maxPlayers: 8,
       },
       chatMessages: [],
+      chatDraft: "",
       chatTyping: {},
       actionLog: [],
       connectionStatus: "disconnected",

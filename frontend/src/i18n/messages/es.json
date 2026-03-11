@@ -206,10 +206,11 @@
   },
   "gameEnd": {
     "podiumTitle": "¡Ganador, ganador, cena de snacks!",
+    "winnerSubtitleFinal": "{name} — ¡el único snack en el bowl!",
     "roundComplete": "Ronda {round} completada",
     "continueToRound": "Continuar a ronda {round}",
     "finalResults": "Resultados finales",
-    "survived": "¡SOBREVIVIÓ!",
+    "survived": "¡SE ZAMPÓ AL RESTO!",
     "winner": "¡GANADOR!",
     "winnerNameFallback": "Ganador",
     "eliminations": "Eliminaciones",
@@ -350,6 +351,8 @@
   "gameTable": {
     "cardsLeft": "{count} cartas en el mazo",
     "discardPile": "Descarte",
+    "viewDiscardPile": "Ver todas las cartas del descarte",
+    "discardPileEmpty": "Aún no hay cartas en el descarte.",
     "yourTurn": "TU TURNO",
     "you": "TÚ",
     "out": "FUERA",
